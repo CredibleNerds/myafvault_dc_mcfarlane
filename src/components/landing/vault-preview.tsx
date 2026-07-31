@@ -367,10 +367,10 @@ function FeaturePanel({
 
       {feature === "collections" && (
         <div className="border-t border-border pt-2.5 space-y-1.5">
-          <p className="text-xs font-medium text-fg">Example display</p>
-          <p className="text-xs text-muted">
-            “The Dark Knight shelf” — group photos of Joker, Batman, and
-            supporting cast with linked vault figures.
+          <p className="text-xs text-muted leading-relaxed">
+            For example you can create a collection — “The Dark Knight shelf” —
+            and post your created group photos of Joker, Batman, and others from
+            The Dark Knight trilogy.
           </p>
           <div className="flex items-center gap-1.5 text-[11px] text-subtle">
             <Camera className="h-3.5 w-3.5" />
