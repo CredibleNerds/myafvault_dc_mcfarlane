@@ -17,6 +17,7 @@ import {
 } from "@/lib/sync-client";
 import { Button } from "@/components/ui/button";
 import { authEnabled } from "@/lib/auth/client";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function AuthSyncBar() {
   const { user, isPending } = useCurrentUserState();
@@ -42,35 +43,39 @@ export function AuthSyncBar() {
     }
   }, [user?.id, user?.isDevFallback, isPending]);
 
-  if (!authEnabled) return null;
-
   return (
     <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-      <SignedOut>
-        <Button asChild size="sm" variant="default">
-          <Link to="/login">
-            <LogIn className="h-4 w-4" />
-            <span className="hidden sm:inline">Sign in</span>
-            <span className="sm:hidden">Sign in</span>
-          </Link>
-        </Button>
-      </SignedOut>
+      <ThemeToggle />
 
-      <SignedIn>
-        <SyncChip
-          status={isPending ? "pulling" : sync}
-          detail={detail}
-          onResync={async () => {
-            try {
-              await forceResync();
-              toast.success("Re-synced");
-            } catch {
-              toast.error("Could not re-sync");
-            }
-          }}
-        />
-        <UserButton />
-      </SignedIn>
+      {authEnabled && (
+        <>
+          <SignedOut>
+            <Button asChild size="sm" variant="default">
+              <Link to="/login">
+                <LogIn className="h-4 w-4" />
+                <span className="hidden sm:inline">Sign in</span>
+                <span className="sm:hidden">Sign in</span>
+              </Link>
+            </Button>
+          </SignedOut>
+
+          <SignedIn>
+            <SyncChip
+              status={isPending ? "pulling" : sync}
+              detail={detail}
+              onResync={async () => {
+                try {
+                  await forceResync();
+                  toast.success("Re-synced");
+                } catch {
+                  toast.error("Could not re-sync");
+                }
+              }}
+            />
+            <UserButton />
+          </SignedIn>
+        </>
+      )}
     </div>
   );
 }
@@ -99,11 +104,12 @@ function SyncChip({
   return (
     <button
       type="button"
-      title={detail || label}
       onClick={() => {
         if (!busy) void onResync();
       }}
-      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-2 px-2.5 py-1 text-[11px] font-medium text-muted hover:text-fg hover:border-border-strong transition-colors"
+      disabled={busy}
+      title={detail || "Re-sync collection"}
+      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-[11px] font-medium text-muted hover:text-fg hover:border-border-strong transition-colors disabled:opacity-70"
     >
       {busy ? (
         <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />

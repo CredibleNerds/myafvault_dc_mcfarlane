@@ -22,6 +22,7 @@ import {
 import { signInWithEmail, signUpWithEmail } from "@/lib/auth/email-auth";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -139,9 +140,12 @@ function LoginPage() {
             <ArrowLeft className="h-4 w-4" />
             Catalogue
           </Link>
-          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
-            McFarlane Vault
-          </p>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+              McFarlane Vault
+            </p>
+          </div>
         </div>
       </header>
 

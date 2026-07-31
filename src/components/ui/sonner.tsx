@@ -1,9 +1,11 @@
 import { Toaster as Sonner } from "sonner";
+import { useTheme } from "@/lib/theme";
 
 function Toaster() {
+  const { resolved } = useTheme();
   return (
     <Sonner
-      theme="dark"
+      theme={resolved}
       position="bottom-right"
       toastOptions={{
         classNames: {

@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/*
+ * Default tokens = dark (current McFarlane vault look).
+ * Light overrides when `html.light` is set by the theme provider.
+ */
 @theme {
   --color-bg: #0a0b0e;
   --color-surface: #12141a;
@@ -31,6 +35,33 @@
   --radius-lg: 16px;
   --radius-xl: 24px;
   --radius: 12px;
+
+  --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-owned: 0 10px 32px rgba(196, 30, 58, 0.3);
+}
+
+/* Light palette — same primary crimson, airier neutrals */
+html.light {
+  --color-bg: #f4f5f7;
+  --color-surface: #ffffff;
+  --color-surface-2: #eef0f4;
+  --color-surface-3: #e4e7ee;
+  --color-fg: #12141a;
+  --color-muted: #5a6272;
+  --color-subtle: #7a8294;
+  --color-border: #d5dae4;
+  --color-border-strong: #b8c0cf;
+  --color-primary: #c41e3a;
+  --color-primary-fg: #ffffff;
+  --color-primary-hover: #a01830;
+  --color-accent: #232833;
+  --color-accent-fg: #f4f5f7;
+  --color-success: #2f8a5c;
+  --color-warning: #b07d18;
+  --color-danger: #c41e3a;
+  --color-ring: #c41e3a;
+  --shadow-card: 0 8px 24px rgba(18, 20, 26, 0.08);
+  --shadow-owned: 0 10px 28px rgba(196, 30, 58, 0.18);
 }
 
 @layer base {
@@ -41,6 +72,11 @@
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    color-scheme: dark;
+  }
+
+  html.light {
+    color-scheme: light;
   }
 
   body {
@@ -49,6 +85,9 @@
     font-family: var(--font-sans);
     line-height: 1.5;
     min-height: 100dvh;
+    transition:
+      background-color 180ms ease,
+      color 180ms ease;
   }
 
   button:not(:disabled),
@@ -94,7 +133,7 @@
 .figure-card:hover {
   transform: translateY(-2px);
   border-color: var(--color-border-strong);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--shadow-card);
 }
 
 /* Owned figures stay highlighted even on hover */
@@ -102,7 +141,7 @@
   border-color: var(--color-primary);
   box-shadow:
     0 0 0 1px var(--color-primary),
-    0 10px 32px rgba(196, 30, 58, 0.3);
+    var(--shadow-owned);
 }
 
 .owned-badge {
