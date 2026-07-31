@@ -394,7 +394,8 @@ function FeaturePanel({
 
       {feature === "wishlist" && (
         <p className="text-xs text-subtle border-t border-border pt-2.5">
-          Create your Wishlist to review and update as you collect!
+          Wishlist stays separate from In My Vault so your owned count stays
+          accurate while you hunt missing pieces.
         </p>
       )}
     </div>
