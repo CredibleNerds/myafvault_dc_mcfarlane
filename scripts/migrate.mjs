@@ -32,6 +32,15 @@ function resolveDatabaseUrl() {
   return undefined;
 }
 
+/** Supabase / Neon / many cloud hosts need TLS; chain may not verify in CI. */
+function poolConfig(connectionString) {
+  return {
+    connectionString,
+    max: 1,
+    ssl: { rejectUnauthorized: false },
+  };
+}
+
 const databaseUrl = resolveDatabaseUrl();
 if (!databaseUrl) {
   console.log(
@@ -43,7 +52,7 @@ if (!databaseUrl) {
 const migrationsDir = join(dirname(fileURLToPath(import.meta.url)), "..", "migrations");
 
 async function main() {
-  const pool = new pg.Pool({ connectionString: databaseUrl, max: 1 });
+  const pool = new pg.Pool(poolConfig(databaseUrl));
   const client = await pool.connect();
   try {
     await client.query(
