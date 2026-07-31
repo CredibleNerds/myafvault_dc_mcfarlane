@@ -106,6 +106,16 @@ export function FigureDetail({
     }
   }
 
+  function handleRemovePhoto(index: number) {
+    const src = personal[index];
+    onRemovePhoto(index);
+    toast.success("Photo deleted");
+    if (src && showImages[galleryIndex] === src) {
+      setGalleryIndex(0);
+      setLightboxOpen(false);
+    }
+  }
+
   return (
     <>
       <Dialog
@@ -285,12 +295,12 @@ export function FigureDetail({
               </div>
 
               {personal.length > 0 && (
-                <div className="mb-4">
-                  <div className="flex items-center justify-between mb-2">
+                <div className="mb-4 rounded-[var(--radius-md)] border border-border bg-surface-2/40 p-3">
+                  <div className="flex items-center justify-between gap-2 mb-2.5">
                     <h4 className="text-[11px] font-medium uppercase tracking-wide text-subtle">
-                      Your photos
+                      Your photos ({personal.length})
                     </h4>
-                    <label className="flex items-center gap-2 text-xs text-muted cursor-pointer">
+                    <label className="flex items-center gap-2 text-xs text-muted cursor-pointer shrink-0">
                       <input
                         type="checkbox"
                         checked={!!entry?.usePersonalPhoto}
@@ -302,35 +312,48 @@ export function FigureDetail({
                       Use as cover
                     </label>
                   </div>
-                  <div className="flex gap-2 flex-wrap">
+                  <div className="flex gap-2.5 flex-wrap">
                     {personal.map((src, i) => (
                       <div
-                        key={i}
-                        className="relative group gallery-thumb overflow-hidden rounded"
+                        key={`personal-${i}`}
+                        className="relative gallery-thumb"
                       >
-                        <ProductImage
-                          src={src}
-                          alt=""
-                          sizes="96px"
-                          className="h-20 w-20 rounded border border-border"
-                          imgClassName="p-0.5"
+                        <button
+                          type="button"
+                          className="block overflow-hidden rounded border border-border bg-bg"
                           onClick={() => {
                             const idx = showImages.indexOf(src);
                             setGalleryIndex(idx >= 0 ? idx : 0);
                             setLightboxOpen(true);
                           }}
-                        />
+                          aria-label={`View your photo ${i + 1}`}
+                        >
+                          <ProductImage
+                            src={src}
+                            alt=""
+                            sizes="96px"
+                            className="h-20 w-20"
+                            imgClassName="p-0.5 object-contain"
+                          />
+                        </button>
                         <button
                           type="button"
-                          onClick={() => onRemovePhoto(i)}
-                          className="absolute -right-1.5 -top-1.5 z-[1] flex h-5 w-5 items-center justify-center rounded-full bg-danger text-primary-fg opacity-0 group-hover:opacity-100 transition-opacity"
-                          aria-label="Remove photo"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemovePhoto(i);
+                          }}
+                          className="absolute -right-1.5 -top-1.5 z-[2] flex h-7 min-w-7 items-center justify-center gap-0.5 rounded-full bg-danger px-1.5 text-primary-fg shadow-md ring-2 ring-bg hover:brightness-110 active:scale-95 transition"
+                          aria-label={`Delete photo ${i + 1}`}
+                          title="Delete photo"
                         >
-                          <X className="h-3 w-3" />
+                          <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </div>
                     ))}
                   </div>
+                  <p className="mt-2 text-[11px] text-subtle">
+                    Tap the red trash button on a photo to delete it.
+                  </p>
                 </div>
               )}
 
