@@ -163,8 +163,8 @@ function LandingPage() {
                 "radial-gradient(ellipse 80% 60% at 70% -10%, color-mix(in oklab, var(--color-primary) 28%, transparent), transparent 55%)",
             }}
           />
-          <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20 lg:py-24">
-            <div className="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.95fr)] lg:items-center">
+          <div className="relative mx-auto max-w-6xl lg:max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:py-24">
+            <div className="grid gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.15fr)] lg:items-center">
               <div className="space-y-6">
                 <Badge variant="secondary" className="font-medium">
                   Multi-franchise collector vault

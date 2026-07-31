@@ -107,7 +107,7 @@ const FEATURE_TABS: {
     label: "Wishlist",
     icon: Heart,
     title: "Wishlist",
-    body: "Park grails and gaps without mixing them into your owned count.",
+    body: "Create your Wishlist to review and update as you collect while keeping them separate from your owned collection.",
   },
   {
     id: "collections",
@@ -143,20 +143,20 @@ export function VaultPreview() {
 
   return (
     <>
-      <div className="rounded-[var(--radius-xl)] border border-border bg-surface p-3 sm:p-4 shadow-[var(--shadow-card)]">
+      <div className="rounded-[var(--radius-xl)] border border-border bg-surface p-4 sm:p-5 lg:p-6 shadow-[var(--shadow-card)]">
         <div className="flex items-center justify-between gap-2 mb-3 px-1">
           <div>
             <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary">
               Interactive preview · DC McFarlane
             </p>
-            <p className="text-sm font-semibold">Tap a figure to explore features</p>
+            <p className="text-sm sm:text-base font-semibold">Tap a figure to explore features</p>
           </div>
           <Badge variant="outline" className="text-[10px] shrink-0">
             Demo
           </Badge>
         </div>
 
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 gap-3 sm:gap-3.5">
           {PREVIEW_CARDS.map((card) => {
             const p = CATALOG_BY_ID[card.productId];
             if (!p?.imageUrl) return null;
@@ -170,13 +170,13 @@ export function VaultPreview() {
                   "hover:border-primary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 )}
               >
-                <div className="aspect-[4/3] bg-surface-3 relative overflow-hidden">
+                <div className="aspect-square sm:aspect-[4/3] min-h-[140px] sm:min-h-[160px] lg:min-h-[180px] bg-surface-3 relative overflow-hidden">
                   <img
                     src={p.imageUrl}
                     alt={p.name}
                     loading="lazy"
                     referrerPolicy="no-referrer"
-                    className="absolute inset-0 h-full w-full object-contain p-1.5 transition-transform duration-300 group-hover:scale-[1.06]"
+                    className="absolute inset-0 h-full w-full object-contain p-2 sm:p-2.5 transition-transform duration-300 group-hover:scale-[1.06]"
                   />
                   <span className="absolute left-2 top-2 rounded-full bg-bg/90 px-2 py-0.5 text-[9px] font-semibold text-fg backdrop-blur-sm">
                     {card.badge}
@@ -185,11 +185,11 @@ export function VaultPreview() {
                     <ZoomIn className="h-3.5 w-3.5" />
                   </span>
                 </div>
-                <div className="p-2.5 space-y-0.5">
-                  <p className="text-xs font-semibold line-clamp-2 leading-snug">
+                <div className="p-3 sm:p-3.5 space-y-1">
+                  <p className="text-xs sm:text-sm font-semibold line-clamp-2 leading-snug">
                     {p.name}
                   </p>
-                  <p className="text-[10px] text-muted">
+                  <p className="text-[11px] sm:text-xs text-muted">
                     {categoryLabel(p.category)} · {p.scale}
                   </p>
                 </div>
@@ -390,8 +390,8 @@ function FeaturePanel({
 
       {feature === "wishlist" && (
         <p className="text-xs text-subtle border-t border-border pt-2.5">
-          Wishlist stays separate from In My Vault so your owned count stays
-          accurate while you hunt missing pieces.
+          Build a Wishlist you can revisit and update as you collect — kept
+          separate from figures marked In My Vault.
         </p>
       )}
     </div>
