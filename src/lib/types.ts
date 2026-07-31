@@ -48,8 +48,16 @@ export interface UserEntry {
   notes: string;
   /** User-uploaded photos as data URLs */
   personalPhotos: string[];
-  /** Prefer personal photo as card cover when available */
+  /**
+   * Prefer a personal photo as THIS user's card cover.
+   * Does not affect other users or the system default cover.
+   */
   usePersonalPhoto: boolean;
+  /**
+   * Which personal photo is the cover for this user only.
+   * Defaults to 0 when usePersonalPhoto is true.
+   */
+  personalCoverIndex?: number;
   /** True if this is a user-created product not in master catalog */
   isCustom?: boolean;
   customProduct?: Partial<CatalogProduct> & {

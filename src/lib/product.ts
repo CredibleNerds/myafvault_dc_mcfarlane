@@ -39,20 +39,59 @@ export function resolveProduct(
   return CATALOG_BY_ID[productId] ?? null;
 }
 
+/**
+ * Resolve the cover shown on cards / list rows.
+ *
+ * Priority:
+ * 1. This user's personal cover (account-only — never affects others)
+ * 2. Admin system cover (shared default for all users)
+ * 3. Catalog pack shot
+ * 4. Placeholder
+ */
 export function displayImageFor(
   product: CatalogProduct,
   entry?: UserEntry | null,
+  systemCover?: string | null,
 ): string {
-  if (
-    entry?.usePersonalPhoto &&
-    entry.personalPhotos.length > 0
-  ) {
-    return entry.personalPhotos[0]!;
+  if (entry?.usePersonalPhoto && entry.personalPhotos.length > 0) {
+    const idx = clampIndex(
+      entry.personalCoverIndex ?? 0,
+      entry.personalPhotos.length,
+    );
+    return entry.personalPhotos[idx]!;
+  }
+  if (systemCover) {
+    return systemCover;
   }
   if (entry?.personalPhotos.length && !product.imageUrl) {
     return entry.personalPhotos[0]!;
   }
   return product.imageUrl ?? figurePlaceholder(product.name);
+}
+
+/** Official + system default gallery for detail view (system cover first when set). */
+export function officialImagesFor(
+  product: CatalogProduct,
+  systemCover?: string | null,
+): string[] {
+  const base =
+    product.gallery?.length > 0
+      ? [...product.gallery]
+      : product.imageUrl
+        ? [product.imageUrl]
+        : [];
+  if (!systemCover) return base;
+  if (base.includes(systemCover)) {
+    return [systemCover, ...base.filter((u) => u !== systemCover)];
+  }
+  return [systemCover, ...base];
+}
+
+function clampIndex(index: number, length: number): number {
+  if (length <= 0) return 0;
+  if (!Number.isFinite(index) || index < 0) return 0;
+  if (index >= length) return length - 1;
+  return index;
 }
 
 export function formatAccessories(product: CatalogProduct): string[] {

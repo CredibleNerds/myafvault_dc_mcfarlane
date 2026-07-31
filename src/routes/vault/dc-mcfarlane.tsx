@@ -22,6 +22,13 @@ import { BulkActionBar } from "@/components/figures/bulk-action-bar";
 import { CollectionsPanel } from "@/components/figures/collections-panel";
 import { Button } from "@/components/ui/button";
 import { OWNERSHIP } from "@/lib/ownership-copy";
+import { useSystemImages } from "@/lib/system-image-store";
+import {
+  fetchSystemImages,
+  getAdminStatus,
+  setSystemProductImage,
+  clearSystemProductImage,
+} from "@/lib/system-images";
 import {
   Dialog,
   DialogContent,
@@ -70,7 +77,14 @@ function CataloguePage() {
   const updateEntry = useCatalogue((s) => s.updateEntry);
   const addPersonalPhoto = useCatalogue((s) => s.addPersonalPhoto);
   const removePersonalPhoto = useCatalogue((s) => s.removePersonalPhoto);
+  const setPersonalCover = useCatalogue((s) => s.setPersonalCover);
+  const clearPersonalCover = useCatalogue((s) => s.clearPersonalCover);
   const addCustomEntry = useCatalogue((s) => s.addCustomEntry);
+  const systemOverrides = useSystemImages((s) => s.overrides);
+  const setSystemAll = useSystemImages((s) => s.setAll);
+  const setSystemOne = useSystemImages((s) => s.setOne);
+  const clearSystemOne = useSystemImages((s) => s.clearOne);
+  const [isAdmin, setIsAdmin] = useState(false);
   const importEntries = useCatalogue((s) => s.importEntries);
 
   useEffect(() => {
@@ -82,6 +96,30 @@ function CataloguePage() {
       cancelled = true;
     };
   }, []);
+
+  // Load shared admin system covers (once signed in / vault ready)
+  useEffect(() => {
+    if (!ready) return;
+    if (authEnabled && !signedIn) return;
+    let cancelled = false;
+    void fetchSystemImages()
+      .then((map) => {
+        if (!cancelled) setSystemAll(map);
+      })
+      .catch(() => {
+        /* non-fatal — catalogue still works with pack shots */
+      });
+    void getAdminStatus()
+      .then((s) => {
+        if (!cancelled) setIsAdmin(!!s.isAdmin);
+      })
+      .catch(() => {
+        if (!cancelled) setIsAdmin(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, signedIn, setSystemAll]);
 
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
@@ -452,6 +490,7 @@ function CataloguePage() {
                   key={p.id}
                   product={p}
                   entry={entries[p.id]}
+                  systemCover={systemOverrides[p.id] ?? null}
                   selectMode={selectMode}
                   selected={selectedIds.has(p.id)}
                   onToggleSelect={() => toggleSelect(p.id)}
@@ -466,6 +505,7 @@ function CataloguePage() {
                   key={p.id}
                   product={p}
                   entry={entries[p.id]}
+                  systemCover={systemOverrides[p.id] ?? null}
                   selectMode={selectMode}
                   selected={selectedIds.has(p.id)}
                   onToggleSelect={() => toggleSelect(p.id)}
@@ -513,6 +553,10 @@ function CataloguePage() {
       <FigureDetail
         product={selectedProduct}
         entry={selectedEntry}
+        systemCover={
+          selectedId ? (systemOverrides[selectedId] ?? null) : null
+        }
+        isAdmin={isAdmin}
         open={!!selectedProduct && !selectMode}
         onOpenChange={(o) => {
           if (!o) setSelectedId(null);
@@ -531,6 +575,24 @@ function CataloguePage() {
         }}
         onRemovePhoto={(index) => {
           if (selectedId) removePersonalPhoto(selectedId, index);
+        }}
+        onSetPersonalCover={(index) => {
+          if (selectedId) setPersonalCover(selectedId, index);
+        }}
+        onClearPersonalCover={() => {
+          if (selectedId) clearPersonalCover(selectedId);
+        }}
+        onSetSystemCover={async (imageUrl) => {
+          if (!selectedId) return;
+          await setSystemProductImage({
+            data: { productId: selectedId, imageUrl },
+          });
+          setSystemOne(selectedId, imageUrl);
+        }}
+        onClearSystemCover={async () => {
+          if (!selectedId) return;
+          await clearSystemProductImage({ data: { productId: selectedId } });
+          clearSystemOne(selectedId);
         }}
       />
 

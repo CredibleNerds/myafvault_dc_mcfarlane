@@ -5,6 +5,8 @@ import {
   ExternalLink,
   Heart,
   ImagePlus,
+  Shield,
+  Star,
   Trash2,
   X,
   ZoomIn,
@@ -36,6 +38,7 @@ import {
   categoryLabel,
   displayImageFor,
   formatAccessories,
+  officialImagesFor,
 } from "@/lib/product";
 import { compressImage } from "@/lib/image";
 import { ProductImage } from "@/components/figures/product-image";
@@ -44,6 +47,9 @@ import { ImageLightbox } from "@/components/figures/image-lightbox";
 interface FigureDetailProps {
   product: CatalogProduct | null;
   entry: UserEntry | null;
+  /** Shared admin default cover for all users */
+  systemCover?: string | null;
+  isAdmin?: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onMarkOwned: (owned: boolean) => void;
@@ -51,11 +57,17 @@ interface FigureDetailProps {
   onUpdate: (patch: Partial<UserEntry>) => void;
   onAddPhoto: (dataUrl: string) => void;
   onRemovePhoto: (index: number) => void;
+  onSetPersonalCover?: (index: number) => void;
+  onClearPersonalCover?: () => void;
+  onSetSystemCover?: (imageUrl: string) => void | Promise<void>;
+  onClearSystemCover?: () => void | Promise<void>;
 }
 
 export function FigureDetail({
   product,
   entry,
+  systemCover = null,
+  isAdmin = false,
   open,
   onOpenChange,
   onMarkOwned,
@@ -63,23 +75,26 @@ export function FigureDetail({
   onUpdate,
   onAddPhoto,
   onRemovePhoto,
+  onSetPersonalCover,
+  onClearPersonalCover,
+  onSetSystemCover,
+  onClearSystemCover,
 }: FigureDetailProps) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const adminFileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [adminBusy, setAdminBusy] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
   if (!product) return null;
 
   const accessories = formatAccessories(product);
-  const officialGallery =
-    product.gallery?.length > 0
-      ? product.gallery
-      : product.imageUrl
-        ? [product.imageUrl]
-        : [];
+  const officialGallery = officialImagesFor(product, systemCover);
   const personal = entry?.personalPhotos ?? [];
-  const cover = displayImageFor(product, entry);
+  const cover = displayImageFor(product, entry, systemCover);
+  const personalCoverIdx = entry?.personalCoverIndex ?? 0;
+  const usingMyCover = !!(entry?.usePersonalPhoto && personal.length > 0);
 
   const showImages =
     personal.length > 0 && entry?.usePersonalPhoto
@@ -104,6 +119,39 @@ export function FigureDetail({
     } finally {
       setBusy(false);
       if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  async function onAdminFile(files: FileList | null) {
+    const file = files?.[0];
+    if (!file || !onSetSystemCover) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please choose an image file");
+      return;
+    }
+    setAdminBusy(true);
+    try {
+      const data = await compressImage(file);
+      await onSetSystemCover(data);
+      toast.success("System cover updated for all users");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not set system cover");
+    } finally {
+      setAdminBusy(false);
+      if (adminFileRef.current) adminFileRef.current.value = "";
+    }
+  }
+
+  async function setSystemFromActive() {
+    if (!onSetSystemCover || !activeImage) return;
+    setAdminBusy(true);
+    try {
+      await onSetSystemCover(activeImage);
+      toast.success("System cover set for all users");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not set system cover");
+    } finally {
+      setAdminBusy(false);
     }
   }
 
@@ -308,6 +356,48 @@ export function FigureDetail({
                 )}
               </div>
 
+              {/* Cover status */}
+              <div className="mb-4 rounded-[var(--radius-md)] border border-border bg-surface-2/40 p-3 space-y-2">
+                <h4 className="text-[11px] font-medium uppercase tracking-wide text-subtle">
+                  Listing photo
+                </h4>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {usingMyCover ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2.5 py-1 font-medium text-primary">
+                      <Star className="h-3 w-3 fill-current" />
+                      Your cover (only you see this)
+                    </span>
+                  ) : systemCover ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-3 px-2.5 py-1 font-medium text-muted">
+                      <Shield className="h-3 w-3" />
+                      Vault default cover
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-3 px-2.5 py-1 font-medium text-muted">
+                      Official pack shot
+                    </span>
+                  )}
+                  {usingMyCover && onClearPersonalCover && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2 text-xs"
+                      onClick={() => {
+                        onClearPersonalCover();
+                        toast.message("Using vault default photo again");
+                      }}
+                    >
+                      Use vault default instead
+                    </Button>
+                  )}
+                </div>
+                <p className="text-[11px] text-subtle leading-relaxed">
+                  Your personal cover only changes what you see. Other collectors
+                  still get the vault default (or official pack shot).
+                </p>
+              </div>
+
               {personal.length > 0 && (
                 <div className="mb-4 rounded-[var(--radius-md)] border border-border bg-surface-2/40 p-3">
                   <div className="flex items-center justify-between gap-2 mb-2.5">
@@ -318,56 +408,163 @@ export function FigureDetail({
                       <input
                         type="checkbox"
                         checked={!!entry?.usePersonalPhoto}
-                        onChange={(e) =>
-                          onUpdate({ usePersonalPhoto: e.target.checked })
-                        }
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            onUpdate({
+                              usePersonalPhoto: true,
+                              personalCoverIndex: personalCoverIdx,
+                            });
+                          } else if (onClearPersonalCover) {
+                            onClearPersonalCover();
+                          } else {
+                            onUpdate({ usePersonalPhoto: false });
+                          }
+                        }}
                         className="rounded border-border"
                       />
-                      Use as cover
+                      Prefer my photos as cover
                     </label>
                   </div>
                   <div className="flex gap-2.5 flex-wrap">
-                    {personal.map((src, i) => (
-                      <div
-                        key={`personal-${i}`}
-                        className="relative gallery-thumb"
-                      >
-                        <button
-                          type="button"
-                          className="block overflow-hidden rounded border border-border bg-bg"
-                          onClick={() => {
-                            const idx = showImages.indexOf(src);
-                            setGalleryIndex(idx >= 0 ? idx : 0);
-                            setLightboxOpen(true);
-                          }}
-                          aria-label={`View your photo ${i + 1}`}
+                    {personal.map((src, i) => {
+                      const isMyCover =
+                        !!entry?.usePersonalPhoto && personalCoverIdx === i;
+                      return (
+                        <div
+                          key={`personal-${i}`}
+                          className="relative gallery-thumb"
                         >
-                          <ProductImage
-                            src={src}
-                            alt=""
-                            sizes="96px"
-                            className="h-20 w-20"
-                            imgClassName="p-0.5 object-contain"
-                          />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemovePhoto(i);
-                          }}
-                          className="absolute -right-1.5 -top-1.5 z-[2] flex h-7 min-w-7 items-center justify-center gap-0.5 rounded-full bg-danger px-1.5 text-primary-fg shadow-md ring-2 ring-bg hover:brightness-110 active:scale-95 transition"
-                          aria-label={`Delete photo ${i + 1}`}
-                          title="Delete photo"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                    ))}
+                          <button
+                            type="button"
+                            className={`block overflow-hidden rounded border bg-bg ${
+                              isMyCover
+                                ? "border-primary ring-2 ring-primary"
+                                : "border-border"
+                            }`}
+                            onClick={() => {
+                              const idx = showImages.indexOf(src);
+                              setGalleryIndex(idx >= 0 ? idx : 0);
+                              setLightboxOpen(true);
+                            }}
+                            aria-label={`View your photo ${i + 1}`}
+                          >
+                            <ProductImage
+                              src={src}
+                              alt=""
+                              sizes="96px"
+                              className="h-20 w-20"
+                              imgClassName="p-0.5 object-contain"
+                            />
+                          </button>
+                          {isMyCover && (
+                            <span className="absolute left-1 bottom-1 z-[1] rounded bg-primary px-1 py-0.5 text-[9px] font-semibold text-primary-fg">
+                              My cover
+                            </span>
+                          )}
+                          <div className="absolute -right-1.5 -top-1.5 z-[2] flex flex-col gap-1">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemovePhoto(i);
+                              }}
+                              className="flex h-7 min-w-7 items-center justify-center rounded-full bg-danger px-1.5 text-primary-fg shadow-md ring-2 ring-bg hover:brightness-110 active:scale-95 transition"
+                              aria-label={`Delete photo ${i + 1}`}
+                              title="Delete photo"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSetPersonalCover?.(i);
+                              toast.success("Set as your cover photo");
+                            }}
+                            className="mt-1 w-full rounded border border-border bg-surface px-1.5 py-1 text-[10px] font-medium text-fg hover:border-primary hover:text-primary"
+                          >
+                            {isMyCover ? "Your cover" : "Use as my cover"}
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                   <p className="mt-2 text-[11px] text-subtle">
-                    Tap the red trash button on a photo to delete it.
+                    “Use as my cover” only affects your account. Delete with the
+                    red trash button.
                   </p>
+                </div>
+              )}
+
+              {isAdmin && (
+                <div className="mb-4 rounded-[var(--radius-md)] border border-primary/30 bg-primary/[0.06] p-3 space-y-2.5">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-primary" />
+                    <h4 className="text-[11px] font-medium uppercase tracking-wide text-primary">
+                      Admin · vault default photo
+                    </h4>
+                  </div>
+                  <p className="text-[11px] text-muted leading-relaxed">
+                    Set the main photo every user sees for this listing (unless
+                    they choose their own cover). This is a system setting — not
+                    tied to your personal vault.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={adminBusy || !activeImage}
+                      onClick={() => void setSystemFromActive()}
+                    >
+                      <Star className="h-3.5 w-3.5" />
+                      {adminBusy ? "Saving…" : "Set current photo as vault default"}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={adminBusy}
+                      onClick={() => adminFileRef.current?.click()}
+                    >
+                      <ImagePlus className="h-3.5 w-3.5" />
+                      Upload vault default
+                    </Button>
+                    {systemCover && onClearSystemCover && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        disabled={adminBusy}
+                        onClick={() => {
+                          void (async () => {
+                            setAdminBusy(true);
+                            try {
+                              await onClearSystemCover();
+                              toast.message("Vault default cleared — using pack shot");
+                            } catch (err) {
+                              toast.error(
+                                err instanceof Error
+                                  ? err.message
+                                  : "Could not clear system cover",
+                              );
+                            } finally {
+                              setAdminBusy(false);
+                            }
+                          })();
+                        }}
+                      >
+                        Clear vault default
+                      </Button>
+                    )}
+                    <input
+                      ref={adminFileRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => void onAdminFile(e.target.files)}
+                    />
+                  </div>
                 </div>
               )}
 

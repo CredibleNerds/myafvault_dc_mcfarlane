@@ -44,6 +44,10 @@ interface CatalogueState {
   updateEntry: (productId: string, patch: Partial<UserEntry>) => void;
   addPersonalPhoto: (productId: string, dataUrl: string) => void;
   removePersonalPhoto: (productId: string, index: number) => void;
+  /** Set which personal photo is THIS user's cover only */
+  setPersonalCover: (productId: string, index: number) => void;
+  /** Stop using personal cover; fall back to system/catalog */
+  clearPersonalCover: (productId: string) => void;
   addCustomEntry: (entry: UserEntry) => void;
   removeEntry: (productId: string) => void;
   importEntries: (entries: Record<string, UserEntry>) => void;
@@ -191,12 +195,14 @@ export const useCatalogue = create<CatalogueState>()(
       addPersonalPhoto: (productId, dataUrl) => {
         const cur = get().entries[productId] ?? emptyEntry(productId);
         const photos = [...cur.personalPhotos, dataUrl].slice(0, 8);
+        const newIndex = photos.length - 1;
         set({
           entries: {
             ...get().entries,
             [productId]: touch(cur, {
               personalPhotos: photos,
               usePersonalPhoto: true,
+              personalCoverIndex: newIndex,
               owned: true,
             }),
           },
@@ -207,12 +213,49 @@ export const useCatalogue = create<CatalogueState>()(
         const cur = get().entries[productId];
         if (!cur) return;
         const photos = cur.personalPhotos.filter((_, i) => i !== index);
+        let coverIdx = cur.personalCoverIndex ?? 0;
+        if (photos.length === 0) {
+          coverIdx = 0;
+        } else if (index < coverIdx) {
+          coverIdx = coverIdx - 1;
+        } else if (index === coverIdx) {
+          coverIdx = Math.min(coverIdx, photos.length - 1);
+        }
         set({
           entries: {
             ...get().entries,
             [productId]: touch(cur, {
               personalPhotos: photos,
               usePersonalPhoto: photos.length > 0 ? cur.usePersonalPhoto : false,
+              personalCoverIndex: photos.length > 0 ? coverIdx : 0,
+            }),
+          },
+        });
+      },
+
+      setPersonalCover: (productId, index) => {
+        const cur = get().entries[productId] ?? emptyEntry(productId);
+        if (cur.personalPhotos.length === 0) return;
+        const safe = Math.max(0, Math.min(index, cur.personalPhotos.length - 1));
+        set({
+          entries: {
+            ...get().entries,
+            [productId]: touch(cur, {
+              usePersonalPhoto: true,
+              personalCoverIndex: safe,
+            }),
+          },
+        });
+      },
+
+      clearPersonalCover: (productId) => {
+        const cur = get().entries[productId];
+        if (!cur) return;
+        set({
+          entries: {
+            ...get().entries,
+            [productId]: touch(cur, {
+              usePersonalPhoto: false,
             }),
           },
         });

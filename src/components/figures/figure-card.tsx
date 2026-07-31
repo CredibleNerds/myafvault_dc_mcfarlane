@@ -12,6 +12,8 @@ import { Check, Heart, Square, SquareCheck } from "lucide-react";
 interface FigureCardProps {
   product: CatalogProduct;
   entry?: UserEntry | null;
+  /** Admin system default cover for this listing (shared) */
+  systemCover?: string | null;
   onClick: () => void;
   className?: string;
   /** Multi-select / bulk mode */
@@ -44,13 +46,14 @@ function VaultedMark({ className }: { className?: string }) {
 export function FigureCard({
   product,
   entry,
+  systemCover = null,
   onClick,
   className,
   selectMode = false,
   selected = false,
   onToggleSelect,
 }: FigureCardProps) {
-  const src = displayImageFor(product, entry);
+  const src = displayImageFor(product, entry, systemCover);
   const owned = entry?.owned;
   const wishlist = entry?.wishlist;
 
@@ -178,12 +181,13 @@ export function FigureCard({
 export function FigureListRow({
   product,
   entry,
+  systemCover = null,
   onClick,
   selectMode = false,
   selected = false,
   onToggleSelect,
 }: FigureCardProps) {
-  const src = displayImageFor(product, entry);
+  const src = displayImageFor(product, entry, systemCover);
   const owned = entry?.owned;
   const wishlist = entry?.wishlist;
 
