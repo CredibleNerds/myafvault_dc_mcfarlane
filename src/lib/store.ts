@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type {
-  FigureCondition,
   ProductCategory,
   UserEntry,
 } from "@/lib/types";
@@ -41,6 +40,7 @@ interface CatalogueState {
   addCustomEntry: (entry: UserEntry) => void;
   removeEntry: (productId: string) => void;
   importEntries: (entries: Record<string, UserEntry>) => void;
+  replaceEntries: (entries: Record<string, UserEntry>) => void;
   clearCollection: () => void;
 }
 
@@ -175,6 +175,10 @@ export const useCatalogue = create<CatalogueState>()(
 
       importEntries: (entries) => {
         set({ entries: { ...get().entries, ...entries } });
+      },
+
+      replaceEntries: (entries) => {
+        set({ entries });
       },
 
       clearCollection: () => set({ entries: {} }),

@@ -15,6 +15,7 @@ import { Toolbar } from "@/components/figures/toolbar";
 import { FigureCard, FigureListRow } from "@/components/figures/figure-card";
 import { FigureDetail } from "@/components/figures/figure-detail";
 import { FigureForm } from "@/components/figures/figure-form";
+import { AuthSyncBar } from "@/components/figures/auth-sync-bar";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -201,7 +202,7 @@ function CataloguePage() {
           return;
         }
         importEntries(parsed.entries);
-        toast.success("Collection imported");
+        toast.success("Collection imported — will sync if signed in");
       } catch {
         toast.error("Invalid collection file");
       }
@@ -213,7 +214,7 @@ function CataloguePage() {
   return (
     <div className="min-h-dvh">
       <header className="sticky top-0 z-40 border-b border-border/80 bg-bg/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 sm:py-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
           <div className="min-w-0">
             <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
               McFarlane Toys · DC Multiverse
@@ -222,9 +223,7 @@ function CataloguePage() {
               Complete Figure Catalogue
             </h1>
           </div>
-          <p className="hidden text-sm text-muted md:block max-w-xs text-right">
-            {masterStats.total} products · high-res photos · accessories
-          </p>
+          <AuthSyncBar />
         </div>
       </header>
 
@@ -275,7 +274,7 @@ function CataloguePage() {
                 : ""}
             </p>
             <p className="hidden sm:block text-xs text-subtle">
-              Official ~2K pack shots · click any figure to view full size
+              Sign in to keep your vault across devices
             </p>
           </div>
 
@@ -338,12 +337,10 @@ function CataloguePage() {
             {masterStats.byCategory["7-inch"]} 7" ·{" "}
             {masterStats.byCategory.megafig} megafigs ·{" "}
             {masterStats.byCategory.multipack} multipacks ·{" "}
-            {masterStats.byCategory.vehicle} vehicles). Product names, photos,
-            and accessory text are for personal cataloguing.
+            {masterStats.byCategory.vehicle} vehicles).
           </p>
           <p className="text-center text-xs text-subtle">
-            Your ownership data and photos stay on this device. Export JSON to
-            back up.
+            Sign in for cloud sync. Export JSON anytime as a backup.
           </p>
         </div>
       </footer>
