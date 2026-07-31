@@ -20,18 +20,23 @@ interface FigureCardProps {
   onToggleSelect?: () => void;
 }
 
-/** Single status mark by the title — no chip over the pack shot. */
+/** Red checkmark + "Vaulted" chip next to the title (not over the photo). */
 function VaultedMark({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-fg",
+        "mt-0.5 inline-flex shrink-0 items-center gap-1.5",
         className,
       )}
       title={OWNERSHIP.titleYes}
       aria-label={OWNERSHIP.ariaYes}
     >
-      <Check className="h-3 w-3 stroke-[3]" aria-hidden />
+      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-fg">
+        <Check className="h-3 w-3 stroke-[3]" aria-hidden />
+      </span>
+      <span className="owned-badge inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-fg">
+        {OWNERSHIP.status}
+      </span>
     </span>
   );
 }
@@ -121,7 +126,7 @@ export function FigureCard({
           </Badge>
         </div>
 
-        {/* Wishlist only on the image — vaulted uses the title checkmark */}
+        {/* Wishlist only on the image — vaulted uses the title checkmark + chip */}
         {!owned && wishlist && (
           <div className="pointer-events-none absolute right-2 top-2 z-[2]">
             <span className="inline-flex items-center gap-1 rounded-full border border-border bg-bg/90 px-2.5 py-1 text-[11px] font-semibold text-primary shadow backdrop-blur-sm">

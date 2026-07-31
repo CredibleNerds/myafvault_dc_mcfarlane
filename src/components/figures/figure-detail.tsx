@@ -194,11 +194,16 @@ export function FigureDetail({
                       <span className="min-w-0">{product.name}</span>
                       {entry?.owned && (
                         <span
-                          className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-fg"
+                          className="mt-1 inline-flex shrink-0 items-center gap-1.5"
                           title={OWNERSHIP.titleYes}
                           aria-label={OWNERSHIP.ariaYes}
                         >
-                          <Check className="h-3.5 w-3.5 stroke-[3]" aria-hidden />
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-fg">
+                            <Check className="h-3.5 w-3.5 stroke-[3]" aria-hidden />
+                          </span>
+                          <span className="owned-badge inline-flex items-center rounded-full bg-primary px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-primary-fg">
+                            {OWNERSHIP.status}
+                          </span>
                         </span>
                       )}
                     </DialogTitle>
