@@ -32,10 +32,23 @@ function resolveDatabaseUrl() {
   return undefined;
 }
 
-/** Supabase / Neon / many cloud hosts need TLS; chain may not verify in CI. */
+/**
+ * Supabase connection strings often include sslmode=require, which node-pg
+ * currently treats as verify-full → SELF_SIGNED_CERT_IN_CHAIN on Vercel.
+ * Strip sslmode and set ssl.rejectUnauthorized=false instead.
+ */
 function poolConfig(connectionString) {
+  let url = connectionString;
+  try {
+    const u = new URL(connectionString);
+    u.searchParams.delete("sslmode");
+    u.searchParams.delete("ssl");
+    url = u.toString();
+  } catch {
+    /* keep raw */
+  }
   return {
-    connectionString,
+    connectionString: url,
     max: 1,
     ssl: { rejectUnauthorized: false },
   };

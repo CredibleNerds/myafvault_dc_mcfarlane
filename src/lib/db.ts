@@ -101,10 +101,19 @@ function createNeonSql(): Promise<Sql> {
     types.setTypeParser(OID_INT8, Number);
     types.setTypeParser(OID_DATE, identity);
     types.setTypeParser(OID_INTERVAL, identity);
+    // Strip sslmode=require (pg treats it as verify-full → cert chain errors)
+    let connectionString = databaseUrl as string;
+    try {
+      const u = new URL(connectionString);
+      u.searchParams.delete("sslmode");
+      u.searchParams.delete("ssl");
+      connectionString = u.toString();
+    } catch {
+      /* keep */
+    }
     const pool = new Pool({
-      connectionString: databaseUrl,
-      // Supabase / Neon TLS: avoid SELF_SIGNED_CERT_IN_CHAIN on Vercel builds
-      ssl: databaseUrl?.includes("localhost")
+      connectionString,
+      ssl: connectionString.includes("localhost")
         ? undefined
         : { rejectUnauthorized: false },
     });

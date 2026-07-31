@@ -144,12 +144,23 @@ const grokUserInfoUrl = `${issuerBase}/api/auth/oauth2/userinfo`;
 // SAME DB as app data, including email/password users. Both use the Better Auth
 // schema from `migrations/0001_auth.sql`.
 const database = databaseUrl
-  ? new Pool({
-      connectionString: databaseUrl,
-      ssl: databaseUrl.includes("localhost")
-        ? undefined
-        : { rejectUnauthorized: false },
-    })
+  ? new Pool((() => {
+      let connectionString = databaseUrl;
+      try {
+        const u = new URL(connectionString);
+        u.searchParams.delete("sslmode");
+        u.searchParams.delete("ssl");
+        connectionString = u.toString();
+      } catch {
+        /* keep */
+      }
+      return {
+        connectionString,
+        ssl: connectionString.includes("localhost")
+          ? undefined
+          : { rejectUnauthorized: false },
+      };
+    })())
   : { dialect: pgliteDialect(() => getPglite()), type: "postgres" as const };
 
 /** Session token cookie name — also read by the live-preview popup completion page. */
