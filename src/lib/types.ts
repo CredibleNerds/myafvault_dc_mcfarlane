@@ -62,7 +62,7 @@ export interface UserEntry {
 }
 
 /**
- * User-built display / group — e.g. Justice League shelf, Dark Knight cast,
+ * User-built display / group — e.g. Justice League shelf, Dark Knight,
  * Teen Titans row. Multiple photos of the group; optional links to catalog IDs.
  */
 export interface UserCollection {

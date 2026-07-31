@@ -73,7 +73,7 @@ export function CollectionsPanel() {
           </h2>
           <p className="text-sm text-muted mt-1 max-w-2xl">
             Group shelf photos of multiple figures — Justice League, Teen Titans,
-            The Dark Knight cast, or any team / movie / custom display.
+            The Dark Knight, or any team / movie / custom display.
           </p>
         </div>
         <Button type="button" onClick={openCreate} className="shrink-0">
