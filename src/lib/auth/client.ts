@@ -50,7 +50,11 @@ export function getBearerToken(): string | null {
   }
 }
 
-function setBearerToken(token: string | null): void {
+/**
+ * Store (or clear) the session bearer. Used after popup OAuth and after
+ * email sign-in/up when the live preview can't rely on partitioned cookies.
+ */
+export function setSessionBearer(token: string | null): void {
   if (typeof window === "undefined") return;
   try {
     if (token) window.sessionStorage.setItem(BEARER_KEY, token);
@@ -78,16 +82,6 @@ type PopupMessage = { source: "grok-auth-popup"; token: string | null; error?: s
 /**
  * Start sign-in with one upstream provider (`providerId` from `GROK_PROVIDERS`),
  * federating through the Grok auth broker.
- *
- * - **Live preview** (`*.grok-sandbox.com` iframe): opens a POPUP to
- *   `/auth/popup`, served by the template Vite plugin (see `vite.config.ts` +
- *   `popup.server.ts`) — 302s to the broker/upstream login (no app chrome) and,
- *   on return, posts the session bearer token back. We store it and refresh the
- *   session; no top-level navigation of the iframe to the broker.
- * - **Deployed** (and local non-iframe): a normal full-page redirect into the broker.
- *
- * Either way it clears any existing local session FIRST so switching providers
- * actually switches identity.
  */
 export async function signIn(
   providerId: string,
@@ -112,13 +106,13 @@ export async function signIn(
       // No active session (or a transient sign-out error) — proceed to sign in.
     }
   }
-  setBearerToken(null);
+  setSessionBearer(null);
 
   if (inLivePreview()) {
     if (!popup) throw new Error("Pop-up blocked — allow pop-ups for sign-in");
     const token = await waitForPopupToken(popup);
     if (!token) throw new Error("Sign-in was cancelled or failed");
-    setBearerToken(token);
+    setSessionBearer(token);
     // Refresh the client session store with the bearer attached (onRequest).
     // Avoid a full iframe reload when we're already on the destination — that
     // reload was the slow "still loading after the popup closed" feeling.
@@ -150,15 +144,10 @@ export async function signIn(
  * Open `/auth/popup` in a new window. Must run synchronously inside the click
  * handler (no await before this). The path is served by the template Vite
  * plugin (`authPopupPlugin` in vite.config.ts) — NOT by a React route.
- *
- * Opens the real URL directly (not about:blank → assign). From a cross-origin
- * iframe the about:blank dance often fails on the first click and the window
- * ends up showing the app shell.
  */
 function openSignInPopup(providerId: string): Window | null {
   const origin = window.location.origin;
   const url = `${origin}/auth/popup?providerId=${encodeURIComponent(providerId)}`;
-  // Unique name per attempt so a prior attempt stuck on the SPA is not reused.
   const name = `grok-signin-${Date.now()}`;
   return window.open(url, name, "popup,width=500,height=650");
 }
@@ -184,8 +173,6 @@ function waitForPopupToken(popup: Window): Promise<string | null> {
       if (!data || data.source !== "grok-auth-popup") return;
       settle(data.token ?? null);
     };
-    // Fallback when the user dismisses the popup. Grace period lets the
-    // completion page's postMessage win over a racing `popup.closed`.
     const pollTimer = window.setInterval(() => {
       if (!popup.closed) return;
       window.clearInterval(pollTimer);
@@ -205,7 +192,7 @@ export async function signOut(redirectTo = "/"): Promise<void> {
   try {
     await authClient.signOut();
   } finally {
-    setBearerToken(null);
+    setSessionBearer(null);
   }
   window.location.href = redirectTo;
 }

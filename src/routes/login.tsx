@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Navigate, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   ArrowLeft,
@@ -15,12 +15,12 @@ import {
 import { toast } from "sonner";
 import {
   GROK_PROVIDERS,
-  authClient,
   authEnabled,
+  setSessionBearer,
   signIn,
 } from "@/lib/auth/client";
+import { signInWithEmail, signUpWithEmail } from "@/lib/auth/email-auth";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
-import { getTwoFactorStatus } from "@/lib/two-factor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,24 +32,8 @@ export const Route = createFileRoute("/login")({
 
 type Mode = "signin" | "signup";
 
-async function goHomeOrTwoFactor(
-  navigate: ReturnType<typeof useNavigate>,
-) {
-  try {
-    const status = await getTwoFactorStatus();
-    if (status.requiresChallenge) {
-      void navigate({ to: "/login/two-factor" });
-      return;
-    }
-  } catch {
-    /* no 2FA or not signed in yet */
-  }
-  void navigate({ to: "/" });
-}
-
 function LoginPage() {
   const { user, isPending } = useCurrentUserState();
-  const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>("signin");
   const [busyProvider, setBusyProvider] = useState<string | null>(null);
   const [emailBusy, setEmailBusy] = useState(false);
@@ -61,7 +45,6 @@ function LoginPage() {
   const [password, setPassword] = useState("");
 
   if (!isPending && user && !user.isDevFallback) {
-    // May still need 2FA — gate handles redirect; prefer challenge if known
     return <Navigate to="/" />;
   }
 
@@ -99,32 +82,41 @@ function LoginPage() {
 
     setEmailBusy(true);
     try {
-      if (mode === "signup") {
-        const { error: signUpError } = await authClient.signUp.email({
-          email: trimmedEmail,
-          password,
-          name: name.trim(),
-        });
-        if (signUpError) {
-          throw new Error(signUpError.message ?? "Could not create account");
-        }
-        toast.success("Account created — welcome to your vault");
-      } else {
-        const { error: signInError } = await authClient.signIn.email({
-          email: trimmedEmail,
-          password,
-        });
-        if (signInError) {
-          throw new Error(signInError.message ?? "Invalid email or password");
-        }
-        toast.success("Password accepted");
+      // Server function normalizes Origin for the live-preview proxy
+      // (fixes "Invalid origin" on create account).
+      const result =
+        mode === "signup"
+          ? await signUpWithEmail({
+              data: {
+                email: trimmedEmail,
+                password,
+                name: name.trim(),
+              },
+            })
+          : await signInWithEmail({
+              data: { email: trimmedEmail, password },
+            });
+
+      if (!result.ok) {
+        setError(result.message);
+        return;
       }
-      try {
-        await authClient.getSession();
-      } catch {
-        /* session store recovers */
+
+      // Live preview uses partitioned cookies — store the session bearer so
+      // subsequent requests (and cloud sync) authenticate correctly.
+      if (result.token) {
+        setSessionBearer(result.token);
       }
-      await goHomeOrTwoFactor(navigate);
+
+      toast.success(
+        mode === "signup"
+          ? "Account created — welcome to your vault"
+          : "Signed in — syncing your collection",
+      );
+
+      // Full navigation so the session store reloads with the bearer attached
+      // and the 2FA gate can evaluate on a clean load.
+      window.location.href = "/";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed");
     } finally {

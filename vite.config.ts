@@ -129,6 +129,9 @@ export default defineConfig(({ command }) => ({
     host: "0.0.0.0",
     port: 8080,
     strictPort: true,
+    // Live preview hits Vite with multi-level `*.grok-sandbox.com` Host headers.
+    // Without this, Vite 403s those requests ("host is not allowed").
+    allowedHosts: true,
   },
   resolve: { tsconfigPaths: true },
   plugins: [
