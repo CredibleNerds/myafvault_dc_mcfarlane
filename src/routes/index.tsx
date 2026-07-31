@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { PackageOpen } from "lucide-react";
+import { Layers, PackageOpen } from "lucide-react";
 import { toast } from "sonner";
 import {
   hydrateCatalogue,
@@ -17,6 +17,7 @@ import { FigureDetail } from "@/components/figures/figure-detail";
 import { FigureForm } from "@/components/figures/figure-form";
 import { AuthSyncBar } from "@/components/figures/auth-sync-bar";
 import { BulkActionBar } from "@/components/figures/bulk-action-bar";
+import { CollectionsPanel } from "@/components/figures/collections-panel";
 import { Button } from "@/components/ui/button";
 import { OWNERSHIP } from "@/lib/ownership-copy";
 import {
@@ -49,6 +50,7 @@ function CataloguePage() {
   const scopeFilter = useCatalogue((s) => s.scopeFilter);
   const sort = useCatalogue((s) => s.sort);
   const view = useCatalogue((s) => s.view);
+  const section = useCatalogue((s) => s.section);
 
   const setSearch = useCatalogue((s) => s.setSearch);
   const setCategoryFilter = useCatalogue((s) => s.setCategoryFilter);
@@ -56,6 +58,7 @@ function CataloguePage() {
   const setScopeFilter = useCatalogue((s) => s.setScopeFilter);
   const setSort = useCatalogue((s) => s.setSort);
   const setView = useCatalogue((s) => s.setView);
+  const setSection = useCatalogue((s) => s.setSection);
   const markOwned = useCatalogue((s) => s.markOwned);
   const toggleWishlist = useCatalogue((s) => s.toggleWishlist);
   const bulkMarkOwned = useCatalogue((s) => s.bulkMarkOwned);
@@ -107,6 +110,7 @@ function CataloguePage() {
       all: allProducts.length,
       "7-inch": 0,
       megafig: 0,
+      statue: 0,
       multipack: 0,
       vehicle: 0,
     };
@@ -257,6 +261,45 @@ function CataloguePage() {
 
       <main className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-8">
         <div className="flex flex-col gap-5 sm:gap-6">
+          <div
+            role="tablist"
+            aria-label="Main sections"
+            className="inline-flex w-full sm:w-auto rounded-[var(--radius-md)] border border-border bg-surface p-1 gap-1"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={section === "catalogue"}
+              onClick={() => setSection("catalogue")}
+              className={
+                section === "catalogue"
+                  ? "flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-primary px-4 py-2 text-sm font-medium text-primary-fg"
+                  : "flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] px-4 py-2 text-sm font-medium text-muted hover:text-fg"
+              }
+            >
+              <PackageOpen className="h-4 w-4" />
+              Catalogue
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={section === "collections"}
+              onClick={() => setSection("collections")}
+              className={
+                section === "collections"
+                  ? "flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-primary px-4 py-2 text-sm font-medium text-primary-fg"
+                  : "flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] px-4 py-2 text-sm font-medium text-muted hover:text-fg"
+              }
+            >
+              <Layers className="h-4 w-4" />
+              Collections
+            </button>
+          </div>
+
+          {section === "collections" ? (
+            <CollectionsPanel />
+          ) : (
+            <>
           <StatsBar
             catalogTotal={masterStats.total}
             owned={ready ? collectionStats.owned : 0}
@@ -412,6 +455,8 @@ function CataloguePage() {
               </Button>
             </div>
           )}
+            </>
+          )}
         </div>
       </main>
 
@@ -421,6 +466,7 @@ function CataloguePage() {
             Master list sourced from McFarlane Toys product pages (
             {masterStats.byCategory["7-inch"]} 7" ·{" "}
             {masterStats.byCategory.megafig} megafigs ·{" "}
+            {masterStats.byCategory.statue ?? 0} statues ·{" "}
             {masterStats.byCategory.multipack} multipacks ·{" "}
             {masterStats.byCategory.vehicle} vehicles).
           </p>

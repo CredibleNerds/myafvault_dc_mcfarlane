@@ -1,4 +1,9 @@
-export type ProductCategory = "7-inch" | "megafig" | "multipack" | "vehicle";
+export type ProductCategory =
+  | "7-inch"
+  | "megafig"
+  | "multipack"
+  | "vehicle"
+  | "statue";
 
 export type FigureCondition =
   | "mint"
@@ -56,6 +61,25 @@ export interface UserEntry {
   createdAt: string;
 }
 
+/**
+ * User-built display / group — e.g. Justice League shelf, Dark Knight cast,
+ * Teen Titans row. Multiple photos of the group; optional links to catalog IDs.
+ */
+export interface UserCollection {
+  id: string;
+  name: string;
+  description: string;
+  /** Free-text theme: team, movie, continuity, shelf, etc. */
+  theme: string;
+  /** Group photos (data URLs), max managed in store */
+  photos: string[];
+  /** Catalog / custom product ids staged in this group */
+  productIds: string[];
+  coverPhotoIndex: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const CONDITIONS: { value: FigureCondition; label: string }[] = [
   { value: "mint", label: "Mint (MISB)" },
   { value: "near-mint", label: "Near Mint" },
@@ -71,6 +95,7 @@ export const CATEGORIES: { value: ProductCategory | "all"; label: string }[] =
     { value: "all", label: "All" },
     { value: "7-inch", label: '7" Figures' },
     { value: "megafig", label: "Megafigs" },
+    { value: "statue", label: "Statues" },
     { value: "multipack", label: "2-Packs / Multipacks" },
     { value: "vehicle", label: "Vehicles" },
   ];
@@ -80,10 +105,27 @@ export const LINES = [
   "Megafig",
   "Gold Label",
   "Platinum Edition",
-  "Collector Edition",
-  "Vault Collection",
   "Page Punchers",
-  "Multipack",
-  "Vehicle",
-  "Other",
+  "The Dark Knight Trilogy",
+  "Batman 85th Anniversary",
+  "Superman",
+  "The Batman",
+  "Aquaman",
+  "Wonder Woman",
+  "Custom",
+];
+
+/** Suggested themes when creating a user collection / display. */
+export const COLLECTION_THEME_SUGGESTIONS = [
+  "Justice League",
+  "Teen Titans",
+  "Bat-Family",
+  "The Dark Knight",
+  "The Batman",
+  "Superman movies",
+  "Suicide Squad",
+  "Crisis on Infinite Earths",
+  "Villains",
+  "Gold Label shelf",
+  "Custom shelf",
 ] as const;

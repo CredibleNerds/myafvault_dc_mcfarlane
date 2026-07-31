@@ -80,5 +80,9 @@ export function categoryLabel(c: ProductCategory): string {
       return "Multipack";
     case "vehicle":
       return "Vehicle";
+    case "statue":
+      return "Statue";
+    default:
+      return c;
   }
 }

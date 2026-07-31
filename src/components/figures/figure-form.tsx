@@ -204,6 +204,7 @@ export function FigureForm({ onSubmit, onCancel }: FigureFormProps) {
             <SelectContent>
               <SelectItem value="7-inch">7" Figure</SelectItem>
               <SelectItem value="megafig">Megafig</SelectItem>
+              <SelectItem value="statue">Statue</SelectItem>
               <SelectItem value="multipack">2-Pack / Multipack</SelectItem>
               <SelectItem value="vehicle">Vehicle</SelectItem>
             </SelectContent>

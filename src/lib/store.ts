@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type {
   ProductCategory,
+  UserCollection,
   UserEntry,
 } from "@/lib/types";
 
@@ -15,15 +16,18 @@ export type SortKey =
 
 export type ViewMode = "grid" | "list";
 export type ScopeFilter = "all" | "owned" | "wishlist" | "unowned";
+export type AppSection = "catalogue" | "collections";
 
 interface CatalogueState {
   entries: Record<string, UserEntry>;
+  collections: Record<string, UserCollection>;
   search: string;
   categoryFilter: ProductCategory | "all";
   lineFilter: string;
   scopeFilter: ScopeFilter;
   sort: SortKey;
   view: ViewMode;
+  section: AppSection;
 
   setSearch: (q: string) => void;
   setCategoryFilter: (c: ProductCategory | "all") => void;
@@ -31,6 +35,7 @@ interface CatalogueState {
   setScopeFilter: (s: ScopeFilter) => void;
   setSort: (s: SortKey) => void;
   setView: (v: ViewMode) => void;
+  setSection: (s: AppSection) => void;
 
   markOwned: (productId: string, owned?: boolean) => void;
   toggleWishlist: (productId: string) => void;
@@ -44,6 +49,17 @@ interface CatalogueState {
   importEntries: (entries: Record<string, UserEntry>) => void;
   replaceEntries: (entries: Record<string, UserEntry>) => void;
   clearCollection: () => void;
+
+  upsertCollection: (collection: UserCollection) => void;
+  updateCollection: (
+    id: string,
+    patch: Partial<UserCollection>,
+  ) => void;
+  removeCollection: (id: string) => void;
+  addCollectionPhoto: (id: string, dataUrl: string) => void;
+  removeCollectionPhoto: (id: string, index: number) => void;
+  setCollectionProducts: (id: string, productIds: string[]) => void;
+  replaceCollections: (collections: Record<string, UserCollection>) => void;
 }
 
 function emptyEntry(productId: string): UserEntry {
@@ -71,6 +87,13 @@ function touch(
   return { ...entry, ...patch, updatedAt: new Date().toISOString() };
 }
 
+function touchCollection(
+  col: UserCollection,
+  patch: Partial<UserCollection>,
+): UserCollection {
+  return { ...col, ...patch, updatedAt: new Date().toISOString() };
+}
+
 const storage =
   typeof window !== "undefined"
     ? createJSONStorage(() => localStorage)
@@ -80,12 +103,14 @@ export const useCatalogue = create<CatalogueState>()(
   persist(
     (set, get) => ({
       entries: {},
+      collections: {},
       search: "",
       categoryFilter: "all",
       lineFilter: "all",
       scopeFilter: "all",
       sort: "year-desc",
       view: "grid",
+      section: "catalogue",
 
       setSearch: (search) => set({ search }),
       setCategoryFilter: (categoryFilter) => set({ categoryFilter }),
@@ -93,6 +118,7 @@ export const useCatalogue = create<CatalogueState>()(
       setScopeFilter: (scopeFilter) => set({ scopeFilter }),
       setSort: (sort) => set({ sort }),
       setView: (view) => set({ view }),
+      setSection: (section) => set({ section }),
 
       markOwned: (productId, owned = true) => {
         const cur = get().entries[productId] ?? emptyEntry(productId);
@@ -145,7 +171,6 @@ export const useCatalogue = create<CatalogueState>()(
           next[id] = {
             ...cur,
             wishlist,
-            // Wishlist and owned are mutually exclusive when adding to wishlist
             owned: wishlist ? false : cur.owned,
             updatedAt: now,
           };
@@ -216,16 +241,94 @@ export const useCatalogue = create<CatalogueState>()(
         set({ entries });
       },
 
-      clearCollection: () => set({ entries: {} }),
+      clearCollection: () => set({ entries: {}, collections: {} }),
+
+      upsertCollection: (collection) => {
+        set({
+          collections: {
+            ...get().collections,
+            [collection.id]: collection,
+          },
+        });
+      },
+
+      updateCollection: (id, patch) => {
+        const cur = get().collections[id];
+        if (!cur) return;
+        set({
+          collections: {
+            ...get().collections,
+            [id]: touchCollection(cur, patch),
+          },
+        });
+      },
+
+      removeCollection: (id) => {
+        const next = { ...get().collections };
+        delete next[id];
+        set({ collections: next });
+      },
+
+      addCollectionPhoto: (id, dataUrl) => {
+        const cur = get().collections[id];
+        if (!cur) return;
+        const photos = [...cur.photos, dataUrl].slice(0, 24);
+        set({
+          collections: {
+            ...get().collections,
+            [id]: touchCollection(cur, {
+              photos,
+              coverPhotoIndex:
+                cur.photos.length === 0 ? 0 : cur.coverPhotoIndex,
+            }),
+          },
+        });
+      },
+
+      removeCollectionPhoto: (id, index) => {
+        const cur = get().collections[id];
+        if (!cur) return;
+        const photos = cur.photos.filter((_, i) => i !== index);
+        let cover = cur.coverPhotoIndex;
+        if (photos.length === 0) cover = 0;
+        else if (index === cover) cover = 0;
+        else if (index < cover) cover = Math.max(0, cover - 1);
+        set({
+          collections: {
+            ...get().collections,
+            [id]: touchCollection(cur, {
+              photos,
+              coverPhotoIndex: cover,
+            }),
+          },
+        });
+      },
+
+      setCollectionProducts: (id, productIds) => {
+        const cur = get().collections[id];
+        if (!cur) return;
+        set({
+          collections: {
+            ...get().collections,
+            [id]: touchCollection(cur, { productIds }),
+          },
+        });
+      },
+
+      replaceCollections: (collections) => {
+        set({ collections });
+      },
     }),
     {
-      name: "dc-mcfarlane-catalogue-v2",
+      name: "dc-mcfarlane-catalogue-v3",
       storage,
       skipHydration: true,
       partialize: (s) => ({
         entries: s.entries,
+        collections: s.collections,
         view: s.view,
         sort: s.sort,
+        section: s.section,
       }),
     },
   ),
@@ -254,4 +357,11 @@ export function selectCollectionStats(entries: Record<string, UserEntry>) {
     mint,
     withPhotos,
   };
+}
+
+export function newCollectionId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return `col-${crypto.randomUUID()}`;
+  }
+  return `col-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }

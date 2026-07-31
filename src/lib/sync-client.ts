@@ -1,6 +1,10 @@
 import { toast } from "sonner";
 import { fetchCloudVault, saveCloudVault } from "@/lib/collection-sync";
-import { mergeEntries, entriesFingerprint } from "@/lib/merge-entries";
+import {
+  mergeCollections,
+  mergeEntries,
+  entriesFingerprint,
+} from "@/lib/merge-entries";
 import { useCatalogue } from "@/lib/store";
 
 export type SyncStatus =
@@ -43,9 +47,17 @@ export function subscribeSyncStatus(listener: Listener) {
   };
 }
 
+function vaultFingerprint() {
+  const { entries, collections } = useCatalogue.getState();
+  return entriesFingerprint(entries, collections);
+}
+
 /** Merge local + cloud, write both sides, start watching for changes. */
 export async function startCloudSync(userId: string): Promise<void> {
-  if (startedForUser === userId && (status === "synced" || status === "pulling" || status === "pushing")) {
+  if (
+    startedForUser === userId &&
+    (status === "synced" || status === "pulling" || status === "pushing")
+  ) {
     return;
   }
   startedForUser = userId;
@@ -54,16 +66,24 @@ export async function startCloudSync(userId: string): Promise<void> {
 
   try {
     const cloud = await fetchCloudVault();
-    const local = useCatalogue.getState().entries;
-    const merged = mergeEntries(local, cloud.entries);
+    const localEntries = useCatalogue.getState().entries;
+    const localCollections = useCatalogue.getState().collections;
+    const mergedEntries = mergeEntries(localEntries, cloud.entries);
+    const mergedCollections = mergeCollections(
+      localCollections,
+      cloud.collections ?? {},
+    );
 
     applyingRemote = true;
-    useCatalogue.getState().replaceEntries(merged);
+    useCatalogue.getState().replaceEntries(mergedEntries);
+    useCatalogue.getState().replaceCollections(mergedCollections);
     applyingRemote = false;
 
     setStatus("pushing");
-    const saved = await saveCloudVault({ data: { entries: merged } });
-    lastPushedFp = entriesFingerprint(merged);
+    const saved = await saveCloudVault({
+      data: { entries: mergedEntries, collections: mergedCollections },
+    });
+    lastPushedFp = entriesFingerprint(mergedEntries, mergedCollections);
     setStatus("synced", saved.updatedAt ?? undefined);
     toast.success("Collection synced to the cloud");
   } catch (err) {
@@ -74,14 +94,24 @@ export async function startCloudSync(userId: string): Promise<void> {
       setStatus("idle");
       return;
     }
-    setStatus("error", msg);
+    // Older DBs without collections column — still try entries-only once
+    if (/column .*collections/i.test(msg)) {
+      setStatus("error", "Run migrations for collections support, then re-sync");
+    } else {
+      setStatus("error", msg);
+    }
     toast.error(msg);
   }
 
   unsubStore?.();
   unsubStore = useCatalogue.subscribe((state, prev) => {
     if (applyingRemote) return;
-    if (state.entries === prev.entries) return;
+    if (
+      state.entries === prev.entries &&
+      state.collections === prev.collections
+    ) {
+      return;
+    }
     if (!activeUserId) return;
     schedulePush();
   });
@@ -108,8 +138,8 @@ function schedulePush() {
 
 export async function pushNow(): Promise<void> {
   if (!activeUserId || syncing || applyingRemote) return;
-  const entries = useCatalogue.getState().entries;
-  const fp = entriesFingerprint(entries);
+  const { entries, collections } = useCatalogue.getState();
+  const fp = entriesFingerprint(entries, collections);
   if (fp === lastPushedFp) {
     setStatus("synced");
     return;
@@ -117,8 +147,8 @@ export async function pushNow(): Promise<void> {
   syncing = true;
   setStatus("pushing");
   try {
-    const saved = await saveCloudVault({ data: { entries } });
-    lastPushedFp = entriesFingerprint(entries);
+    const saved = await saveCloudVault({ data: { entries, collections } });
+    lastPushedFp = entriesFingerprint(entries, collections);
     setStatus("synced", saved.updatedAt ?? undefined);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Sync failed";
