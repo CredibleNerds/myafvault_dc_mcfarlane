@@ -42,3 +42,8 @@ AGENTS.md
 
 # OS
 Thumbs.db
+.vercel
+.env*
+.env.vercel
+.env.production.local
+.env*.local

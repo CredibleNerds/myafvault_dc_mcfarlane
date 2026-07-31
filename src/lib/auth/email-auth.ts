@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { createServerFn } from "@tanstack/react-start";
 import { hashPassword, verifyPassword } from "better-auth/crypto";
-import { getSql } from "@/lib/db";
+import { dbSource, getSql } from "@/lib/db";
 
 /**
  * Email sign-up / sign-in without Better Auth's HTTP origin middleware.
@@ -10,6 +10,9 @@ import { getSql } from "@/lib/db";
  * when the visitor is legitimate. We create/verify accounts against the same
  * Better Auth tables (`user` / `account` / `session`) using the same password
  * hasher, then return a session token the client stores as a bearer.
+ *
+ * Production (Vercel) requires DATABASE_URL → Neon. PGLite is preview-only and
+ * cannot open files under `/var/task` on serverless.
  */
 
 function newId(): string {
@@ -20,8 +23,26 @@ function newToken(): string {
   return randomBytes(24).toString("base64url");
 }
 
+function productionDbRequiredMessage(): string | null {
+  // Empty DATABASE_URL on Vercel falls through to PGLite, which then ENOENTs
+  // on `/var/task/_libs/pglite.data`. Fail with a clear setup message instead.
+  if (process.env.VERCEL === "1" && dbSource !== "neon") {
+    return (
+      "Cloud database is not configured. Add a Neon DATABASE_URL in Vercel " +
+      "project settings (Production), then redeploy."
+    );
+  }
+  return null;
+}
+
 function friendlyAuthError(err: unknown, fallback: string): string {
   const message = err instanceof Error ? err.message : fallback;
+  if (/ENOENT|pglite\.data|EROFS|read-only file system/i.test(message)) {
+    return (
+      "Cloud database is not configured for this deploy. " +
+      "Set DATABASE_URL (Neon) in Vercel and redeploy."
+    );
+  }
   if (/invalid origin/i.test(message)) {
     return "Sign-in blocked by a security check. Refresh the page and try again.";
   }
@@ -34,6 +55,12 @@ function friendlyAuthError(err: unknown, fallback: string): string {
   }
   if (/invalid email or password|INVALID_EMAIL_OR_PASSWORD/i.test(message)) {
     return "Invalid email or password";
+  }
+  if (/relation .* does not exist|undefined_table/i.test(message)) {
+    return (
+      "Database tables are missing. Ensure DATABASE_URL is set and migrations " +
+      "have run, then redeploy."
+    );
   }
   return message || fallback;
 }
@@ -76,6 +103,8 @@ export const signUpWithEmail = createServerFn({ method: "POST" })
     return { email, password, name };
   })
   .handler(async ({ data }): Promise<EmailAuthResult> => {
+    const blocked = productionDbRequiredMessage();
+    if (blocked) return { ok: false, message: blocked };
     try {
       const sql = await getSql();
       const existing = await sql.query<{ id: string }>(
@@ -130,6 +159,8 @@ export const signInWithEmail = createServerFn({ method: "POST" })
     return { email, password };
   })
   .handler(async ({ data }): Promise<EmailAuthResult> => {
+    const blocked = productionDbRequiredMessage();
+    if (blocked) return { ok: false, message: blocked };
     try {
       const sql = await getSql();
       const users = await sql.query<{
