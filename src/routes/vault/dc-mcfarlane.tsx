@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Layers, PackageOpen } from "lucide-react";
+import { Layers, Loader2, PackageOpen } from "lucide-react";
+import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { authEnabled } from "@/lib/auth/client";
 import { toast } from "sonner";
 import {
   hydrateCatalogue,
@@ -35,6 +37,8 @@ export const Route = createFileRoute("/vault/dc-mcfarlane")({
 const PAGE_SIZE = 48;
 
 function CataloguePage() {
+  const { user, isPending: authPending } = useCurrentUserState();
+  const signedIn = !!user && !user.isDevFallback;
   const [ready, setReady] = useState(false);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -242,6 +246,33 @@ function CataloguePage() {
   }
 
   const selectedList = useMemo(() => [...selectedIds], [selectedIds]);
+
+  // Vault requires an account — no free browse
+  if (authEnabled && authPending) {
+    return (
+      <div className="min-h-dvh grid place-items-center bg-bg text-muted">
+        <div className="flex items-center gap-2 text-sm">
+          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+          Checking access…
+        </div>
+      </div>
+    );
+  }
+  if (authEnabled && !signedIn) {
+    return (
+      <div className="min-h-dvh grid place-items-center bg-bg p-6">
+        <div className="max-w-sm text-center space-y-3">
+          <p className="text-sm text-muted">Vault access requires an account.</p>
+          <a
+            href="/login?mode=signup"
+            className="inline-flex items-center justify-center rounded-[var(--radius-sm)] bg-primary px-4 py-2.5 text-sm font-medium text-primary-fg"
+          >
+            Sign up for access
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-dvh">

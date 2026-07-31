@@ -22,6 +22,7 @@ import {
 } from "@/lib/franchises";
 import { catalogStats } from "@/data/catalog";
 import { cn } from "@/lib/utils";
+import { VaultPreview } from "@/components/landing/vault-preview";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -142,7 +143,7 @@ function LandingPage() {
                 </Button>
                 <Button asChild size="sm">
                   <a href="/login?mode=signup">
-                    Sign up
+                    Sign up for access
                   </a>
                 </Button>
               </>
@@ -180,25 +181,40 @@ function LandingPage() {
                   Collections — synced to the cloud when you sign in.
                 </p>
                 <div className="flex flex-col sm:flex-row flex-wrap gap-3">
-                  <Button asChild size="lg" className="h-11 px-5">
-                    <Link to={PRIMARY_VAULT_PATH}>
-                      Enter DC McFarlane vault
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                  {!signedIn && (
-                    <Button asChild size="lg" variant="outline" className="h-11 px-5">
-                      <a href="/login?mode=signup">
-                        Create free account
-                      </a>
+                  {signedIn ? (
+                    <Button asChild size="lg" className="h-11 px-5">
+                      <Link to={PRIMARY_VAULT_PATH}>
+                        Open DC McFarlane vault
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
                     </Button>
+                  ) : (
+                    <>
+                      <Button asChild size="lg" className="h-11 px-5">
+                        <a href="/login?mode=signup">
+                          Sign up for access
+                          <ArrowRight className="h-4 w-4" />
+                        </a>
+                      </Button>
+                      <Button asChild size="lg" variant="outline" className="h-11 px-5">
+                        <a href="/login?mode=signin">
+                          Sign in
+                        </a>
+                      </Button>
+                    </>
                   )}
                   <Button asChild size="lg" variant="ghost" className="h-11 px-5">
                     <a href="#pricing">
-                      Lifetime access {VAULT_ACCESS.priceLabel}
+                      {VAULT_ACCESS.priceLabel} lifetime access
                     </a>
                   </Button>
                 </div>
+                {!signedIn && (
+                  <p className="text-xs text-subtle">
+                    Account required — catalogue and vault tools unlock after sign-up.
+                    Lifetime cloud access is {VAULT_ACCESS.priceLabel} one-time.
+                  </p>
+                )}
                 <dl className="grid grid-cols-3 gap-3 max-w-md pt-2">
                   <div className="rounded-[var(--radius-md)] border border-border bg-surface p-3">
                     <dt className="text-[11px] uppercase tracking-wide text-subtle">
@@ -225,80 +241,8 @@ function LandingPage() {
                 </dl>
               </div>
 
-              {/* Product preview mock */}
               <div className="relative">
-                <div className="rounded-[var(--radius-xl)] border border-border bg-surface p-3 sm:p-4 shadow-[var(--shadow-card)]">
-                  <div className="flex items-center justify-between gap-2 mb-3 px-1">
-                    <div>
-                      <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary">
-                        Live preview · DC McFarlane
-                      </p>
-                      <p className="text-sm font-semibold">What the vault looks like</p>
-                    </div>
-                    <Badge variant="outline" className="text-[10px]">
-                      Demo UI
-                    </Badge>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2.5">
-                    {[
-                      {
-                        title: "Batman (Hush)",
-                        meta: '7" · Gold Label',
-                        badge: "In My Vault",
-                      },
-                      {
-                        title: "Doomsday Megafig",
-                        meta: "Megafig · Accessories",
-                        badge: "Wishlist",
-                      },
-                      {
-                        title: "Justice League shelf",
-                        meta: "Collection · 6 photos",
-                        badge: "Display",
-                      },
-                      {
-                        title: "The Batman statue",
-                        meta: "Statue · 12″",
-                        badge: "Catalog",
-                      },
-                    ].map((card) => (
-                      <div
-                        key={card.title}
-                        className="rounded-[var(--radius-lg)] border border-border bg-surface-2 overflow-hidden"
-                      >
-                        <div className="aspect-[4/3] bg-surface-3 relative">
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <Package className="h-8 w-8 text-subtle/50" />
-                          </div>
-                          <span className="absolute left-2 top-2 rounded-full bg-bg/90 px-2 py-0.5 text-[9px] font-semibold text-fg backdrop-blur-sm">
-                            {card.badge}
-                          </span>
-                        </div>
-                        <div className="p-2.5 space-y-0.5">
-                          <p className="text-xs font-semibold line-clamp-1">
-                            {card.title}
-                          </p>
-                          <p className="text-[10px] text-muted">{card.meta}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <ul className="mt-3 space-y-1.5 border-t border-border pt-3 px-0.5">
-                    {[
-                      "Official pack shots + your photos",
-                      "Accessories listed per release",
-                      "Cloud backup when signed in",
-                    ].map((line) => (
-                      <li
-                        key={line}
-                        className="flex items-center gap-2 text-xs text-muted"
-                      >
-                        <Check className="h-3.5 w-3.5 text-primary shrink-0" />
-                        {line}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <VaultPreview />
               </div>
             </div>
           </div>
@@ -416,7 +360,7 @@ function LandingPage() {
                       <span className="text-xs text-subtle">{f.scopeNote}</span>
                       {live ? (
                         <span className="inline-flex items-center gap-1 text-sm font-medium text-primary">
-                          Open vault
+                          {signedIn ? "Open vault" : "Sign up for access"}
                           <ArrowRight className="h-3.5 w-3.5" />
                         </span>
                       ) : (
@@ -429,17 +373,31 @@ function LandingPage() {
                 );
 
                 if (live && f.path) {
+                  if (signedIn) {
+                    return (
+                      <Link
+                        key={f.id}
+                        to={f.path}
+                        className={cn(
+                          "block rounded-[var(--radius-xl)] border p-5 sm:p-6 transition-colors",
+                          "border-primary/40 bg-primary/[0.06] hover:border-primary hover:bg-primary/10",
+                        )}
+                      >
+                        {CardInner}
+                      </Link>
+                    );
+                  }
                   return (
-                    <Link
+                    <a
                       key={f.id}
-                      to={f.path}
+                      href="/login?mode=signup"
                       className={cn(
                         "block rounded-[var(--radius-xl)] border p-5 sm:p-6 transition-colors",
                         "border-primary/40 bg-primary/[0.06] hover:border-primary hover:bg-primary/10",
                       )}
                     >
                       {CardInner}
-                    </Link>
+                    </a>
                   );
                 }
 
@@ -467,8 +425,8 @@ function LandingPage() {
                 Lifetime vault access
               </h2>
               <p className="text-muted mt-2 text-sm sm:text-base">
-                Browse the catalogue free. Unlock cloud sync, multi-device vault
-                storage, and future franchise databases with a single payment.
+                Sign up for vault access. Unlock the full DC McFarlane catalogue, cloud
+                sync, multi-device storage, and future franchise databases with a single payment.
               </p>
             </div>
 
@@ -516,7 +474,7 @@ function LandingPage() {
                   </Button>
                   <Button asChild size="lg" variant="outline" className="h-11">
                     <a href="/login?mode=signup">
-                      Create account first
+                      Sign up for access
                     </a>
                   </Button>
                 </div>
@@ -529,16 +487,16 @@ function LandingPage() {
 
               <div className="rounded-[var(--radius-xl)] border border-border bg-surface-2/60 p-6 sm:p-8 flex flex-col justify-center">
                 <h3 className="font-semibold text-lg mb-2">
-                  Sign up, then open the vault
+                  Sign up for vault access
                 </h3>
                 <p className="text-sm text-muted leading-relaxed mb-5">
-                  For now, sign-up and sign-in take you straight into the{" "}
+                  Create an account to enter the{" "}
                   <strong className="text-fg font-medium">
                     DC McFarlane
                   </strong>{" "}
-                  database. When Marvel, Star Wars, Fallout, and other vaults
-                  launch, the same account will switch between them from one
-                  home.
+                  database. There is no free browse mode — the vault unlocks after
+                  you sign up. When Marvel, Star Wars, Fallout, and other vaults
+                  launch, the same account covers them too.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2">
                   {signedIn ? (
@@ -552,7 +510,7 @@ function LandingPage() {
                     <>
                       <Button asChild size="lg" className="h-11">
                         <a href="/login?mode=signup">
-                          Create account
+                          Sign up for access
                         </a>
                       </Button>
                       <Button asChild size="lg" variant="outline" className="h-11">
@@ -564,14 +522,8 @@ function LandingPage() {
                   )}
                 </div>
                 <p className="mt-4 text-xs text-subtle">
-                  Prefer to look around first?{" "}
-                  <Link
-                    to={PRIMARY_VAULT_PATH}
-                    className="text-primary underline-offset-2 hover:underline"
-                  >
-                    Browse the DC catalogue without signing in
-                  </Link>
-                  .
+                  Use the interactive figure preview above to see how catalogue,
+                  ownership, accessories, and collections work before you join.
                 </p>
               </div>
             </div>
@@ -585,22 +537,31 @@ function LandingPage() {
               Ready to index your McFarlane shelf?
             </h2>
             <p className="text-muted mt-2 max-w-lg mx-auto text-sm sm:text-base">
-              Open the live DC vault, create an account, and claim lifetime
-              access when Stripe goes live.
+              Sign up for access to the DC vault, then claim lifetime cloud access
+              for {VAULT_ACCESS.priceLabel} when Stripe goes live.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3">
-              <Button asChild size="lg" className="h-11 px-6">
-                <Link to={PRIMARY_VAULT_PATH}>
-                  Enter DC McFarlane vault
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              {!signedIn && (
-                <Button asChild size="lg" variant="outline" className="h-11 px-6">
-                  <a href="/login?mode=signup">
-                    Sign up
-                  </a>
+              {signedIn ? (
+                <Button asChild size="lg" className="h-11 px-6">
+                  <Link to={PRIMARY_VAULT_PATH}>
+                    Open DC McFarlane vault
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
                 </Button>
+              ) : (
+                <>
+                  <Button asChild size="lg" className="h-11 px-6">
+                    <a href="/login?mode=signup">
+                      Sign up for access
+                      <ArrowRight className="h-4 w-4" />
+                    </a>
+                  </Button>
+                  <Button asChild size="lg" variant="outline" className="h-11 px-6">
+                    <a href="/login?mode=signin">
+                      Sign in
+                    </a>
+                  </Button>
+                </>
               )}
             </div>
           </div>
@@ -616,9 +577,15 @@ function LandingPage() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted">
-            <Link to={PRIMARY_VAULT_PATH} className="hover:text-fg">
-              DC vault
-            </Link>
+            {signedIn ? (
+              <Link to={PRIMARY_VAULT_PATH} className="hover:text-fg">
+                DC vault
+              </Link>
+            ) : (
+              <a href="/login?mode=signup" className="hover:text-fg">
+                Sign up for access
+              </a>
+            )}
             <a href="#pricing" className="hover:text-fg">
               Pricing
             </a>
