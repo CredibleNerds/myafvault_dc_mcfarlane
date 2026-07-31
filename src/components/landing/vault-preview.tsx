@@ -107,7 +107,7 @@ const FEATURE_TABS: {
     label: "Wishlist",
     icon: Heart,
     title: "Wishlist",
-    body: "Create your Wishlist to review and update as you collect while keeping them separate from your owned collection.",
+    body: "Create your Wishlist to review and update as you collect!",
   },
   {
     id: "collections",
@@ -350,14 +350,18 @@ function FeaturePanel({
       )}
 
       {feature === "vaulted" && (
-        <div className="flex items-center gap-2 border-t border-border pt-2.5">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-fg">
-            <Check className="h-3.5 w-3.5 stroke-[3]" />
-          </span>
-          <span className="rounded-full bg-primary px-2.5 py-0.5 text-[11px] font-semibold text-primary-fg">
-            In My Vault
-          </span>
-          <span className="text-xs text-subtle truncate">{productName}</span>
+        <div className="border-t border-border pt-3 space-y-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-fg shadow-sm">
+              <Check className="h-4 w-4 stroke-[3]" />
+            </span>
+            <span className="inline-flex shrink-0 items-center rounded-full bg-primary px-3.5 py-1.5 text-xs font-semibold tracking-tight text-primary-fg whitespace-nowrap">
+              In My Vault
+            </span>
+          </div>
+          <p className="text-xs text-subtle leading-snug line-clamp-2 pl-0.5">
+            {productName}
+          </p>
         </div>
       )}
 
@@ -390,8 +394,7 @@ function FeaturePanel({
 
       {feature === "wishlist" && (
         <p className="text-xs text-subtle border-t border-border pt-2.5">
-          Build a Wishlist you can revisit and update as you collect — kept
-          separate from figures marked In My Vault.
+          Create your Wishlist to review and update as you collect!
         </p>
       )}
     </div>
