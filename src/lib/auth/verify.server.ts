@@ -24,7 +24,7 @@ export { authConfigured };
 
 if (databaseConfigured && !authConfigured) {
   console.error(
-    "[auth] Postgres URL is set but auth is disabled (VITE_AUTH_ENABLED=false) " +
+    "[auth] DATABASE_URL is set but auth is disabled (VITE_AUTH_ENABLED=false) " +
       "— requireUserId() will reject every request (fail closed) rather than " +
       "share one dev user on a real database.",
   );
@@ -46,48 +46,56 @@ export class UnauthorizedError extends Error {
   }
 }
 
+export type VerifiedUser = { id: string; email: string | null };
+
 /**
- * Resolve the authenticated user id from the request session.
+ * Resolve the signed-in user from the current request, or `null` when auth isn't
+ * configured / nobody is signed in. Safe to call from server functions and SSR
+ * loaders.
  *
- * - Auth configured -> require a valid session; throw UnauthorizedError if none
- * - Auth disabled (`VITE_AUTH_ENABLED=false`) + no Postgres URL -> DEV_USER_ID
- * - Auth disabled + Postgres URL set -> throw (fail closed)
+ * `bearerToken` is for the LIVE PREVIEW: the app runs in a partitioned iframe
+ * whose cookies don't reach the server, so `authMiddleware` forwards the session
+ * as a bearer token, which we present as `Authorization: Bearer …` (the `bearer`
+ * plugin resolves it). When deployed no token is passed and the cookie is used.
  */
-export async function requireUserId(): Promise<string> {
+export async function getSessionUser(
+  bearerToken?: string,
+): Promise<VerifiedUser | null> {
+  if (!authConfigured) return null;
+  const request = getRequest();
+  if (!request) return null;
+  let headers = request.headers;
+  if (bearerToken) {
+    headers = new Headers(request.headers);
+    headers.set("Authorization", `Bearer ${bearerToken}`);
+  }
+  const session = await auth.api.getSession({ headers });
+  if (!session?.user) return null;
+  return { id: session.user.id, email: session.user.email ?? null };
+}
+
+/**
+ * Resolve the current user id for a server function, or throw when unauthorized.
+ * Prefer `authMiddleware` (`./middleware`), which calls this for you.
+ * - Auth enabled (default) -> the verified session user id; throws
+ *   `UnauthorizedError` when signed out. Works in the sandbox preview too (real
+ *   sign-in via the baked preview client).
+ * - Auth disabled (`VITE_AUTH_ENABLED=false`) + `DATABASE_URL` set -> throw (fail
+ *   closed): one shared dev user on a real database would let every visitor
+ *   read/write everyone's rows.
+ * - Auth disabled + no database -> the shared dev user id.
+ */
+export async function requireUserId(bearerToken?: string): Promise<string> {
   if (!authConfigured) {
     if (databaseConfigured) {
       throw new Error(
-        "Auth is disabled (VITE_AUTH_ENABLED=false) but a Postgres URL is set — " +
-          "refusing to share the dev user on a real database. Enable auth or " +
-          "unset DATABASE_URL / POSTGRES_URL.",
+        "Auth is disabled (VITE_AUTH_ENABLED=false) but DATABASE_URL is set — " +
+          "refusing to fall back to the shared dev user against a real database.",
       );
     }
     return DEV_USER_ID;
   }
-
-  const request = getRequest();
-  if (!request) throw new UnauthorizedError();
-
-  const session = await auth.api.getSession({ headers: request.headers });
-  const userId = session?.user?.id;
-  if (!userId) throw new UnauthorizedError();
-  return userId;
-}
-
-/**
- * Soft session lookup — returns null when signed out (does not throw).
- * Prefer `requireUserId` for mutations that must be authenticated.
- */
-export async function getOptionalUserId(): Promise<string | null> {
-  if (!authConfigured) {
-    return databaseConfigured ? null : DEV_USER_ID;
-  }
-  try {
-    const request = getRequest();
-    if (!request) return null;
-    const session = await auth.api.getSession({ headers: request.headers });
-    return session?.user?.id ?? null;
-  } catch {
-    return null;
-  }
+  const user = await getSessionUser(bearerToken);
+  if (!user) throw new UnauthorizedError();
+  return user.id;
 }

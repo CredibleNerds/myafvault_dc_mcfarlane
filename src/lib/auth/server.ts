@@ -4,20 +4,36 @@
  * Pre-wired for live preview + deploy — do not rewrite this file. To enable
  * local email/password, flip the flag in `./email-password` only (see auth skill).
  *
- * The app runs its own Better Auth at `/api/auth/*`, so the SPA always talks
- * to same-origin auth endpoints. Identity is federated to the shared Grok auth
- * broker (Google / X) via generic OAuth; when the broker client is missing we
- * fall back to a preview client so the live preview still has real sign-in.
+ * The app runs its own Better Auth at `/api/auth/*`, so the session cookie stays
+ * on this app's own origin. Sign-in federates to the shared **Grok auth broker**
+ * (`GROK_AUTH_ISSUER`) via the `genericOAuth` plugin — the broker brokers the
+ * upstream sign-in methods (Google, X, …) and holds their shared secrets; this
+ * app only holds its own client id/secret and names the upstream it wants via
+ * each provider's `idp` hint.
  *
- * Persistence:
- * - Deployed: `DATABASE_URL` / `POSTGRES_URL` (Supabase/Neon) → real Postgres
- * - Preview: embedded PGLite (same migrations as production)
+ * Tri-mode:
+ *   - Deployed: the deployer injects a per-app `GROK_AUTH_*` + `BETTER_AUTH_URL`
+ *     + `DATABASE_URL`, so real federated auth is persisted in Postgres.
+ *   - Sandbox live preview: no injection -> falls back to the shared **preview
+ *     client** (`./preview`) and derives the preview's `https://*.grok-sandbox.com`
+ *     origin from the request, so real sign-in works (no demo users). Sessions
+ *     and identities persist in the embedded PGLite DB (same DB as app data);
+ *     the process restart wipes both. Live-preview iframe clients use a bearer
+ *     token (partitioned cookies) — see `client.ts`.
+ *   - Explicitly off (`VITE_AUTH_ENABLED=false`): no providers; per-user server
+ *     functions fall back to a dev user (see `verify.server.ts`).
+ *
+ * NEVER import this from client code — it pulls in `pg` + the preview secret +
+ * server-only Better Auth internals. The client uses `@/lib/auth/client`;
+ * components read the user via `@/lib/auth/use-current-user`; server functions get
+ * a verified id via `@/lib/auth/middleware`.
  */
-import { randomBytes } from "node:crypto";
 import { betterAuth } from "better-auth";
-import { genericOAuth, bearer, tanstackStartCookies } from "better-auth/plugins";
-import { Pool } from "pg";
+import { bearer, genericOAuth } from "better-auth/plugins";
+import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { getCookie } from "@tanstack/react-start/server";
+import { randomBytes } from "node:crypto";
+import { Pool } from "pg";
 import { ensureDbReady, getPglite } from "../db";
 import { emailAndPasswordEnabled } from "./email-password";
 import { GROK_PROVIDERS } from "./providers";
@@ -107,7 +123,7 @@ const trustedOrigins: string[] = explicitBaseURL
       ...LOCAL_DEV_ORIGINS,
     ];
 
-// Postgres URL: Neon (`DATABASE_URL`) or Vercel Supabase integration (`POSTGRES_*`)
+// Neon (`DATABASE_URL`) or Vercel Supabase integration (`POSTGRES_*`)
 const databaseUrl =
   env("DATABASE_URL") ??
   env("POSTGRES_URL") ??
@@ -123,7 +139,7 @@ const grokAuthorizationUrl = `${issuerBase}/api/auth/oauth2/authorize`;
 const grokTokenUrl = `${issuerBase}/api/auth/oauth2/token`;
 const grokUserInfoUrl = `${issuerBase}/api/auth/oauth2/userinfo`;
 
-// Real Postgres when a connection URL is set (deployed apps), else the app's
+// Real Postgres when `DATABASE_URL` is set (deployed apps), else the app's
 // embedded PGLite (preview) via a Kysely dialect — so Better Auth persists to the
 // SAME DB as app data, including email/password users. Both use the Better Auth
 // schema from `migrations/0001_auth.sql`.
@@ -165,7 +181,7 @@ export const auth = betterAuth({
   secret: env("BETTER_AUTH_SECRET") ?? previewAuthSecret(),
   database,
 
-  // CSRF / origin check for credentialed auth POSTs (sign-up/sign-in, …).
+  // CSRF / origin check for credentialed auth POSTs (email sign-up/sign-in, …).
   // See `trustedOrigins` construction above — must cover live preview hosts AND
   // local loopback variants, or clients get "Invalid origin".
   trustedOrigins,
@@ -236,3 +252,7 @@ export const auth = betterAuth({
 export function readSessionToken(): string | null {
   return getCookie(SESSION_TOKEN_COOKIE) ?? null;
 }
+
+// Re-exported for convenience; the array lives in the dependency-free
+// `providers.ts` so the client can import it too.
+export { GROK_PROVIDERS } from "./providers";
