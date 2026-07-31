@@ -1,0 +1,84 @@
+import type { CatalogProduct, ProductCategory, UserEntry } from "@/lib/types";
+import { CATALOG_BY_ID } from "@/data/catalog";
+import { figurePlaceholder } from "@/lib/image";
+
+export interface DisplayProduct extends CatalogProduct {
+  entry: UserEntry | null;
+  displayImage: string;
+  hasPersonalPhoto: boolean;
+}
+
+export function resolveProduct(
+  productId: string,
+  entry?: UserEntry | null,
+): CatalogProduct | null {
+  if (entry?.isCustom && entry.customProduct) {
+    const c = entry.customProduct;
+    return {
+      id: productId,
+      name: c.name,
+      character: c.character,
+      brand: c.brand ?? "Custom",
+      category: c.category,
+      line: c.line ?? "Custom",
+      scale: c.scale ?? '7"',
+      productType: c.productType ?? "Action Figure",
+      genre: c.genre ?? "Comics",
+      series: c.series ?? "",
+      releaseYear: c.releaseYear ?? null,
+      sku: c.sku ?? "",
+      description: c.description ?? "",
+      features: c.features ?? [],
+      accessories: c.accessories ?? [],
+      imageUrl: c.imageUrl ?? null,
+      gallery: c.gallery ?? [],
+      productUrl: c.productUrl ?? "",
+      source: "user",
+    };
+  }
+  return CATALOG_BY_ID[productId] ?? null;
+}
+
+export function displayImageFor(
+  product: CatalogProduct,
+  entry?: UserEntry | null,
+): string {
+  if (
+    entry?.usePersonalPhoto &&
+    entry.personalPhotos.length > 0
+  ) {
+    return entry.personalPhotos[0]!;
+  }
+  if (entry?.personalPhotos.length && !product.imageUrl) {
+    return entry.personalPhotos[0]!;
+  }
+  return product.imageUrl ?? figurePlaceholder(product.name);
+}
+
+export function formatAccessories(product: CatalogProduct): string[] {
+  if (product.accessories?.length) return product.accessories;
+  return product.features.filter((f) => {
+    const low = f.toLowerCase();
+    return (
+      low.includes("include") ||
+      low.includes("comes with") ||
+      low.includes("hand") ||
+      low.includes("weapon") ||
+      low.includes("card") ||
+      low.includes("base")
+    );
+  });
+}
+
+export function categoryLabel(c: ProductCategory): string {
+  switch (c) {
+    case "7-inch":
+      return '7" Figure';
+    case "megafig":
+      return "Megafig";
+    case "multipack":
+      return "Multipack";
+    case "vehicle":
+      return "Vehicle";
+  }
+}

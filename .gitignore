@@ -1,0 +1,44 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# build / cache
+dist/
+.output/
+.vinxi/
+.tanstack/
+.vercel/
+.nitro/
+*.local
+.DS_Store
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# logs / tooling
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+/tmp/
+*.log
+
+# agent QA artifacts & sandbox scaffolding (not part of the app)
+screenshots/
+.playwright/
+test-results/
+.grok/
+AGENTS.md
+.node_modules.lock
+
+# editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+Thumbs.db

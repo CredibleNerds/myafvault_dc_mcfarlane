@@ -1,0 +1,414 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { PackageOpen } from "lucide-react";
+import { toast } from "sonner";
+import {
+  hydrateCatalogue,
+  selectCollectionStats,
+  useCatalogue,
+} from "@/lib/store";
+import type { UserEntry } from "@/lib/types";
+import { CATALOG, catalogStats } from "@/data/catalog";
+import { resolveProduct } from "@/lib/product";
+import { StatsBar } from "@/components/figures/stats-bar";
+import { Toolbar } from "@/components/figures/toolbar";
+import { FigureCard, FigureListRow } from "@/components/figures/figure-card";
+import { FigureDetail } from "@/components/figures/figure-detail";
+import { FigureForm } from "@/components/figures/figure-form";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+export const Route = createFileRoute("/")({
+  component: CataloguePage,
+});
+
+const PAGE_SIZE = 48;
+
+function CataloguePage() {
+  const [ready, setReady] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const importRef = useRef<HTMLInputElement>(null);
+
+  const entries = useCatalogue((s) => s.entries);
+  const search = useCatalogue((s) => s.search);
+  const categoryFilter = useCatalogue((s) => s.categoryFilter);
+  const lineFilter = useCatalogue((s) => s.lineFilter);
+  const scopeFilter = useCatalogue((s) => s.scopeFilter);
+  const sort = useCatalogue((s) => s.sort);
+  const view = useCatalogue((s) => s.view);
+
+  const setSearch = useCatalogue((s) => s.setSearch);
+  const setCategoryFilter = useCatalogue((s) => s.setCategoryFilter);
+  const setLineFilter = useCatalogue((s) => s.setLineFilter);
+  const setScopeFilter = useCatalogue((s) => s.setScopeFilter);
+  const setSort = useCatalogue((s) => s.setSort);
+  const setView = useCatalogue((s) => s.setView);
+  const markOwned = useCatalogue((s) => s.markOwned);
+  const toggleWishlist = useCatalogue((s) => s.toggleWishlist);
+  const updateEntry = useCatalogue((s) => s.updateEntry);
+  const addPersonalPhoto = useCatalogue((s) => s.addPersonalPhoto);
+  const removePersonalPhoto = useCatalogue((s) => s.removePersonalPhoto);
+  const addCustomEntry = useCatalogue((s) => s.addCustomEntry);
+  const importEntries = useCatalogue((s) => s.importEntries);
+
+  useEffect(() => {
+    let cancelled = false;
+    void hydrateCatalogue().then(() => {
+      if (!cancelled) setReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [search, categoryFilter, lineFilter, scopeFilter, sort]);
+
+  const masterStats = useMemo(() => catalogStats(), []);
+  const collectionStats = useMemo(
+    () => selectCollectionStats(entries),
+    [entries],
+  );
+
+  const allProducts = useMemo(() => {
+    const customs = Object.values(entries)
+      .filter((e) => e.isCustom)
+      .map((e) => resolveProduct(e.productId, e))
+      .filter(Boolean);
+    return [...CATALOG, ...customs] as NonNullable<
+      ReturnType<typeof resolveProduct>
+    >[];
+  }, [entries]);
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {
+      all: allProducts.length,
+      "7-inch": 0,
+      megafig: 0,
+      multipack: 0,
+      vehicle: 0,
+    };
+    for (const p of allProducts) {
+      counts[p.category] = (counts[p.category] ?? 0) + 1;
+    }
+    return counts;
+  }, [allProducts]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    let list = allProducts.filter((p) => {
+      if (categoryFilter !== "all" && p.category !== categoryFilter)
+        return false;
+      if (lineFilter !== "all" && p.line !== lineFilter) return false;
+
+      const entry = entries[p.id];
+      if (scopeFilter === "owned" && !entry?.owned) return false;
+      if (scopeFilter === "wishlist" && !entry?.wishlist) return false;
+      if (scopeFilter === "unowned" && entry?.owned) return false;
+
+      if (!q) return true;
+      const hay = [
+        p.name,
+        p.character,
+        p.line,
+        p.sku,
+        p.description,
+        p.scale,
+        ...p.accessories,
+        ...p.features,
+        entry?.notes ?? "",
+      ]
+        .join(" ")
+        .toLowerCase();
+      return hay.includes(q);
+    });
+
+    const ownedOf = (id: string) => (entries[id]?.owned ? 1 : 0);
+
+    list = [...list].sort((a, b) => {
+      switch (sort) {
+        case "name-asc":
+          return a.name.localeCompare(b.name);
+        case "name-desc":
+          return b.name.localeCompare(a.name);
+        case "year-asc":
+          return (a.releaseYear ?? 0) - (b.releaseYear ?? 0);
+        case "year-desc":
+          return (b.releaseYear ?? 0) - (a.releaseYear ?? 0);
+        case "character-asc":
+          return a.character.localeCompare(b.character);
+        case "owned-first":
+          return ownedOf(b.id) - ownedOf(a.id) || a.name.localeCompare(b.name);
+        default:
+          return 0;
+      }
+    });
+    return list;
+  }, [
+    allProducts,
+    entries,
+    search,
+    categoryFilter,
+    lineFilter,
+    scopeFilter,
+    sort,
+  ]);
+
+  const visible = filtered.slice(0, visibleCount);
+  const selectedProduct = selectedId
+    ? resolveProduct(selectedId, entries[selectedId])
+    : null;
+  const selectedEntry = selectedId ? (entries[selectedId] ?? null) : null;
+
+  function handleExport() {
+    const payload = {
+      version: 2,
+      exportedAt: new Date().toISOString(),
+      entries,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `dc-mcfarlane-collection-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Collection exported");
+  }
+
+  function handleImportFile(files: FileList | null) {
+    const file = files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result)) as {
+          entries?: Record<string, UserEntry>;
+        };
+        if (!parsed.entries || typeof parsed.entries !== "object") {
+          toast.error("Invalid collection file");
+          return;
+        }
+        importEntries(parsed.entries);
+        toast.success("Collection imported");
+      } catch {
+        toast.error("Invalid collection file");
+      }
+    };
+    reader.readAsText(file);
+    if (importRef.current) importRef.current.value = "";
+  }
+
+  return (
+    <div className="min-h-dvh">
+      <header className="sticky top-0 z-40 border-b border-border/80 bg-bg/90 backdrop-blur-md">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 sm:py-4">
+          <div className="min-w-0">
+            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+              McFarlane Toys · DC Multiverse
+            </p>
+            <h1 className="truncate text-lg font-semibold tracking-tight sm:text-xl">
+              Complete Figure Catalogue
+            </h1>
+          </div>
+          <p className="hidden text-sm text-muted md:block max-w-xs text-right">
+            {masterStats.total} products · high-res photos · accessories
+          </p>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-8">
+        <div className="flex flex-col gap-5 sm:gap-6">
+          <StatsBar
+            catalogTotal={masterStats.total}
+            owned={ready ? collectionStats.owned : 0}
+            wishlist={ready ? collectionStats.wishlist : 0}
+            withPhotos={ready ? collectionStats.withPhotos : 0}
+            spent={ready ? collectionStats.spent : 0}
+          />
+
+          <Toolbar
+            search={search}
+            onSearch={setSearch}
+            categoryFilter={categoryFilter}
+            onCategory={setCategoryFilter}
+            lineFilter={lineFilter}
+            onLine={setLineFilter}
+            scopeFilter={scopeFilter}
+            onScope={setScopeFilter}
+            sort={sort}
+            onSort={setSort}
+            view={view}
+            onView={setView}
+            categoryCounts={categoryCounts}
+            onAddCustom={() => setFormOpen(true)}
+            onExport={handleExport}
+            onImport={() => importRef.current?.click()}
+          />
+
+          <input
+            ref={importRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={(e) => handleImportFile(e.target.files)}
+          />
+
+          <div className="flex items-center justify-between text-sm text-muted">
+            <p className="tabular-nums">
+              {ready
+                ? `${filtered.length.toLocaleString()} product${filtered.length === 1 ? "" : "s"}`
+                : "Loading catalog…"}
+              {filtered.length > visible.length
+                ? ` · showing ${visible.length}`
+                : ""}
+            </p>
+            <p className="hidden sm:block text-xs text-subtle">
+              Official ~2K pack shots · click any figure to view full size
+            </p>
+          </div>
+
+          {!ready ? (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+              {Array.from({ length: 9 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="aspect-square animate-pulse rounded-[var(--radius-xl)] bg-surface-2"
+                />
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
+            <EmptyState onAdd={() => setFormOpen(true)} />
+          ) : view === "grid" ? (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+              {visible.map((p) => (
+                <FigureCard
+                  key={p.id}
+                  product={p}
+                  entry={entries[p.id]}
+                  onClick={() => setSelectedId(p.id)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {visible.map((p) => (
+                <FigureListRow
+                  key={p.id}
+                  product={p}
+                  entry={entries[p.id]}
+                  onClick={() => setSelectedId(p.id)}
+                />
+              ))}
+            </div>
+          )}
+
+          {ready && visible.length < filtered.length && (
+            <div className="flex justify-center pt-2">
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  setVisibleCount((n) =>
+                    Math.min(n + PAGE_SIZE, filtered.length),
+                  )
+                }
+              >
+                Load more ({filtered.length - visible.length} remaining)
+              </Button>
+            </div>
+          )}
+        </div>
+      </main>
+
+      <footer className="border-t border-border mt-8">
+        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 space-y-1">
+          <p className="text-center text-xs text-subtle">
+            Master list sourced from McFarlane Toys product pages (
+            {masterStats.byCategory["7-inch"]} 7" ·{" "}
+            {masterStats.byCategory.megafig} megafigs ·{" "}
+            {masterStats.byCategory.multipack} multipacks ·{" "}
+            {masterStats.byCategory.vehicle} vehicles). Product names, photos,
+            and accessory text are for personal cataloguing.
+          </p>
+          <p className="text-center text-xs text-subtle">
+            Your ownership data and photos stay on this device. Export JSON to
+            back up.
+          </p>
+        </div>
+      </footer>
+
+      <FigureDetail
+        product={selectedProduct}
+        entry={selectedEntry}
+        open={!!selectedProduct}
+        onOpenChange={(o) => {
+          if (!o) setSelectedId(null);
+        }}
+        onMarkOwned={(owned) => {
+          if (selectedId) markOwned(selectedId, owned);
+        }}
+        onToggleWishlist={() => {
+          if (selectedId) toggleWishlist(selectedId);
+        }}
+        onUpdate={(patch) => {
+          if (selectedId) updateEntry(selectedId, patch);
+        }}
+        onAddPhoto={(dataUrl) => {
+          if (selectedId) addPersonalPhoto(selectedId, dataUrl);
+        }}
+        onRemovePhoto={(index) => {
+          if (selectedId) removePersonalPhoto(selectedId, index);
+        }}
+      />
+
+      <Dialog open={formOpen} onOpenChange={setFormOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Add custom figure</DialogTitle>
+            <DialogDescription>
+              Create an entry for a piece not in the master McFarlane list.
+            </DialogDescription>
+          </DialogHeader>
+          <FigureForm
+            onSubmit={(entry) => {
+              addCustomEntry(entry);
+              setFormOpen(false);
+              toast.success("Custom figure added");
+              setSelectedId(entry.productId);
+            }}
+            onCancel={() => setFormOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function EmptyState({ onAdd }: { onAdd: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center rounded-[var(--radius-xl)] border border-dashed border-border bg-surface px-6 py-16 text-center">
+      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-surface-2 text-primary">
+        <PackageOpen className="h-6 w-6" />
+      </div>
+      <h2 className="text-lg font-semibold tracking-tight">No matches</h2>
+      <p className="mt-1 max-w-sm text-sm text-muted">
+        Try another search or category. You can also add a custom figure with
+        your own photo and accessory list.
+      </p>
+      <Button className="mt-5" onClick={onAdd}>
+        Add custom figure
+      </Button>
+    </div>
+  );
+}
