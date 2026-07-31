@@ -5,6 +5,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth/provider";
+import { TwoFactorGate } from "@/components/auth/two-factor-gate";
 import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
 
@@ -44,7 +45,9 @@ function RootDocument() {
       </head>
       <body className="min-h-dvh bg-bg text-fg">
         <AuthProvider>
-          <Outlet />
+          <TwoFactorGate>
+            <Outlet />
+          </TwoFactorGate>
           <Toaster />
         </AuthProvider>
         <Scripts />

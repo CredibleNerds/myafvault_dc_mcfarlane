@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Cloud, CloudOff, Loader2, RefreshCw } from "lucide-react";
+import { Cloud, CloudOff, Loader2, LogIn, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import {
   SignedIn,
@@ -23,10 +23,14 @@ export function AuthSyncBar() {
   const [sync, setSync] = useState<SyncStatus>("idle");
   const [detail, setDetail] = useState("");
 
-  useEffect(() => subscribeSyncStatus((s, d) => {
-    setSync(s);
-    setDetail(d ?? "");
-  }), []);
+  useEffect(
+    () =>
+      subscribeSyncStatus((s, d) => {
+        setSync(s);
+        setDetail(d ?? "");
+      }),
+    [],
+  );
 
   useEffect(() => {
     if (!authEnabled) return;
@@ -45,16 +49,16 @@ export function AuthSyncBar() {
       <SignedOut>
         <Button asChild size="sm" variant="default">
           <Link to="/login">
-            <Cloud className="h-4 w-4" />
-            <span className="hidden sm:inline">Sign in to sync</span>
-            <span className="sm:hidden">Sync</span>
+            <LogIn className="h-4 w-4" />
+            <span className="hidden sm:inline">Sign in</span>
+            <span className="sm:hidden">Sign in</span>
           </Link>
         </Button>
       </SignedOut>
 
       <SignedIn>
         <SyncChip
-          status={sync}
+          status={isPending ? "pulling" : sync}
           detail={detail}
           onResync={async () => {
             try {
@@ -65,12 +69,7 @@ export function AuthSyncBar() {
             }
           }}
         />
-        <div className="hidden sm:block [&_button]:text-xs [&_button]:text-muted [&_span]:text-xs [&_span]:text-muted">
-          <UserButton />
-        </div>
-        <div className="sm:hidden">
-          <UserButton />
-        </div>
+        <UserButton />
       </SignedIn>
     </div>
   );
@@ -115,7 +114,7 @@ function SyncChip({
       ) : (
         <RefreshCw className="h-3.5 w-3.5" />
       )}
-      <span className="hidden xs:inline sm:inline">{label}</span>
+      <span className="hidden sm:inline">{label}</span>
     </button>
   );
 }

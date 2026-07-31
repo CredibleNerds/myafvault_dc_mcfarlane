@@ -34,6 +34,8 @@ interface CatalogueState {
 
   markOwned: (productId: string, owned?: boolean) => void;
   toggleWishlist: (productId: string) => void;
+  bulkMarkOwned: (productIds: string[], owned: boolean) => void;
+  bulkSetWishlist: (productIds: string[], wishlist: boolean) => void;
   updateEntry: (productId: string, patch: Partial<UserEntry>) => void;
   addPersonalPhoto: (productId: string, dataUrl: string) => void;
   removePersonalPhoto: (productId: string, index: number) => void;
@@ -116,6 +118,39 @@ export const useCatalogue = create<CatalogueState>()(
             }),
           },
         });
+      },
+
+      bulkMarkOwned: (productIds, owned) => {
+        if (productIds.length === 0) return;
+        const next = { ...get().entries };
+        const now = new Date().toISOString();
+        for (const id of productIds) {
+          const cur = next[id] ?? emptyEntry(id);
+          next[id] = {
+            ...cur,
+            owned,
+            wishlist: owned ? false : cur.wishlist,
+            updatedAt: now,
+          };
+        }
+        set({ entries: next });
+      },
+
+      bulkSetWishlist: (productIds, wishlist) => {
+        if (productIds.length === 0) return;
+        const next = { ...get().entries };
+        const now = new Date().toISOString();
+        for (const id of productIds) {
+          const cur = next[id] ?? emptyEntry(id);
+          next[id] = {
+            ...cur,
+            wishlist,
+            // Wishlist and owned are mutually exclusive when adding to wishlist
+            owned: wishlist ? false : cur.owned,
+            updatedAt: now,
+          };
+        }
+        set({ entries: next });
       },
 
       updateEntry: (productId, patch) => {

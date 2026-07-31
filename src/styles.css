@@ -97,6 +97,18 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
+/* Owned figures stay highlighted even on hover */
+.figure-card--owned:hover {
+  border-color: var(--color-primary);
+  box-shadow:
+    0 0 0 1px var(--color-primary),
+    0 10px 32px rgba(196, 30, 58, 0.3);
+}
+
+.owned-badge {
+  letter-spacing: 0.04em;
+}
+
 /*
  * Thumbnail hover zoom — GPU layer so downscaled high-res pack shots
  * stay sharp while scaling (avoids subpixel blur).
@@ -107,7 +119,6 @@
   transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
   backface-visibility: hidden;
-  /* Prefer high-quality resampling when the browser supports it */
   image-rendering: auto;
 }
 .figure-card:hover .figure-img {

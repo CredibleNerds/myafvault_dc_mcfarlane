@@ -6,13 +6,17 @@ import {
   displayImageFor,
 } from "@/lib/product";
 import { ProductImage } from "@/components/figures/product-image";
-import { Check, Heart } from "lucide-react";
+import { Check, Heart, Square, SquareCheck } from "lucide-react";
 
 interface FigureCardProps {
   product: CatalogProduct;
   entry?: UserEntry | null;
   onClick: () => void;
   className?: string;
+  /** Multi-select / bulk mode */
+  selectMode?: boolean;
+  selected?: boolean;
+  onToggleSelect?: () => void;
 }
 
 export function FigureCard({
@@ -20,6 +24,9 @@ export function FigureCard({
   entry,
   onClick,
   className,
+  selectMode = false,
+  selected = false,
+  onToggleSelect,
 }: FigureCardProps) {
   const src = displayImageFor(product, entry);
   const owned = entry?.owned;
@@ -28,14 +35,31 @@ export function FigureCard({
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={() => {
+        if (selectMode) {
+          onToggleSelect?.();
+          return;
+        }
+        onClick();
+      }}
+      aria-pressed={selectMode ? selected : undefined}
       className={cn(
-        "figure-card group flex w-full flex-col overflow-hidden rounded-[var(--radius-xl)] border border-border bg-surface text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
-        owned && "border-primary/40",
+        "figure-card group flex w-full flex-col overflow-hidden rounded-[var(--radius-xl)] border bg-surface text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
+        owned && !selected
+          ? "figure-card--owned border-primary shadow-[0_0_0_1px_var(--color-primary),0_8px_28px_rgba(196,30,58,0.22)]"
+          : "border-border",
+        selected &&
+          "border-primary ring-2 ring-primary shadow-[0_0_0_1px_var(--color-primary),0_8px_28px_rgba(196,30,58,0.28)]",
         className,
       )}
     >
-      <div className="relative aspect-square w-full overflow-hidden bg-surface-2">
+      <div
+        className={cn(
+          "relative aspect-square w-full overflow-hidden bg-surface-2",
+          owned && "ring-2 ring-inset ring-primary",
+          selected && "ring-2 ring-inset ring-primary",
+        )}
+      >
         <ProductImage
           src={src}
           alt={product.name}
@@ -43,7 +67,35 @@ export function FigureCard({
           imgClassName="p-1 sm:p-1.5"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
-        <div className="pointer-events-none absolute left-2 top-2 z-[1] flex flex-col gap-1">
+
+        {/* Selection control */}
+        {selectMode && (
+          <div className="absolute left-2 top-2 z-[3]">
+            <span
+              className={cn(
+                "flex h-8 w-8 items-center justify-center rounded-md border shadow-md",
+                selected
+                  ? "border-primary bg-primary text-primary-fg"
+                  : "border-border bg-bg/90 text-muted backdrop-blur-sm",
+              )}
+              aria-hidden
+            >
+              {selected ? (
+                <SquareCheck className="h-5 w-5" />
+              ) : (
+                <Square className="h-5 w-5" />
+              )}
+            </span>
+          </div>
+        )}
+
+        {/* Category (top-left, shifts when select mode) */}
+        <div
+          className={cn(
+            "pointer-events-none absolute z-[1] flex flex-col gap-1",
+            selectMode ? "left-2 top-12" : "left-2 top-2",
+          )}
+        >
           <Badge
             variant="secondary"
             className="bg-bg/85 text-[10px] backdrop-blur-sm"
@@ -51,18 +103,28 @@ export function FigureCard({
             {categoryLabel(product.category)}
           </Badge>
         </div>
-        <div className="pointer-events-none absolute right-2 top-2 z-[1] flex gap-1">
-          {owned && (
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-fg shadow">
-              <Check className="h-3.5 w-3.5" />
+
+        <div className="pointer-events-none absolute right-2 top-2 z-[2] flex flex-col items-end gap-1.5">
+          {owned ? (
+            <span className="owned-badge inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary-fg shadow-lg shadow-primary/40">
+              <Check className="h-3.5 w-3.5 stroke-[3]" aria-hidden />
+              Owned
             </span>
-          )}
-          {wishlist && !owned && (
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-2 text-primary shadow border border-border">
-              <Heart className="h-3.5 w-3.5 fill-current" />
+          ) : wishlist ? (
+            <span className="inline-flex items-center gap-1 rounded-full border border-border bg-bg/90 px-2.5 py-1 text-[11px] font-semibold text-primary shadow backdrop-blur-sm">
+              <Heart className="h-3.5 w-3.5 fill-current" aria-hidden />
+              Wishlist
             </span>
-          )}
+          ) : null}
         </div>
+
+        {owned && (
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-1 bg-primary"
+            aria-hidden
+          />
+        )}
+
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] bg-gradient-to-t from-bg/90 via-bg/40 to-transparent p-2.5 pt-8">
           <p className="text-[10px] font-medium uppercase tracking-wide text-muted">
             {product.line}
@@ -70,10 +132,28 @@ export function FigureCard({
           </p>
         </div>
       </div>
-      <div className="flex flex-1 flex-col gap-1 p-3.5">
-        <h3 className="font-semibold leading-snug text-fg line-clamp-2 text-sm sm:text-[15px]">
-          {product.name}
-        </h3>
+
+      <div
+        className={cn(
+          "flex flex-1 flex-col gap-1 p-3.5",
+          owned && "bg-primary/[0.06]",
+          selected && "bg-primary/10",
+        )}
+      >
+        <div className="flex items-start gap-2">
+          <h3 className="min-w-0 flex-1 font-semibold leading-snug text-fg line-clamp-2 text-sm sm:text-[15px]">
+            {product.name}
+          </h3>
+          {owned && (
+            <span
+              className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-fg"
+              title="In your collection"
+              aria-label="Owned"
+            >
+              <Check className="h-3 w-3 stroke-[3]" />
+            </span>
+          )}
+        </div>
         <p className="text-xs text-muted line-clamp-1">{product.character}</p>
         {product.accessories.length > 0 && (
           <p className="mt-1 text-[11px] text-subtle line-clamp-2 leading-snug">
@@ -85,26 +165,74 @@ export function FigureCard({
   );
 }
 
-export function FigureListRow({ product, entry, onClick }: FigureCardProps) {
+export function FigureListRow({
+  product,
+  entry,
+  onClick,
+  selectMode = false,
+  selected = false,
+  onToggleSelect,
+}: FigureCardProps) {
   const src = displayImageFor(product, entry);
   const owned = entry?.owned;
+  const wishlist = entry?.wishlist;
 
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={() => {
+        if (selectMode) {
+          onToggleSelect?.();
+          return;
+        }
+        onClick();
+      }}
+      aria-pressed={selectMode ? selected : undefined}
       className={cn(
-        "figure-list-row flex w-full items-center gap-3 rounded-[var(--radius-lg)] border border-border bg-surface p-2.5 text-left transition-colors hover:border-border-strong hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:gap-4 sm:p-3",
-        owned && "border-primary/35",
+        "figure-list-row flex w-full items-center gap-3 rounded-[var(--radius-lg)] border bg-surface p-2.5 text-left transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:gap-4 sm:p-3",
+        owned
+          ? "border-primary bg-primary/[0.06] shadow-[inset_3px_0_0_0_var(--color-primary)]"
+          : "border-border hover:border-border-strong",
+        selected && "border-primary ring-2 ring-primary bg-primary/10",
       )}
     >
-      <ProductImage
-        src={src}
-        alt=""
-        className="h-20 w-20 shrink-0 rounded-[var(--radius-sm)] sm:h-24 sm:w-24"
-        imgClassName="p-0.5"
-        sizes="96px"
-      />
+      {selectMode && (
+        <span
+          className={cn(
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md border",
+            selected
+              ? "border-primary bg-primary text-primary-fg"
+              : "border-border bg-surface-2 text-muted",
+          )}
+          aria-hidden
+        >
+          {selected ? (
+            <SquareCheck className="h-5 w-5" />
+          ) : (
+            <Square className="h-5 w-5" />
+          )}
+        </span>
+      )}
+      <div
+        className={cn(
+          "relative shrink-0 overflow-hidden rounded-[var(--radius-sm)]",
+          owned && "ring-2 ring-primary ring-offset-1 ring-offset-bg",
+        )}
+      >
+        <ProductImage
+          src={src}
+          alt=""
+          className="h-20 w-20 sm:h-24 sm:w-24"
+          imgClassName="p-0.5"
+          sizes="96px"
+        />
+        {owned && (
+          <span className="absolute bottom-1 left-1 right-1 flex items-center justify-center gap-0.5 rounded bg-primary py-0.5 text-[9px] font-bold uppercase tracking-wide text-primary-fg shadow">
+            <Check className="h-2.5 w-2.5 stroke-[3]" />
+            Owned
+          </span>
+        )}
+      </div>
       <div className="min-w-0 flex-1">
         <h3 className="font-semibold text-sm sm:text-base truncate">
           {product.name}
@@ -122,8 +250,21 @@ export function FigureListRow({ product, entry, onClick }: FigureCardProps) {
             </span>
           )}
           {owned && (
-            <Badge variant="default" className="text-[10px]">
+            <Badge
+              variant="default"
+              className="text-[10px] font-bold uppercase tracking-wide gap-1"
+            >
+              <Check className="h-3 w-3 stroke-[3]" />
               Owned
+            </Badge>
+          )}
+          {wishlist && !owned && (
+            <Badge
+              variant="outline"
+              className="text-[10px] border-primary/50 text-primary gap-1"
+            >
+              <Heart className="h-3 w-3 fill-current" />
+              Wishlist
             </Badge>
           )}
         </div>

@@ -16,6 +16,7 @@ import { FigureCard, FigureListRow } from "@/components/figures/figure-card";
 import { FigureDetail } from "@/components/figures/figure-detail";
 import { FigureForm } from "@/components/figures/figure-form";
 import { AuthSyncBar } from "@/components/figures/auth-sync-bar";
+import { BulkActionBar } from "@/components/figures/bulk-action-bar";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -36,6 +37,8 @@ function CataloguePage() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const importRef = useRef<HTMLInputElement>(null);
 
   const entries = useCatalogue((s) => s.entries);
@@ -54,6 +57,8 @@ function CataloguePage() {
   const setView = useCatalogue((s) => s.setView);
   const markOwned = useCatalogue((s) => s.markOwned);
   const toggleWishlist = useCatalogue((s) => s.toggleWishlist);
+  const bulkMarkOwned = useCatalogue((s) => s.bulkMarkOwned);
+  const bulkSetWishlist = useCatalogue((s) => s.bulkSetWishlist);
   const updateEntry = useCatalogue((s) => s.updateEntry);
   const addPersonalPhoto = useCatalogue((s) => s.addPersonalPhoto);
   const removePersonalPhoto = useCatalogue((s) => s.removePersonalPhoto);
@@ -73,6 +78,12 @@ function CataloguePage() {
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
   }, [search, categoryFilter, lineFilter, scopeFilter, sort]);
+
+  // Drop selection for figures no longer in the filtered set (optional cleanup)
+  useEffect(() => {
+    if (!selectMode) return;
+    // keep selection across filter changes — user may intentionally select across filters
+  }, [selectMode]);
 
   const masterStats = useMemo(() => catalogStats(), []);
   const collectionStats = useMemo(
@@ -170,6 +181,20 @@ function CataloguePage() {
     : null;
   const selectedEntry = selectedId ? (entries[selectedId] ?? null) : null;
 
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function exitSelectMode() {
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  }
+
   function handleExport() {
     const payload = {
       version: 2,
@@ -210,6 +235,8 @@ function CataloguePage() {
     reader.readAsText(file);
     if (importRef.current) importRef.current.value = "";
   }
+
+  const selectedList = useMemo(() => [...selectedIds], [selectedIds]);
 
   return (
     <div className="min-h-dvh">
@@ -264,6 +291,52 @@ function CataloguePage() {
             onChange={(e) => handleImportFile(e.target.files)}
           />
 
+          <BulkActionBar
+            selectMode={selectMode}
+            selectedCount={selectedIds.size}
+            visibleCount={visible.length}
+            filteredCount={filtered.length}
+            onToggleSelectMode={() => {
+              if (selectMode) exitSelectMode();
+              else setSelectMode(true);
+            }}
+            onSelectVisible={() => {
+              setSelectedIds((prev) => {
+                const next = new Set(prev);
+                for (const p of visible) next.add(p.id);
+                return next;
+              });
+              toast.message(`Selected ${visible.length} shown figures`);
+            }}
+            onSelectFiltered={() => {
+              setSelectedIds(new Set(filtered.map((p) => p.id)));
+              toast.message(
+                `Selected all ${filtered.length.toLocaleString()} matches`,
+              );
+            }}
+            onClearSelection={() => setSelectedIds(new Set())}
+            onMarkOwned={() => {
+              bulkMarkOwned(selectedList, true);
+              toast.success(`Marked ${selectedList.length} as owned`);
+              setSelectedIds(new Set());
+            }}
+            onMarkUnowned={() => {
+              bulkMarkOwned(selectedList, false);
+              toast.success(`Marked ${selectedList.length} as unowned`);
+              setSelectedIds(new Set());
+            }}
+            onAddWishlist={() => {
+              bulkSetWishlist(selectedList, true);
+              toast.success(`Added ${selectedList.length} to wishlist`);
+              setSelectedIds(new Set());
+            }}
+            onRemoveWishlist={() => {
+              bulkSetWishlist(selectedList, false);
+              toast.success(`Removed ${selectedList.length} from wishlist`);
+              setSelectedIds(new Set());
+            }}
+          />
+
           <div className="flex items-center justify-between text-sm text-muted">
             <p className="tabular-nums">
               {ready
@@ -272,9 +345,14 @@ function CataloguePage() {
               {filtered.length > visible.length
                 ? ` · showing ${visible.length}`
                 : ""}
+              {selectMode && selectedIds.size > 0
+                ? ` · ${selectedIds.size} selected`
+                : ""}
             </p>
             <p className="hidden sm:block text-xs text-subtle">
-              Sign in to keep your vault across devices
+              {selectMode
+                ? "Tap figures to select · use bulk actions below"
+                : "Sign in to keep your vault across devices"}
             </p>
           </div>
 
@@ -296,6 +374,9 @@ function CataloguePage() {
                   key={p.id}
                   product={p}
                   entry={entries[p.id]}
+                  selectMode={selectMode}
+                  selected={selectedIds.has(p.id)}
+                  onToggleSelect={() => toggleSelect(p.id)}
                   onClick={() => setSelectedId(p.id)}
                 />
               ))}
@@ -307,6 +388,9 @@ function CataloguePage() {
                   key={p.id}
                   product={p}
                   entry={entries[p.id]}
+                  selectMode={selectMode}
+                  selected={selectedIds.has(p.id)}
+                  onToggleSelect={() => toggleSelect(p.id)}
                   onClick={() => setSelectedId(p.id)}
                 />
               ))}
@@ -348,7 +432,7 @@ function CataloguePage() {
       <FigureDetail
         product={selectedProduct}
         entry={selectedEntry}
-        open={!!selectedProduct}
+        open={!!selectedProduct && !selectMode}
         onOpenChange={(o) => {
           if (!o) setSelectedId(null);
         }}
