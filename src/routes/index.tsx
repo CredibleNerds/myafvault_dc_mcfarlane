@@ -318,7 +318,7 @@ function CataloguePage() {
             onClearSelection={() => setSelectedIds(new Set())}
             onMarkOwned={() => {
               bulkMarkOwned(selectedList, true);
-              toast.success(`Marked ${selectedList.length} as vaulted`);
+              toast.success(`Marked ${selectedList.length} as in vault`);
               setSelectedIds(new Set());
             }}
             onMarkUnowned={() => {

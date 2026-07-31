@@ -34,7 +34,7 @@ function VaultedMark({ className }: { className?: string }) {
       <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-fg">
         <Check className="h-3 w-3 stroke-[3]" aria-hidden />
       </span>
-      <span className="owned-badge inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-fg">
+      <span className="owned-badge inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold tracking-tight text-primary-fg">
         {OWNERSHIP.status}
       </span>
     </span>

@@ -1,12 +1,10 @@
 /**
  * Collector-facing language for "I have this figure".
  * Internal state still uses `owned` — only UI labels live here.
- *
- * Brand fit: MyAFVault → "Vaulted"
  */
 export const OWNERSHIP = {
-  /** Past-tense status: "Vaulted" */
-  status: "Vaulted",
+  /** Status chip next to checkmark */
+  status: "In My Vault",
   /** CTA when not yet owned */
   add: "Add to vault",
   /** CTA when already owned */
@@ -15,16 +13,16 @@ export const OWNERSHIP = {
   toastAdded: "Added to your vault",
   toastRemoved: "Removed from vault",
   /** Filters / sorts */
-  filterOnly: "Vaulted only",
-  filterNot: "Not vaulted",
-  sortFirst: "Vaulted first",
+  filterOnly: "In my vault only",
+  filterNot: "Not in vault",
+  sortFirst: "In vault first",
   /** Bulk actions */
-  bulkMark: "Mark vaulted",
-  bulkUnmark: "Mark not vaulted",
-  bulkHint: "Bulk vault, unvault, or wishlist",
+  bulkMark: "Mark in vault",
+  bulkUnmark: "Mark not in vault",
+  bulkHint: "Bulk add to vault, remove, or wishlist",
   /** Stats strip */
-  countLabel: "Vaulted",
+  countLabel: "In My Vault",
   /** a11y */
-  ariaYes: "Vaulted — in your collection",
-  titleYes: "In your vault",
+  ariaYes: "In my vault",
+  titleYes: "In my vault",
 } as const;
