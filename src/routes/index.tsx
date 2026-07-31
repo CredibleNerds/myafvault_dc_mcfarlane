@@ -1,542 +1,634 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { Layers, PackageOpen } from "lucide-react";
-import { toast } from "sonner";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  hydrateCatalogue,
-  selectCollectionStats,
-  useCatalogue,
-} from "@/lib/store";
-import type { UserEntry } from "@/lib/types";
-import { CATALOG, catalogStats } from "@/data/catalog";
-import { resolveProduct } from "@/lib/product";
-import { StatsBar } from "@/components/figures/stats-bar";
-import { Toolbar } from "@/components/figures/toolbar";
-import { FigureCard, FigureListRow } from "@/components/figures/figure-card";
-import { FigureDetail } from "@/components/figures/figure-detail";
-import { FigureForm } from "@/components/figures/figure-form";
-import { AuthSyncBar } from "@/components/figures/auth-sync-bar";
-import { BulkActionBar } from "@/components/figures/bulk-action-bar";
-import { CollectionsPanel } from "@/components/figures/collections-panel";
+  ArrowRight,
+  Camera,
+  Check,
+  Cloud,
+  Layers,
+  Lock,
+  Package,
+  Search,
+  Shield,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { OWNERSHIP } from "@/lib/ownership-copy";
+import { Badge } from "@/components/ui/badge";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  FRANCHISES,
+  PRIMARY_VAULT_PATH,
+  VAULT_ACCESS,
+} from "@/lib/franchises";
+import { catalogStats } from "@/data/catalog";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
-  component: CataloguePage,
+  component: LandingPage,
+  head: () => ({
+    meta: [
+      {
+        title: "MyAFVault — Collect. Index. Display. Your figures, one vault.",
+      },
+      {
+        name: "description",
+        content:
+          "MyAFVault is your multi-franchise action figure vault. Start with DC McFarlane Multiverse — catalogue, photos, ownership, and cloud sync. Lifetime access $1.99.",
+      },
+    ],
+  }),
 });
 
-const PAGE_SIZE = 48;
+const FEATURES = [
+  {
+    icon: Search,
+    title: "Master catalogue",
+    body: "Browse official product shots, scales, lines, and package accessories — not a blank spreadsheet.",
+  },
+  {
+    icon: Package,
+    title: "In My Vault tracking",
+    body: "Mark figures you have, build a wishlist, bulk-update ownership, and see your vault grow.",
+  },
+  {
+    icon: Camera,
+    title: "Your photos",
+    body: "Upload shelf shots and loose figure photos. Prefer yours as the cover without losing the official pack art.",
+  },
+  {
+    icon: Layers,
+    title: "Displays & collections",
+    body: "Group Justice League, Teen Titans, or The Dark Knight shelf photos in one place — multi-figure sets included.",
+  },
+  {
+    icon: Cloud,
+    title: "Cloud sync",
+    body: "Sign in once. Notes, photos, and ownership follow you across phone, tablet, and desktop.",
+  },
+  {
+    icon: Shield,
+    title: "Optional 2FA",
+    body: "Lock the vault with two-factor authentication when you want extra protection on your collection data.",
+  },
+] as const;
 
-function CataloguePage() {
-  const [ready, setReady] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [formOpen, setFormOpen] = useState(false);
-  const [selectMode, setSelectMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
-  const importRef = useRef<HTMLInputElement>(null);
+const PREVIEW_STEPS = [
+  {
+    step: "01",
+    title: "Browse the master list",
+    body: "Filter by 7\", Megafig, statue, multipack, or vehicle. Search character, line, or SKU.",
+  },
+  {
+    step: "02",
+    title: "Mark what you own",
+    body: "Tap In My Vault, set condition and price, add notes — or bulk-select a whole wave.",
+  },
+  {
+    step: "03",
+    title: "Photograph & display",
+    body: "Attach personal photos, then build Collections for team shelves and movie lineups.",
+  },
+] as const;
 
-  const entries = useCatalogue((s) => s.entries);
-  const search = useCatalogue((s) => s.search);
-  const categoryFilter = useCatalogue((s) => s.categoryFilter);
-  const lineFilter = useCatalogue((s) => s.lineFilter);
-  const scopeFilter = useCatalogue((s) => s.scopeFilter);
-  const sort = useCatalogue((s) => s.sort);
-  const view = useCatalogue((s) => s.view);
-  const section = useCatalogue((s) => s.section);
-
-  const setSearch = useCatalogue((s) => s.setSearch);
-  const setCategoryFilter = useCatalogue((s) => s.setCategoryFilter);
-  const setLineFilter = useCatalogue((s) => s.setLineFilter);
-  const setScopeFilter = useCatalogue((s) => s.setScopeFilter);
-  const setSort = useCatalogue((s) => s.setSort);
-  const setView = useCatalogue((s) => s.setView);
-  const setSection = useCatalogue((s) => s.setSection);
-  const markOwned = useCatalogue((s) => s.markOwned);
-  const toggleWishlist = useCatalogue((s) => s.toggleWishlist);
-  const bulkMarkOwned = useCatalogue((s) => s.bulkMarkOwned);
-  const bulkSetWishlist = useCatalogue((s) => s.bulkSetWishlist);
-  const updateEntry = useCatalogue((s) => s.updateEntry);
-  const addPersonalPhoto = useCatalogue((s) => s.addPersonalPhoto);
-  const removePersonalPhoto = useCatalogue((s) => s.removePersonalPhoto);
-  const addCustomEntry = useCatalogue((s) => s.addCustomEntry);
-  const importEntries = useCatalogue((s) => s.importEntries);
-
-  useEffect(() => {
-    let cancelled = false;
-    void hydrateCatalogue().then(() => {
-      if (!cancelled) setReady(true);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    setVisibleCount(PAGE_SIZE);
-  }, [search, categoryFilter, lineFilter, scopeFilter, sort]);
-
-  // Drop selection for figures no longer in the filtered set (optional cleanup)
-  useEffect(() => {
-    if (!selectMode) return;
-    // keep selection across filter changes — user may intentionally select across filters
-  }, [selectMode]);
-
-  const masterStats = useMemo(() => catalogStats(), []);
-  const collectionStats = useMemo(
-    () => selectCollectionStats(entries),
-    [entries],
-  );
-
-  const allProducts = useMemo(() => {
-    const customs = Object.values(entries)
-      .filter((e) => e.isCustom)
-      .map((e) => resolveProduct(e.productId, e))
-      .filter(Boolean);
-    return [...CATALOG, ...customs] as NonNullable<
-      ReturnType<typeof resolveProduct>
-    >[];
-  }, [entries]);
-
-  const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = {
-      all: allProducts.length,
-      "7-inch": 0,
-      megafig: 0,
-      statue: 0,
-      multipack: 0,
-      vehicle: 0,
-    };
-    for (const p of allProducts) {
-      counts[p.category] = (counts[p.category] ?? 0) + 1;
-    }
-    return counts;
-  }, [allProducts]);
-
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    let list = allProducts.filter((p) => {
-      if (categoryFilter !== "all" && p.category !== categoryFilter)
-        return false;
-      if (lineFilter !== "all" && p.line !== lineFilter) return false;
-
-      const entry = entries[p.id];
-      if (scopeFilter === "owned" && !entry?.owned) return false;
-      if (scopeFilter === "wishlist" && !entry?.wishlist) return false;
-      if (scopeFilter === "unowned" && entry?.owned) return false;
-
-      if (!q) return true;
-      const hay = [
-        p.name,
-        p.character,
-        p.line,
-        p.sku,
-        p.description,
-        p.scale,
-        ...p.accessories,
-        ...p.features,
-        entry?.notes ?? "",
-      ]
-        .join(" ")
-        .toLowerCase();
-      return hay.includes(q);
-    });
-
-    const ownedOf = (id: string) => (entries[id]?.owned ? 1 : 0);
-
-    list = [...list].sort((a, b) => {
-      switch (sort) {
-        case "name-asc":
-          return a.name.localeCompare(b.name);
-        case "name-desc":
-          return b.name.localeCompare(a.name);
-        case "year-asc":
-          return (a.releaseYear ?? 0) - (b.releaseYear ?? 0);
-        case "year-desc":
-          return (b.releaseYear ?? 0) - (a.releaseYear ?? 0);
-        case "character-asc":
-          return a.character.localeCompare(b.character);
-        case "owned-first":
-          return ownedOf(b.id) - ownedOf(a.id) || a.name.localeCompare(b.name);
-        default:
-          return 0;
-      }
-    });
-    return list;
-  }, [
-    allProducts,
-    entries,
-    search,
-    categoryFilter,
-    lineFilter,
-    scopeFilter,
-    sort,
-  ]);
-
-  const visible = filtered.slice(0, visibleCount);
-  const selectedProduct = selectedId
-    ? resolveProduct(selectedId, entries[selectedId])
-    : null;
-  const selectedEntry = selectedId ? (entries[selectedId] ?? null) : null;
-
-  function toggleSelect(id: string) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-
-  function exitSelectMode() {
-    setSelectMode(false);
-    setSelectedIds(new Set());
-  }
-
-  function handleExport() {
-    const payload = {
-      version: 2,
-      exportedAt: new Date().toISOString(),
-      entries,
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `dc-mcfarlane-collection-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success("Collection exported");
-  }
-
-  function handleImportFile(files: FileList | null) {
-    const file = files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const parsed = JSON.parse(String(reader.result)) as {
-          entries?: Record<string, UserEntry>;
-        };
-        if (!parsed.entries || typeof parsed.entries !== "object") {
-          toast.error("Invalid collection file");
-          return;
-        }
-        importEntries(parsed.entries);
-        toast.success("Collection imported — will sync if signed in");
-      } catch {
-        toast.error("Invalid collection file");
-      }
-    };
-    reader.readAsText(file);
-    if (importRef.current) importRef.current.value = "";
-  }
-
-  const selectedList = useMemo(() => [...selectedIds], [selectedIds]);
+function LandingPage() {
+  const { user, isPending } = useCurrentUserState();
+  const signedIn = !isPending && !!user && !user.isDevFallback;
+  const stats = catalogStats();
 
   return (
-    <div className="min-h-dvh">
+    <div className="min-h-dvh bg-bg text-fg">
+      <div className="h-1 w-full bg-primary" aria-hidden />
+
+      {/* Nav */}
       <header className="sticky top-0 z-40 border-b border-border/80 bg-bg/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
-          <div className="min-w-0">
-            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
-              McFarlane Toys · DC Multiverse
-            </p>
-            <h1 className="truncate text-lg font-semibold tracking-tight sm:text-xl">
-              Complete Figure Catalogue
-            </h1>
-          </div>
-          <AuthSyncBar />
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+          <Link to="/" className="min-w-0 flex items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-sm)] bg-primary text-primary-fg">
+              <Package className="h-4 w-4" />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+                MyAFVault
+              </span>
+              <span className="block truncate text-sm font-semibold tracking-tight">
+                Action Figure Vaults
+              </span>
+            </span>
+          </Link>
+          <nav className="flex items-center gap-1.5 sm:gap-2">
+            <ThemeToggle className="hidden sm:flex" />
+            <Button asChild size="sm" variant="ghost" className="hidden sm:inline-flex">
+              <a href="#features">Features</a>
+            </Button>
+            <Button asChild size="sm" variant="ghost" className="hidden md:inline-flex">
+              <a href="#vaults">Vaults</a>
+            </Button>
+            <Button asChild size="sm" variant="ghost" className="hidden md:inline-flex">
+              <a href="#pricing">Pricing</a>
+            </Button>
+            {signedIn ? (
+              <Button asChild size="sm">
+                <Link to={PRIMARY_VAULT_PATH}>
+                  Open vault
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button asChild size="sm" variant="outline">
+                  <a href="/login?mode=signin">
+                    Sign in
+                  </a>
+                </Button>
+                <Button asChild size="sm">
+                  <a href="/login?mode=signup">
+                    Sign up
+                  </a>
+                </Button>
+              </>
+            )}
+          </nav>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-8">
-        <div className="flex flex-col gap-5 sm:gap-6">
+      <main>
+        {/* Hero */}
+        <section className="relative overflow-hidden border-b border-border">
           <div
-            role="tablist"
-            aria-label="Main sections"
-            className="inline-flex w-full sm:w-auto rounded-[var(--radius-md)] border border-border bg-surface p-1 gap-1"
-          >
-            <button
-              type="button"
-              role="tab"
-              aria-selected={section === "catalogue"}
-              onClick={() => setSection("catalogue")}
-              className={
-                section === "catalogue"
-                  ? "flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-primary px-4 py-2 text-sm font-medium text-primary-fg"
-                  : "flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] px-4 py-2 text-sm font-medium text-muted hover:text-fg"
-              }
-            >
-              <PackageOpen className="h-4 w-4" />
-              Catalogue
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={section === "collections"}
-              onClick={() => setSection("collections")}
-              className={
-                section === "collections"
-                  ? "flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-primary px-4 py-2 text-sm font-medium text-primary-fg"
-                  : "flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] px-4 py-2 text-sm font-medium text-muted hover:text-fg"
-              }
-            >
-              <Layers className="h-4 w-4" />
-              Collections
-            </button>
+            className="pointer-events-none absolute inset-0 opacity-[0.35]"
+            aria-hidden
+            style={{
+              background:
+                "radial-gradient(ellipse 80% 60% at 70% -10%, color-mix(in oklab, var(--color-primary) 28%, transparent), transparent 55%)",
+            }}
+          />
+          <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20 lg:py-24">
+            <div className="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.95fr)] lg:items-center">
+              <div className="space-y-6">
+                <Badge variant="secondary" className="font-medium">
+                  Multi-franchise collector vault
+                </Badge>
+                <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-semibold tracking-tight leading-[1.12] text-balance">
+                  One vault for every line you collect.
+                  <span className="block text-muted font-medium mt-2 text-2xl sm:text-3xl lg:text-[2rem]">
+                    Start with DC McFarlane Multiverse.
+                  </span>
+                </h1>
+                <p className="text-base sm:text-lg text-muted max-w-xl leading-relaxed text-pretty">
+                  Catalogue official figures with accessories and pack shots,
+                  mark what is In My Vault, upload your photos, and build shelf
+                  Collections — synced to the cloud when you sign in.
+                </p>
+                <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+                  <Button asChild size="lg" className="h-11 px-5">
+                    <Link to={PRIMARY_VAULT_PATH}>
+                      Enter DC McFarlane vault
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  {!signedIn && (
+                    <Button asChild size="lg" variant="outline" className="h-11 px-5">
+                      <a href="/login?mode=signup">
+                        Create free account
+                      </a>
+                    </Button>
+                  )}
+                  <Button asChild size="lg" variant="ghost" className="h-11 px-5">
+                    <a href="#pricing">
+                      Lifetime access {VAULT_ACCESS.priceLabel}
+                    </a>
+                  </Button>
+                </div>
+                <dl className="grid grid-cols-3 gap-3 max-w-md pt-2">
+                  <div className="rounded-[var(--radius-md)] border border-border bg-surface p-3">
+                    <dt className="text-[11px] uppercase tracking-wide text-subtle">
+                      Catalog
+                    </dt>
+                    <dd className="text-lg font-semibold tabular-nums">
+                      {stats.total.toLocaleString()}+
+                    </dd>
+                  </div>
+                  <div className="rounded-[var(--radius-md)] border border-border bg-surface p-3">
+                    <dt className="text-[11px] uppercase tracking-wide text-subtle">
+                      Categories
+                    </dt>
+                    <dd className="text-lg font-semibold tabular-nums">5</dd>
+                  </div>
+                  <div className="rounded-[var(--radius-md)] border border-border bg-surface p-3">
+                    <dt className="text-[11px] uppercase tracking-wide text-subtle">
+                      Access
+                    </dt>
+                    <dd className="text-lg font-semibold tabular-nums">
+                      {VAULT_ACCESS.priceLabel}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+
+              {/* Product preview mock */}
+              <div className="relative">
+                <div className="rounded-[var(--radius-xl)] border border-border bg-surface p-3 sm:p-4 shadow-[var(--shadow-card)]">
+                  <div className="flex items-center justify-between gap-2 mb-3 px-1">
+                    <div>
+                      <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary">
+                        Live preview · DC McFarlane
+                      </p>
+                      <p className="text-sm font-semibold">What the vault looks like</p>
+                    </div>
+                    <Badge variant="outline" className="text-[10px]">
+                      Demo UI
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {[
+                      {
+                        title: "Batman (Hush)",
+                        meta: '7" · Gold Label',
+                        badge: "In My Vault",
+                      },
+                      {
+                        title: "Doomsday Megafig",
+                        meta: "Megafig · Accessories",
+                        badge: "Wishlist",
+                      },
+                      {
+                        title: "Justice League shelf",
+                        meta: "Collection · 6 photos",
+                        badge: "Display",
+                      },
+                      {
+                        title: "The Batman statue",
+                        meta: "Statue · 12″",
+                        badge: "Catalog",
+                      },
+                    ].map((card) => (
+                      <div
+                        key={card.title}
+                        className="rounded-[var(--radius-lg)] border border-border bg-surface-2 overflow-hidden"
+                      >
+                        <div className="aspect-[4/3] bg-surface-3 relative">
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <Package className="h-8 w-8 text-subtle/50" />
+                          </div>
+                          <span className="absolute left-2 top-2 rounded-full bg-bg/90 px-2 py-0.5 text-[9px] font-semibold text-fg backdrop-blur-sm">
+                            {card.badge}
+                          </span>
+                        </div>
+                        <div className="p-2.5 space-y-0.5">
+                          <p className="text-xs font-semibold line-clamp-1">
+                            {card.title}
+                          </p>
+                          <p className="text-[10px] text-muted">{card.meta}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <ul className="mt-3 space-y-1.5 border-t border-border pt-3 px-0.5">
+                    {[
+                      "Official pack shots + your photos",
+                      "Accessories listed per release",
+                      "Cloud backup when signed in",
+                    ].map((line) => (
+                      <li
+                        key={line}
+                        className="flex items-center gap-2 text-xs text-muted"
+                      >
+                        <Check className="h-3.5 w-3.5 text-primary shrink-0" />
+                        {line}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
+        </section>
 
-          {section === "collections" ? (
-            <CollectionsPanel />
-          ) : (
-            <>
-          <StatsBar
-            catalogTotal={masterStats.total}
-            owned={ready ? collectionStats.owned : 0}
-            wishlist={ready ? collectionStats.wishlist : 0}
-            withPhotos={ready ? collectionStats.withPhotos : 0}
-            spent={ready ? collectionStats.spent : 0}
-          />
-
-          <Toolbar
-            search={search}
-            onSearch={setSearch}
-            categoryFilter={categoryFilter}
-            onCategory={setCategoryFilter}
-            lineFilter={lineFilter}
-            onLine={setLineFilter}
-            scopeFilter={scopeFilter}
-            onScope={setScopeFilter}
-            sort={sort}
-            onSort={setSort}
-            view={view}
-            onView={setView}
-            categoryCounts={categoryCounts}
-            onAddCustom={() => setFormOpen(true)}
-            onExport={handleExport}
-            onImport={() => importRef.current?.click()}
-          />
-
-          <input
-            ref={importRef}
-            type="file"
-            accept="application/json,.json"
-            className="hidden"
-            onChange={(e) => handleImportFile(e.target.files)}
-          />
-
-          <BulkActionBar
-            selectMode={selectMode}
-            selectedCount={selectedIds.size}
-            visibleCount={visible.length}
-            filteredCount={filtered.length}
-            onToggleSelectMode={() => {
-              if (selectMode) exitSelectMode();
-              else setSelectMode(true);
-            }}
-            onSelectVisible={() => {
-              setSelectedIds((prev) => {
-                const next = new Set(prev);
-                for (const p of visible) next.add(p.id);
-                return next;
-              });
-              toast.message(`Selected ${visible.length} shown figures`);
-            }}
-            onSelectFiltered={() => {
-              setSelectedIds(new Set(filtered.map((p) => p.id)));
-              toast.message(
-                `Selected all ${filtered.length.toLocaleString()} matches`,
-              );
-            }}
-            onClearSelection={() => setSelectedIds(new Set())}
-            onMarkOwned={() => {
-              bulkMarkOwned(selectedList, true);
-              toast.success(`Marked ${selectedList.length} as in vault`);
-              setSelectedIds(new Set());
-            }}
-            onMarkUnowned={() => {
-              bulkMarkOwned(selectedList, false);
-              toast.success(`Removed ${selectedList.length} from vault`);
-              setSelectedIds(new Set());
-            }}
-            onAddWishlist={() => {
-              bulkSetWishlist(selectedList, true);
-              toast.success(`Added ${selectedList.length} to wishlist`);
-              setSelectedIds(new Set());
-            }}
-            onRemoveWishlist={() => {
-              bulkSetWishlist(selectedList, false);
-              toast.success(`Removed ${selectedList.length} from wishlist`);
-              setSelectedIds(new Set());
-            }}
-          />
-
-          <div className="flex items-center justify-between text-sm text-muted">
-            <p className="tabular-nums">
-              {ready
-                ? `${filtered.length.toLocaleString()} product${filtered.length === 1 ? "" : "s"}`
-                : "Loading catalog…"}
-              {filtered.length > visible.length
-                ? ` · showing ${visible.length}`
-                : ""}
-              {selectMode && selectedIds.size > 0
-                ? ` · ${selectedIds.size} selected`
-                : ""}
-            </p>
-            <p className="hidden sm:block text-xs text-subtle">
-              {selectMode
-                ? "Tap figures to select · use bulk actions below"
-                : "Sign in to keep your vault across devices"}
-            </p>
+        {/* How it works */}
+        <section className="border-b border-border" id="how">
+          <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16">
+            <div className="max-w-2xl mb-8">
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary mb-2">
+                How it works
+              </p>
+              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+                Built for how collectors actually track a line
+              </h2>
+            </div>
+            <ol className="grid gap-4 md:grid-cols-3">
+              {PREVIEW_STEPS.map((s) => (
+                <li
+                  key={s.step}
+                  className="rounded-[var(--radius-xl)] border border-border bg-surface p-5 sm:p-6"
+                >
+                  <p className="text-xs font-semibold tabular-nums text-primary mb-3">
+                    {s.step}
+                  </p>
+                  <h3 className="font-semibold text-base mb-1.5">{s.title}</h3>
+                  <p className="text-sm text-muted leading-relaxed">{s.body}</p>
+                </li>
+              ))}
+            </ol>
           </div>
+        </section>
 
-          {!ready ? (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-              {Array.from({ length: 9 }).map((_, i) => (
+        {/* Features */}
+        <section className="border-b border-border" id="features">
+          <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16">
+            <div className="max-w-2xl mb-8">
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary mb-2">
+                Features
+              </p>
+              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+                Everything in the vault
+              </h2>
+              <p className="text-muted mt-2 text-sm sm:text-base max-w-xl">
+                The same tools power every franchise database as we add them —
+                start on DC McFarlane today.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {FEATURES.map((f) => (
                 <div
-                  key={i}
-                  className="aspect-square animate-pulse rounded-[var(--radius-xl)] bg-surface-2"
-                />
+                  key={f.title}
+                  className="rounded-[var(--radius-xl)] border border-border bg-surface p-5"
+                >
+                  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-[var(--radius-sm)] bg-primary/12 text-primary ring-1 ring-primary/20">
+                    <f.icon className="h-4 w-4" />
+                  </div>
+                  <h3 className="font-semibold mb-1">{f.title}</h3>
+                  <p className="text-sm text-muted leading-relaxed">{f.body}</p>
+                </div>
               ))}
             </div>
-          ) : filtered.length === 0 ? (
-            <EmptyState onAdd={() => setFormOpen(true)} />
-          ) : view === "grid" ? (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-              {visible.map((p) => (
-                <FigureCard
-                  key={p.id}
-                  product={p}
-                  entry={entries[p.id]}
-                  selectMode={selectMode}
-                  selected={selectedIds.has(p.id)}
-                  onToggleSelect={() => toggleSelect(p.id)}
-                  onClick={() => setSelectedId(p.id)}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {visible.map((p) => (
-                <FigureListRow
-                  key={p.id}
-                  product={p}
-                  entry={entries[p.id]}
-                  selectMode={selectMode}
-                  selected={selectedIds.has(p.id)}
-                  onToggleSelect={() => toggleSelect(p.id)}
-                  onClick={() => setSelectedId(p.id)}
-                />
-              ))}
-            </div>
-          )}
+          </div>
+        </section>
 
-          {ready && visible.length < filtered.length && (
-            <div className="flex justify-center pt-2">
-              <Button
-                variant="secondary"
-                onClick={() =>
-                  setVisibleCount((n) =>
-                    Math.min(n + PAGE_SIZE, filtered.length),
-                  )
-                }
-              >
-                Load more ({filtered.length - visible.length} remaining)
-              </Button>
+        {/* Franchise vaults */}
+        <section className="border-b border-border" id="vaults">
+          <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+              <div className="max-w-2xl">
+                <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary mb-2">
+                  Franchise vaults
+                </p>
+                <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+                  DC McFarlane first. More lines next.
+                </h2>
+                <p className="text-muted mt-2 text-sm sm:text-base">
+                  Each franchise is its own database inside MyAFVault. One
+                  account unlocks every vault as it launches.
+                </p>
+              </div>
             </div>
-          )}
-            </>
-          )}
-        </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {FRANCHISES.map((f) => {
+                const live = f.status === "live";
+                const CardInner = (
+                  <>
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div>
+                        <p className="text-[11px] font-medium uppercase tracking-wide text-subtle">
+                          {live ? "Available now" : "Planned vault"}
+                        </p>
+                        <h3 className="text-lg font-semibold tracking-tight mt-0.5">
+                          {f.name}
+                        </h3>
+                      </div>
+                      <Badge variant={live ? "default" : "secondary"}>
+                        {live ? "Live" : "Coming soon"}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted leading-relaxed mb-4">
+                      {f.tagline}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 mb-4">
+                      {f.highlights.map((h) => (
+                        <span
+                          key={h}
+                          className="rounded-full border border-border bg-surface-2 px-2.5 py-0.5 text-[11px] text-muted"
+                        >
+                          {h}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between gap-2 pt-1 border-t border-border">
+                      <span className="text-xs text-subtle">{f.scopeNote}</span>
+                      {live ? (
+                        <span className="inline-flex items-center gap-1 text-sm font-medium text-primary">
+                          Open vault
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </span>
+                      ) : (
+                        <span className="text-xs font-medium text-subtle">
+                          Not yet available
+                        </span>
+                      )}
+                    </div>
+                  </>
+                );
+
+                if (live && f.path) {
+                  return (
+                    <Link
+                      key={f.id}
+                      to={f.path}
+                      className={cn(
+                        "block rounded-[var(--radius-xl)] border p-5 sm:p-6 transition-colors",
+                        "border-primary/40 bg-primary/[0.06] hover:border-primary hover:bg-primary/10",
+                      )}
+                    >
+                      {CardInner}
+                    </Link>
+                  );
+                }
+
+                return (
+                  <div
+                    key={f.id}
+                    className="rounded-[var(--radius-xl)] border border-border bg-surface p-5 sm:p-6 opacity-90"
+                  >
+                    {CardInner}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Pricing — Stripe later */}
+        <section className="border-b border-border" id="pricing">
+          <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16">
+            <div className="max-w-2xl mb-8">
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary mb-2">
+                Pricing
+              </p>
+              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+                Lifetime vault access
+              </h2>
+              <p className="text-muted mt-2 text-sm sm:text-base">
+                Browse the catalogue free. Unlock cloud sync, multi-device vault
+                storage, and future franchise databases with a single payment.
+              </p>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+              <div className="rounded-[var(--radius-xl)] border border-border bg-surface p-6 sm:p-8">
+                <p className="text-sm font-medium text-muted mb-1">
+                  {VAULT_ACCESS.productName}
+                </p>
+                <p className="flex items-baseline gap-1.5">
+                  <span className="text-4xl font-semibold tracking-tight tabular-nums">
+                    {VAULT_ACCESS.priceLabel}
+                  </span>
+                  <span className="text-sm text-muted">one-time</span>
+                </p>
+                <p className="text-sm text-muted mt-3 leading-relaxed">
+                  {VAULT_ACCESS.description}
+                </p>
+                <ul className="mt-5 space-y-2.5">
+                  {[
+                    "Cloud backup of ownership, notes, and photos",
+                    "Collections & multi-figure displays",
+                    "Optional two-factor security",
+                    "Access to new franchise vaults when they launch",
+                    "No subscription — pay once",
+                  ].map((item) => (
+                    <li
+                      key={item}
+                      className="flex items-start gap-2 text-sm text-muted"
+                    >
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-6 flex flex-col sm:flex-row gap-2">
+                  <Button
+                    type="button"
+                    size="lg"
+                    className="h-11"
+                    disabled
+                    title="Stripe checkout will be connected next"
+                  >
+                    <Lock className="h-4 w-4" />
+                    Pay {VAULT_ACCESS.priceLabel} — Stripe coming soon
+                  </Button>
+                  <Button asChild size="lg" variant="outline" className="h-11">
+                    <a href="/login?mode=signup">
+                      Create account first
+                    </a>
+                  </Button>
+                </div>
+                <p className="mt-3 text-xs text-subtle flex items-start gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                  Secure Stripe Checkout will be wired next. You can already
+                  create an account and use the DC McFarlane vault.
+                </p>
+              </div>
+
+              <div className="rounded-[var(--radius-xl)] border border-border bg-surface-2/60 p-6 sm:p-8 flex flex-col justify-center">
+                <h3 className="font-semibold text-lg mb-2">
+                  Sign up, then open the vault
+                </h3>
+                <p className="text-sm text-muted leading-relaxed mb-5">
+                  For now, sign-up and sign-in take you straight into the{" "}
+                  <strong className="text-fg font-medium">
+                    DC McFarlane
+                  </strong>{" "}
+                  database. When Marvel, Star Wars, Fallout, and other vaults
+                  launch, the same account will switch between them from one
+                  home.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  {signedIn ? (
+                    <Button asChild size="lg" className="h-11">
+                      <Link to={PRIMARY_VAULT_PATH}>
+                        Continue to DC McFarlane
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                  ) : (
+                    <>
+                      <Button asChild size="lg" className="h-11">
+                        <a href="/login?mode=signup">
+                          Create account
+                        </a>
+                      </Button>
+                      <Button asChild size="lg" variant="outline" className="h-11">
+                        <a href="/login?mode=signin">
+                          Sign in
+                        </a>
+                      </Button>
+                    </>
+                  )}
+                </div>
+                <p className="mt-4 text-xs text-subtle">
+                  Prefer to look around first?{" "}
+                  <Link
+                    to={PRIMARY_VAULT_PATH}
+                    className="text-primary underline-offset-2 hover:underline"
+                  >
+                    Browse the DC catalogue without signing in
+                  </Link>
+                  .
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Final CTA */}
+        <section className="border-b border-border">
+          <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16 text-center">
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-balance">
+              Ready to index your McFarlane shelf?
+            </h2>
+            <p className="text-muted mt-2 max-w-lg mx-auto text-sm sm:text-base">
+              Open the live DC vault, create an account, and claim lifetime
+              access when Stripe goes live.
+            </p>
+            <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3">
+              <Button asChild size="lg" className="h-11 px-6">
+                <Link to={PRIMARY_VAULT_PATH}>
+                  Enter DC McFarlane vault
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              {!signedIn && (
+                <Button asChild size="lg" variant="outline" className="h-11 px-6">
+                  <a href="/login?mode=signup">
+                    Sign up
+                  </a>
+                </Button>
+              )}
+            </div>
+          </div>
+        </section>
       </main>
 
-      <footer className="border-t border-border mt-8">
-        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 space-y-1">
-          <p className="text-center text-xs text-subtle">
-            Master list sourced from McFarlane Toys product pages (
-            {masterStats.byCategory["7-inch"]} 7" ·{" "}
-            {masterStats.byCategory.megafig} megafigs ·{" "}
-            {masterStats.byCategory.statue ?? 0} statues ·{" "}
-            {masterStats.byCategory.multipack} multipacks ·{" "}
-            {masterStats.byCategory.vehicle} vehicles).
-          </p>
-          <p className="text-center text-xs text-subtle">
-            Sign in for cloud sync. Export JSON anytime as a backup.
-          </p>
+      <footer className="border-t border-border">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold">MyAFVault</p>
+            <p className="text-xs text-subtle mt-0.5">
+              Multi-franchise figure catalogues. DC McFarlane live.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 text-xs text-muted">
+            <Link to={PRIMARY_VAULT_PATH} className="hover:text-fg">
+              DC vault
+            </Link>
+            <a href="#pricing" className="hover:text-fg">
+              Pricing
+            </a>
+            <a href="/login?mode=signin" className="hover:text-fg">
+              Sign in
+            </a>
+            <ThemeToggle className="sm:hidden" />
+          </div>
         </div>
       </footer>
-
-      <FigureDetail
-        product={selectedProduct}
-        entry={selectedEntry}
-        open={!!selectedProduct && !selectMode}
-        onOpenChange={(o) => {
-          if (!o) setSelectedId(null);
-        }}
-        onMarkOwned={(owned) => {
-          if (selectedId) markOwned(selectedId, owned);
-        }}
-        onToggleWishlist={() => {
-          if (selectedId) toggleWishlist(selectedId);
-        }}
-        onUpdate={(patch) => {
-          if (selectedId) updateEntry(selectedId, patch);
-        }}
-        onAddPhoto={(dataUrl) => {
-          if (selectedId) addPersonalPhoto(selectedId, dataUrl);
-        }}
-        onRemovePhoto={(index) => {
-          if (selectedId) removePersonalPhoto(selectedId, index);
-        }}
-      />
-
-      <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Add custom figure</DialogTitle>
-            <DialogDescription>
-              Create an entry for a piece not in the master McFarlane list.
-            </DialogDescription>
-          </DialogHeader>
-          <FigureForm
-            onSubmit={(entry) => {
-              addCustomEntry(entry);
-              setFormOpen(false);
-              toast.success("Custom figure added");
-              setSelectedId(entry.productId);
-            }}
-            onCancel={() => setFormOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
-
-function EmptyState({ onAdd }: { onAdd: () => void }) {
-  return (
-    <div className="flex flex-col items-center justify-center rounded-[var(--radius-xl)] border border-dashed border-border bg-surface px-6 py-16 text-center">
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-surface-2 text-primary">
-        <PackageOpen className="h-6 w-6" />
-      </div>
-      <h2 className="text-lg font-semibold tracking-tight">No matches</h2>
-      <p className="mt-1 max-w-sm text-sm text-muted">
-        Try another search or category. You can also add a custom figure with
-        your own photo and accessory list.
-      </p>
-      <Button className="mt-5" onClick={onAdd}>
-        Add custom figure
-      </Button>
     </div>
   );
 }

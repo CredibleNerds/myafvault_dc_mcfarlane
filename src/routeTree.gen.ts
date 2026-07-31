@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AccountSecurityRouteImport } from './routes/account/security'
 import { Route as LoginTwoFactorRouteImport } from './routes/login/two-factor'
+import { Route as VaultDcMcfarlaneRouteImport } from './routes/vault/dc-mcfarlane'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const IndexRoute = IndexRouteImport.update({
@@ -35,6 +36,11 @@ const LoginTwoFactorRoute = LoginTwoFactorRouteImport.update({
   path: '/two-factor',
   getParentRoute: () => LoginRoute,
 } as any)
+const VaultDcMcfarlaneRoute = VaultDcMcfarlaneRouteImport.update({
+  id: '/vault/dc-mcfarlane',
+  path: '/vault/dc-mcfarlane',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRouteWithChildren
   '/account/security': typeof AccountSecurityRoute
   '/login/two-factor': typeof LoginTwoFactorRoute
+  '/vault/dc-mcfarlane': typeof VaultDcMcfarlaneRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRouteWithChildren
   '/account/security': typeof AccountSecurityRoute
   '/login/two-factor': typeof LoginTwoFactorRoute
+  '/vault/dc-mcfarlane': typeof VaultDcMcfarlaneRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
@@ -61,20 +69,33 @@ export interface FileRoutesById {
   '/login': typeof LoginRouteWithChildren
   '/account/security': typeof AccountSecurityRoute
   '/login/two-factor': typeof LoginTwoFactorRoute
+  '/vault/dc-mcfarlane': typeof VaultDcMcfarlaneRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/login' | '/account/security' | '/login/two-factor' | '/api/auth/$'
+    | '/'
+    | '/login'
+    | '/account/security'
+    | '/login/two-factor'
+    | '/vault/dc-mcfarlane'
+    | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/account/security' | '/login/two-factor' | '/api/auth/$'
+  to:
+    | '/'
+    | '/login'
+    | '/account/security'
+    | '/login/two-factor'
+    | '/vault/dc-mcfarlane'
+    | '/api/auth/$'
   id:
     | '__root__'
     | '/'
     | '/login'
     | '/account/security'
     | '/login/two-factor'
+    | '/vault/dc-mcfarlane'
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
@@ -82,6 +103,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRouteWithChildren
   AccountSecurityRoute: typeof AccountSecurityRoute
+  VaultDcMcfarlaneRoute: typeof VaultDcMcfarlaneRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -115,6 +137,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginTwoFactorRouteImport
       parentRoute: typeof LoginRoute
     }
+    '/vault/dc-mcfarlane': {
+      id: '/vault/dc-mcfarlane'
+      path: '/vault/dc-mcfarlane'
+      fullPath: '/vault/dc-mcfarlane'
+      preLoaderRoute: typeof VaultDcMcfarlaneRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -139,6 +168,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRouteWithChildren,
   AccountSecurityRoute: AccountSecurityRoute,
+  VaultDcMcfarlaneRoute: VaultDcMcfarlaneRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

@@ -30,7 +30,7 @@ function TwoFactorChallengePage() {
     void getTwoFactorStatus()
       .then((s) => {
         setNeedsChallenge(s.requiresChallenge);
-        if (!s.requiresChallenge) void navigate({ to: "/" });
+        if (!s.requiresChallenge) void navigate({ to: "/vault/dc-mcfarlane" });
       })
       .catch(() => setNeedsChallenge(false));
   }, [user?.id, isPending, navigate]);
@@ -46,7 +46,7 @@ function TwoFactorChallengePage() {
     try {
       await verifyTwoFactorChallenge({ data: { code } });
       toast.success("Two-factor verified");
-      void navigate({ to: "/" });
+      void navigate({ to: "/vault/dc-mcfarlane" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Verification failed");
     } finally {

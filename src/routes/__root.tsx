@@ -19,13 +19,12 @@ export const Route = createRootRoute({
         content: "width=device-width, initial-scale=1, viewport-fit=cover",
       },
       {
-        title:
-          "DC McFarlane Catalogue — Multiverse 7\", Megafigs, Multipacks & Vehicles",
+        title: "MyAFVault — Multi-franchise action figure vaults",
       },
       {
         name: "description",
         content:
-          "Complete catalogue of DC McFarlane Multiverse figures with official photos, package accessories, and personal collection tracking.",
+          "MyAFVault catalogues and tracks your figure collections. DC McFarlane Multiverse is live — more franchises coming.",
       },
       { name: "theme-color", content: "#0a0b0e" },
       { name: "color-scheme", content: "dark light" },
@@ -37,7 +36,6 @@ export const Route = createRootRoute({
     ],
     scripts: [
       {
-        // Prevent light/dark flash before React hydrates
         children: THEME_BOOT_SCRIPT,
       },
     ],

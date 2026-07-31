@@ -35,7 +35,11 @@ type Mode = "signin" | "signup";
 
 function LoginPage() {
   const { user, isPending } = useCurrentUserState();
-  const [mode, setMode] = useState<Mode>("signin");
+  const [mode, setMode] = useState<Mode>(() => {
+    if (typeof window === "undefined") return "signin";
+    const m = new URLSearchParams(window.location.search).get("mode");
+    return m === "signup" ? "signup" : "signin";
+  });
   const [busyProvider, setBusyProvider] = useState<string | null>(null);
   const [emailBusy, setEmailBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +50,7 @@ function LoginPage() {
   const [password, setPassword] = useState("");
 
   if (!isPending && user && !user.isDevFallback) {
-    return <Navigate to="/" />;
+    return <Navigate to="/vault/dc-mcfarlane" />;
   }
 
   async function onProvider(providerId: string) {
@@ -54,7 +58,7 @@ function LoginPage() {
     setBusyProvider(providerId);
     try {
       await signIn(providerId, {
-        callbackURL: "/",
+        callbackURL: "/vault/dc-mcfarlane",
         errorCallbackURL: "/login",
       });
     } catch (e) {
@@ -117,7 +121,7 @@ function LoginPage() {
 
       // Full navigation so the session store reloads with the bearer attached
       // and the 2FA gate can evaluate on a clean load.
-      window.location.href = "/";
+      window.location.href = "/vault/dc-mcfarlane";
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed");
     } finally {
@@ -138,12 +142,12 @@ function LoginPage() {
             className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-fg"
           >
             <ArrowLeft className="h-4 w-4" />
-            Catalogue
+            Home
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
-              McFarlane Vault
+              MyAFVault
             </p>
           </div>
         </div>
