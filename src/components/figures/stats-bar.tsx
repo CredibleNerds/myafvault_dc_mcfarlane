@@ -1,4 +1,5 @@
 import type { ElementType } from "react";
+import { OWNERSHIP } from "@/lib/ownership-copy";
 import { Box, CheckCircle2, Heart, Image as ImageIcon } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
@@ -46,7 +47,7 @@ export function StatsBar({
   return (
     <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-5">
       <Stat icon={Box} label="In catalog" value={String(catalogTotal)} />
-      <Stat icon={CheckCircle2} label="Owned" value={String(owned)} />
+      <Stat icon={CheckCircle2} label={OWNERSHIP.countLabel} value={String(owned)} />
       <Stat icon={Heart} label="Wishlist" value={String(wishlist)} />
       <Stat icon={ImageIcon} label="Your photos" value={String(withPhotos)} />
       <div className="col-span-2 lg:col-span-1">

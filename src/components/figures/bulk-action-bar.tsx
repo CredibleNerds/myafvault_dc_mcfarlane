@@ -1,3 +1,4 @@
+import { OWNERSHIP } from "@/lib/ownership-copy";
 import {
   Check,
   CheckCheck,
@@ -51,7 +52,7 @@ export function BulkActionBar({
           Select figures
         </Button>
         <p className="hidden sm:block text-xs text-subtle">
-          Bulk mark owned, unowned, or wishlist
+          {OWNERSHIP.bulkHint}
         </p>
       </div>
     );
@@ -131,7 +132,7 @@ export function BulkActionBar({
               disabled={selectedCount === 0}
             >
               <Check className="h-4 w-4" />
-              Mark owned
+              {OWNERSHIP.bulkMark}
             </Button>
             <Button
               type="button"
@@ -140,7 +141,7 @@ export function BulkActionBar({
               onClick={onMarkUnowned}
               disabled={selectedCount === 0}
             >
-              Mark unowned
+              {OWNERSHIP.bulkUnmark}
             </Button>
             <Button
               type="button"

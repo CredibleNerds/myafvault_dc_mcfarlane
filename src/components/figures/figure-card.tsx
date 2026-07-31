@@ -6,6 +6,7 @@ import {
   displayImageFor,
 } from "@/lib/product";
 import { ProductImage } from "@/components/figures/product-image";
+import { OWNERSHIP } from "@/lib/ownership-copy";
 import { Check, Heart, Square, SquareCheck } from "lucide-react";
 
 interface FigureCardProps {
@@ -17,6 +18,22 @@ interface FigureCardProps {
   selectMode?: boolean;
   selected?: boolean;
   onToggleSelect?: () => void;
+}
+
+/** Single status mark by the title — no chip over the pack shot. */
+function VaultedMark({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-fg",
+        className,
+      )}
+      title={OWNERSHIP.titleYes}
+      aria-label={OWNERSHIP.ariaYes}
+    >
+      <Check className="h-3 w-3 stroke-[3]" aria-hidden />
+    </span>
+  );
 }
 
 export function FigureCard({
@@ -104,19 +121,15 @@ export function FigureCard({
           </Badge>
         </div>
 
-        <div className="pointer-events-none absolute right-2 top-2 z-[2] flex flex-col items-end gap-1.5">
-          {owned ? (
-            <span className="owned-badge inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-primary-fg shadow-lg shadow-primary/40">
-              <Check className="h-3.5 w-3.5 stroke-[3]" aria-hidden />
-              Owned
-            </span>
-          ) : wishlist ? (
+        {/* Wishlist only on the image — vaulted uses the title checkmark */}
+        {!owned && wishlist && (
+          <div className="pointer-events-none absolute right-2 top-2 z-[2]">
             <span className="inline-flex items-center gap-1 rounded-full border border-border bg-bg/90 px-2.5 py-1 text-[11px] font-semibold text-primary shadow backdrop-blur-sm">
               <Heart className="h-3.5 w-3.5 fill-current" aria-hidden />
               Wishlist
             </span>
-          ) : null}
-        </div>
+          </div>
+        )}
 
         {owned && (
           <div
@@ -144,15 +157,7 @@ export function FigureCard({
           <h3 className="min-w-0 flex-1 font-semibold leading-snug text-fg line-clamp-2 text-sm sm:text-[15px]">
             {product.name}
           </h3>
-          {owned && (
-            <span
-              className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-fg"
-              title="In your collection"
-              aria-label="Owned"
-            >
-              <Check className="h-3 w-3 stroke-[3]" />
-            </span>
-          )}
+          {owned && <VaultedMark />}
         </div>
         <p className="text-xs text-muted line-clamp-1">{product.character}</p>
         {product.accessories.length > 0 && (
@@ -226,17 +231,14 @@ export function FigureListRow({
           imgClassName="p-0.5"
           sizes="96px"
         />
-        {owned && (
-          <span className="absolute bottom-1 left-1 right-1 flex items-center justify-center gap-0.5 rounded bg-primary py-0.5 text-[9px] font-bold uppercase tracking-wide text-primary-fg shadow">
-            <Check className="h-2.5 w-2.5 stroke-[3]" />
-            Owned
-          </span>
-        )}
       </div>
       <div className="min-w-0 flex-1">
-        <h3 className="font-semibold text-sm sm:text-base truncate">
-          {product.name}
-        </h3>
+        <div className="flex items-start gap-2">
+          <h3 className="min-w-0 flex-1 font-semibold text-sm sm:text-base truncate">
+            {product.name}
+          </h3>
+          {owned && <VaultedMark className="mt-0.5" />}
+        </div>
         <p className="text-xs text-muted truncate">
           {product.character} · {product.line} · {product.scale}
         </p>
@@ -248,15 +250,6 @@ export function FigureListRow({
             <span className="text-xs text-subtle tabular-nums">
               {product.releaseYear}
             </span>
-          )}
-          {owned && (
-            <Badge
-              variant="default"
-              className="text-[10px] font-bold uppercase tracking-wide gap-1"
-            >
-              <Check className="h-3 w-3 stroke-[3]" />
-              Owned
-            </Badge>
           )}
           {wishlist && !owned && (
             <Badge

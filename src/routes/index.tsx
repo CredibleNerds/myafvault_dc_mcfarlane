@@ -18,6 +18,7 @@ import { FigureForm } from "@/components/figures/figure-form";
 import { AuthSyncBar } from "@/components/figures/auth-sync-bar";
 import { BulkActionBar } from "@/components/figures/bulk-action-bar";
 import { Button } from "@/components/ui/button";
+import { OWNERSHIP } from "@/lib/ownership-copy";
 import {
   Dialog,
   DialogContent,
@@ -317,12 +318,12 @@ function CataloguePage() {
             onClearSelection={() => setSelectedIds(new Set())}
             onMarkOwned={() => {
               bulkMarkOwned(selectedList, true);
-              toast.success(`Marked ${selectedList.length} as owned`);
+              toast.success(`Marked ${selectedList.length} as vaulted`);
               setSelectedIds(new Set());
             }}
             onMarkUnowned={() => {
               bulkMarkOwned(selectedList, false);
-              toast.success(`Marked ${selectedList.length} as unowned`);
+              toast.success(`Removed ${selectedList.length} from vault`);
               setSelectedIds(new Set());
             }}
             onAddWishlist={() => {

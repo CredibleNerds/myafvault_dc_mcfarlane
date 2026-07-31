@@ -1,3 +1,4 @@
+import { OWNERSHIP } from "@/lib/ownership-copy";
 import {
   Download,
   Grid3X3,
@@ -142,9 +143,9 @@ export function Toolbar({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Full catalog</SelectItem>
-            <SelectItem value="owned">Owned only</SelectItem>
+            <SelectItem value="owned">{OWNERSHIP.filterOnly}</SelectItem>
             <SelectItem value="wishlist">Wishlist</SelectItem>
-            <SelectItem value="unowned">Not owned</SelectItem>
+            <SelectItem value="unowned">{OWNERSHIP.filterNot}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -172,7 +173,7 @@ export function Toolbar({
             <SelectItem value="name-asc">Name A–Z</SelectItem>
             <SelectItem value="name-desc">Name Z–A</SelectItem>
             <SelectItem value="character-asc">Character</SelectItem>
-            <SelectItem value="owned-first">Owned first</SelectItem>
+            <SelectItem value="owned-first">{OWNERSHIP.sortFirst}</SelectItem>
           </SelectContent>
         </Select>
 

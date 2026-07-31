@@ -1,3 +1,4 @@
+import { OWNERSHIP } from "@/lib/ownership-copy";
 import { useRef, useState } from "react";
 import {
   Check,
@@ -185,13 +186,21 @@ export function FigureDetail({
                   {product.scale && (
                     <Badge variant="outline">{product.scale}</Badge>
                   )}
-                  {entry?.owned && <Badge variant="default">Owned</Badge>}
                 </div>
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 pr-6">
                   <div className="min-w-0 flex-1">
-                    <DialogTitle className="text-xl sm:text-2xl">
-                      {product.name}
+                    <DialogTitle className="text-xl sm:text-2xl flex items-start gap-2">
+                      <span className="min-w-0">{product.name}</span>
+                      {entry?.owned && (
+                        <span
+                          className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-fg"
+                          title={OWNERSHIP.titleYes}
+                          aria-label={OWNERSHIP.ariaYes}
+                        >
+                          <Check className="h-3.5 w-3.5 stroke-[3]" aria-hidden />
+                        </span>
+                      )}
                     </DialogTitle>
                     <DialogDescription className="text-base text-muted mt-1">
                       {product.character}
@@ -272,7 +281,7 @@ export function FigureDetail({
                   onClick={() => onMarkOwned(!entry?.owned)}
                 >
                   <Check className="h-4 w-4" />
-                  {entry?.owned ? "Owned" : "Mark owned"}
+                  {entry?.owned ? OWNERSHIP.status : OWNERSHIP.add}
                 </Button>
                 <Button size="sm" variant="outline" onClick={onToggleWishlist}>
                   <Heart
@@ -458,11 +467,11 @@ export function FigureDetail({
                     className="text-danger"
                     onClick={() => {
                       onMarkOwned(false);
-                      toast.message("Removed from owned");
+                      toast.message(OWNERSHIP.toastRemoved);
                     }}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
-                    Remove from collection
+                    {OWNERSHIP.remove}
                   </Button>
                 </div>
               )}
