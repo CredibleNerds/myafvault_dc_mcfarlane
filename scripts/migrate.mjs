@@ -3,21 +3,39 @@
  * Deploy-time database migrator (node-postgres, `pg`).
  *
  * Runs during `npm run build` — on every Vercel deploy — applying pending files
- * in ../migrations to DATABASE_URL. Each file is applied in one transaction and
- * recorded in a `_migrations` table, so it runs once and is safe to re-run.
+ * in ../migrations to the Postgres URL. Each file is applied in one transaction
+ * and recorded in a `_migrations` table, so it runs once and is safe to re-run.
  *
- * No DATABASE_URL (local / preview builds) -> skip; the PGLite fallback applies
- * the same files at startup instead (see src/lib/db.ts).
+ * Accepts (first non-empty wins):
+ *   DATABASE_URL | POSTGRES_URL | POSTGRES_PRISMA_URL | POSTGRES_URL_NON_POOLING
+ * (Vercel Supabase integration sets the POSTGRES_* names.)
+ *
+ * No URL (local / preview builds) -> skip; the PGLite fallback applies the same
+ * files at startup instead (see src/lib/db.ts).
  */
 import { readdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import pg from "pg";
 
-const databaseUrl = process.env.DATABASE_URL;
+function resolveDatabaseUrl() {
+  const candidates = [
+    process.env.DATABASE_URL,
+    process.env.POSTGRES_URL,
+    process.env.POSTGRES_PRISMA_URL,
+    process.env.POSTGRES_URL_NON_POOLING,
+  ];
+  for (const raw of candidates) {
+    const value = raw?.trim();
+    if (value) return value;
+  }
+  return undefined;
+}
+
+const databaseUrl = resolveDatabaseUrl();
 if (!databaseUrl) {
   console.log(
-    "[migrate] DATABASE_URL not set — skipping (the PGLite fallback migrates itself).",
+    "[migrate] No DATABASE_URL / POSTGRES_URL — skipping (PGLite migrates itself in preview).",
   );
   process.exit(0);
 }
@@ -38,34 +56,33 @@ async function main() {
     let files;
     try {
       files = (await readdir(migrationsDir)).filter((f) => f.endsWith(".sql")).sort();
-    } catch {
-      console.log("[migrate] no migrations/ directory — nothing to do.");
-      return;
+    } catch (err) {
+      if (err && typeof err === "object" && "code" in err && err.code === "ENOENT") {
+        console.log("[migrate] No migrations/ directory — nothing to apply.");
+        return;
+      }
+      throw err;
     }
 
-    let count = 0;
     for (const name of files) {
-      if (applied.has(name)) continue;
-      const text = await readFile(join(migrationsDir, name), "utf8");
+      if (applied.has(name)) {
+        console.log(`[migrate] skip ${name} (already applied)`);
+        continue;
+      }
+      const sql = await readFile(join(migrationsDir, name), "utf8");
+      console.log(`[migrate] apply ${name}…`);
+      await client.query("BEGIN");
       try {
-        await client.query("BEGIN");
-        // pg's simple-query protocol runs a whole multi-statement file at once.
-        await client.query(text);
+        await client.query(sql);
         await client.query("INSERT INTO _migrations (name) VALUES ($1)", [name]);
         await client.query("COMMIT");
+        console.log(`[migrate] applied ${name}`);
       } catch (err) {
-        console.error(`[migrate] error applying ${name}`);
-        try {
-          await client.query("ROLLBACK");
-        } catch {
-          // ROLLBACK fails when the connection died — keep the original error.
-        }
+        await client.query("ROLLBACK");
         throw err;
       }
-      console.log(`[migrate] applied ${name}`);
-      count += 1;
     }
-    console.log(count ? `[migrate] done — ${count} migration(s) applied.` : "[migrate] up to date.");
+    console.log("[migrate] done");
   } finally {
     client.release();
     await pool.end();
@@ -73,10 +90,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error("[migrate] failed:", err?.message || err);
-  // pg errors carry the context needed to debug a bad SQL file.
-  for (const key of ["code", "detail", "hint", "position", "where"]) {
-    if (err?.[key] != null) console.error(`[migrate]   ${key}: ${err[key]}`);
-  }
+  console.error("[migrate] failed:", err);
   process.exit(1);
 });

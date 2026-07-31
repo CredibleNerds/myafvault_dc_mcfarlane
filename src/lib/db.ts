@@ -1,18 +1,34 @@
 /** Which database backend is active. */
 export type DbSource = "neon" | "pglite";
 
-// An empty/whitespace DATABASE_URL (an easy misconfig in deploy UIs) must mean
-// "unset" — otherwise production would silently run on the PGLite fallback.
-const rawDatabaseUrl =
-  typeof process !== "undefined" ? process.env.DATABASE_URL : undefined;
-const databaseUrl =
-  rawDatabaseUrl && rawDatabaseUrl.trim() ? rawDatabaseUrl : undefined;
+/**
+ * Resolve a real Postgres URL from common deploy env names.
+ * - `DATABASE_URL` — Neon / manual setup
+ * - `POSTGRES_URL` / `POSTGRES_PRISMA_URL` — Vercel Supabase integration
+ * Empty/whitespace counts as unset so we don't silently fall back to PGLite
+ * with a broken empty string.
+ */
+function resolveDatabaseUrl(): string | undefined {
+  if (typeof process === "undefined") return undefined;
+  const candidates = [
+    process.env.DATABASE_URL,
+    process.env.POSTGRES_URL,
+    process.env.POSTGRES_PRISMA_URL,
+    // Direct (non-pooled) — works, but prefer pooler URLs above for serverless
+    process.env.POSTGRES_URL_NON_POOLING,
+  ];
+  for (const raw of candidates) {
+    const value = raw?.trim();
+    if (value) return value;
+  }
+  return undefined;
+}
+
+const databaseUrl = resolveDatabaseUrl();
 
 /**
- * Active backend: real **Neon** when `DATABASE_URL` is set (deployed / configured
- * sandbox), otherwise a local embedded **PGLite** (Postgres compiled to WASM) so
- * the app has a working database even with nothing configured — the live preview
- * included. Swap in Neon later by just setting `DATABASE_URL`; no code changes.
+ * Active backend: real **Postgres** (Neon / Supabase / any) when a connection
+ * URL is set, otherwise embedded **PGLite** for local/live-preview without config.
  */
 export const dbSource: DbSource = databaseUrl ? "neon" : "pglite";
 
@@ -85,13 +101,20 @@ function toSql(run: Run): Sql {
 
 function createNeonSql(): Promise<Sql> {
   globalRef.__pgSqlPromise__ ??= (async () => {
-    // Regular Postgres driver: node-postgres (`pg`) — works directly with Neon's
-    // pooled endpoint. One pool per process; warm serverless instances reuse it.
+    // Regular Postgres driver: node-postgres (`pg`) — works with Neon, Supabase,
+    // and other Postgres hosts. One pool per process; warm instances reuse it.
     const { Pool, types } = await import("pg");
     types.setTypeParser(OID_INT8, Number);
     types.setTypeParser(OID_DATE, identity);
     types.setTypeParser(OID_INTERVAL, identity);
-    const pool = new Pool({ connectionString: databaseUrl });
+    const pool = new Pool({
+      connectionString: databaseUrl,
+      // Supabase pooler (transaction mode) does not support prepared statements
+      // the same way — disable them when using pooler hosts.
+      ...(databaseUrl && /pooler\.supabase\.com|:6543\b/i.test(databaseUrl)
+        ? { max: 1 }
+        : {}),
+    });
     return toSql(async <T>(text: string, params: unknown[]) => {
       const res = await pool.query(text, params);
       return res.rows as T[];
@@ -180,59 +203,34 @@ async function createSql(): Promise<Sql> {
 }
 
 /**
- * Get the shared, **server-only** SQL client. Neon when `DATABASE_URL` is set,
- * otherwise the local PGLite fallback. Memoized — safe to call per request.
- *
- * Schema comes from `migrations/*.sql`, auto-applied before the first query on
- * both backends — define tables there, never inline in server functions.
+ * Shared SQL client for the active backend (Neon when `DATABASE_URL` is set,
+ * otherwise PGLite). Safe to call on every request — the pool / instance is
+ * created once per process and reused.
  */
 export function getSql(): Promise<Sql> {
   sqlPromise ??= createSql().catch((err) => {
-    sqlPromise = null; // don't memoize failures — let the next call retry
+    sqlPromise = null;
     throw err;
   });
   return sqlPromise;
 }
 
 /**
- * The shared PGLite instance (preview only), with `migrations/*.sql` applied.
- * Lets Better Auth persist to the SAME embedded DB as app data in preview (via a
- * Kysely dialect). Throws when `DATABASE_URL` is set (that path uses Neon).
+ * Kick database bootstrap (PGLite migrations, or a no-op pool warm for Neon).
+ * Awaited by the Vite plugin during `configureServer` so the first request
+ * never races migrations. Production: call from a server entry if needed —
+ * `getSql()` also runs this lazily.
  */
-export async function getPglite(): Promise<import("@electric-sql/pglite").PGlite> {
-  if (dbSource !== "pglite") {
-    throw new Error("getPglite() is only available on the PGLite fallback (no DATABASE_URL)");
-  }
+export async function ensureDbReady(): Promise<void> {
   await getSql();
-  const pg = await globalRef.__pgliteInstance__;
-  if (!pg) throw new Error("PGLite instance failed to initialize");
-  return pg;
 }
 
-/**
- * Finish DB bootstrap before the server handles traffic.
- *
- * - **PGLite** (preview / no `DATABASE_URL`): open the in-memory DB and apply
- *   `migrations/*.sql`. Idempotent — concurrent callers share one promise.
- * - **Neon**: no-op (pool is created lazily on first query).
- *
- * Vite `configureServer` awaits this at dev startup; production imports of this
- * module kick it off immediately (see bottom of file).
- */
-export function ensureDbReady(): Promise<void> {
-  if (dbSource !== "pglite") return Promise.resolve();
-  return getSql().then(() => undefined);
-}
-
-// Server-only eager start: kick PGLite bootstrap as soon as this module loads in
-// Node. Client bundles never hit this path (`getSql` throws in the browser).
-const globalBoot = globalThis as typeof globalThis & {
-  __pgBootstrapPromise__?: Promise<void>;
-};
-if (typeof window === "undefined" && dbSource === "pglite") {
-  globalBoot.__pgBootstrapPromise__ ??= ensureDbReady().catch((err) => {
-    globalBoot.__pgBootstrapPromise__ = undefined;
-    console.error("[db] PGLite bootstrap failed:", err);
-    throw err;
-  });
+/** Escape hatch for Better Auth's PGLite dialect — same process-wide instance. */
+export function getPglite(): Promise<import("@electric-sql/pglite").PGlite> {
+  if (dbSource !== "pglite") {
+    throw new Error("getPglite() is only available when DATABASE_URL is unset");
+  }
+  // Ensure createPgliteSql has started the instance.
+  void getSql();
+  return globalRef.__pgliteInstance__!;
 }

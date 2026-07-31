@@ -6,13 +6,8 @@ import { dbSource, getSql } from "@/lib/db";
 /**
  * Email sign-up / sign-in without Better Auth's HTTP origin middleware.
  *
- * Live preview hosts can fail Better Auth's CSRF "Invalid origin" check even
- * when the visitor is legitimate. We create/verify accounts against the same
- * Better Auth tables (`user` / `account` / `session`) using the same password
- * hasher, then return a session token the client stores as a bearer.
- *
- * Production (Vercel) requires DATABASE_URL → Neon. PGLite is preview-only and
- * cannot open files under `/var/task` on serverless.
+ * Production (Vercel) requires a Postgres URL (`DATABASE_URL` or the Supabase
+ * integration's `POSTGRES_URL`). PGLite is preview-only.
  */
 
 function newId(): string {
@@ -24,12 +19,10 @@ function newToken(): string {
 }
 
 function productionDbRequiredMessage(): string | null {
-  // Empty DATABASE_URL on Vercel falls through to PGLite, which then ENOENTs
-  // on `/var/task/_libs/pglite.data`. Fail with a clear setup message instead.
   if (process.env.VERCEL === "1" && dbSource !== "neon") {
     return (
-      "Cloud database is not configured. Add a Neon DATABASE_URL in Vercel " +
-      "project settings (Production), then redeploy."
+      "Cloud database is not configured. Connect Supabase (or set DATABASE_URL) " +
+      "in Vercel project settings for Production, then redeploy."
     );
   }
   return null;
@@ -40,7 +33,7 @@ function friendlyAuthError(err: unknown, fallback: string): string {
   if (/ENOENT|pglite\.data|EROFS|read-only file system/i.test(message)) {
     return (
       "Cloud database is not configured for this deploy. " +
-      "Set DATABASE_URL (Neon) in Vercel and redeploy."
+      "Set DATABASE_URL or POSTGRES_URL in Vercel and redeploy."
     );
   }
   if (/invalid origin/i.test(message)) {
@@ -58,8 +51,8 @@ function friendlyAuthError(err: unknown, fallback: string): string {
   }
   if (/relation .* does not exist|undefined_table/i.test(message)) {
     return (
-      "Database tables are missing. Ensure DATABASE_URL is set and migrations " +
-      "have run, then redeploy."
+      "Database tables are missing. Ensure the Postgres URL is set and " +
+      "migrations have run, then redeploy."
     );
   }
   return message || fallback;
@@ -77,7 +70,7 @@ async function createSession(userId: string): Promise<string> {
   const sql = await getSql();
   const token = newToken();
   const sessionId = newId();
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   await sql.query(
     `insert into "session" ("id", "expiresAt", "token", "createdAt", "updatedAt", "userId")
      values ($1, $2, $3, now(), now(), $4)`,
