@@ -57,7 +57,7 @@ const PREVIEW_CARDS: PreviewCard[] = [
       "Every release lists what is in the box — extra hands, weapons, cards, bases — so you know if a loose figure is complete.",
   },
   {
-    productId: "mcf-kaiju-superman-movie-mega-figure",
+    productId: "mcf-darkseid-dc-classic",
     badge: "Wishlist",
     feature: "wishlist",
     featureTitle: "Wishlist & hunt list",
@@ -65,7 +65,7 @@ const PREVIEW_CARDS: PreviewCard[] = [
       "Save targets you do not own yet. Filter the catalogue to wishlist-only when you are shopping or trading.",
   },
   {
-    productId: "mcf-superman-superman-movie-1-6th-scale-pvc-statue",
+    productId: "mcf-batman-vs-bane-2pk",
     badge: "Catalogue",
     feature: "catalog",
     featureTitle: "Master catalogue with pack shots",
