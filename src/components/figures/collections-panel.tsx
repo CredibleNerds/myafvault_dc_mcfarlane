@@ -4,6 +4,7 @@ import {
   Layers,
   Pencil,
   Plus,
+  Share2,
   Trash2,
   Users,
   X,
@@ -28,6 +29,8 @@ import {
 } from "@/components/ui/dialog";
 import { ProductImage } from "@/components/figures/product-image";
 import { cn } from "@/lib/utils";
+import { publishCollectionShare } from "@/lib/public-share";
+import { absoluteShareUrl, copyText } from "@/lib/share-utils";
 
 export function CollectionsPanel() {
   const collections = useCatalogue((s) => s.collections);
@@ -347,6 +350,7 @@ function CollectionDetail({
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [shareBusy, setShareBusy] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
   const [linkQuery, setLinkQuery] = useState("");
 
@@ -424,6 +428,63 @@ function CollectionDetail({
     onSetProducts([...set]);
   }
 
+  async function handleShareCollection() {
+    if (!collection) return;
+    setShareBusy(true);
+    try {
+      const customs: Record<
+        string,
+        {
+          name: string;
+          character?: string;
+          imageUrl?: string | null;
+          category?: string;
+          line?: string;
+          scale?: string;
+        }
+      > = {};
+      for (const id of collection.productIds) {
+        const e = entries[id];
+        if (!e?.isCustom) continue;
+        const p = resolveProduct(id, e);
+        if (!p) continue;
+        customs[id] = {
+          name: p.name,
+          character: p.character,
+          imageUrl: p.imageUrl,
+          category: p.category,
+          line: p.line,
+          scale: p.scale,
+        };
+      }
+      const result = await publishCollectionShare({
+        data: {
+          collectionId: collection.id,
+          name: collection.name,
+          description: collection.description,
+          theme: collection.theme,
+          photos: collection.photos,
+          productIds: collection.productIds,
+          customs,
+        },
+      });
+      const url = absoluteShareUrl(result.path);
+      const ok = await copyText(url);
+      toast.success(
+        ok
+          ? "Collection link copied — share it with anyone"
+          : "Collection link ready",
+      );
+      if (!ok) window.prompt("Copy this share link:", url);
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Could not create share link",
+      );
+    } finally {
+      setShareBusy(false);
+    }
+  }
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -446,6 +507,16 @@ function CollectionDetail({
                     </DialogDescription>
                   </div>
                   <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={shareBusy}
+                      onClick={() => void handleShareCollection()}
+                    >
+                      <Share2 className="h-3.5 w-3.5" />
+                      {shareBusy ? "Sharing…" : "Share"}
+                    </Button>
                     <Button
                       type="button"
                       size="sm"

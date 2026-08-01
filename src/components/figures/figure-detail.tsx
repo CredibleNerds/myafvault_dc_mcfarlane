@@ -5,6 +5,7 @@ import {
   ExternalLink,
   Heart,
   ImagePlus,
+  Share2,
   Shield,
   Star,
   Trash2,
@@ -43,6 +44,8 @@ import {
 import { compressImage } from "@/lib/image";
 import { ProductImage } from "@/components/figures/product-image";
 import { ImageLightbox } from "@/components/figures/image-lightbox";
+import { publishItemShare } from "@/lib/public-share";
+import { absoluteShareUrl, copyText } from "@/lib/share-utils";
 
 interface FigureDetailProps {
   product: CatalogProduct | null;
@@ -84,6 +87,7 @@ export function FigureDetail({
   const adminFileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [adminBusy, setAdminBusy] = useState(false);
+  const [shareBusy, setShareBusy] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
@@ -101,6 +105,46 @@ export function FigureDetail({
       ? [...personal, ...officialGallery]
       : [...officialGallery, ...personal];
   const activeImage = showImages[galleryIndex] ?? cover;
+
+  async function handleShareItem() {
+    if (!product) return;
+    setShareBusy(true);
+    try {
+      const result = await publishItemShare({
+        data: {
+          productId: product.id,
+          custom: entry?.isCustom
+            ? {
+                name: product.name,
+                character: product.character,
+                imageUrl: cover,
+                category: product.category,
+                line: product.line,
+                scale: product.scale,
+                description: product.description,
+                accessories: product.accessories,
+              }
+            : undefined,
+        },
+      });
+      const url = absoluteShareUrl(result.path);
+      const ok = await copyText(url);
+      toast.success(
+        ok
+          ? "Share link copied — anyone can open it"
+          : "Share link ready",
+      );
+      if (!ok) {
+        window.prompt("Copy this share link:", url);
+      }
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Could not create share link",
+      );
+    } finally {
+      setShareBusy(false);
+    }
+  }
 
   async function onFile(files: FileList | null) {
     const file = files?.[0];
@@ -368,6 +412,15 @@ export function FigureDetail({
                     }
                   />
                   {entry?.wishlist ? "On wishlist" : "Wishlist"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void handleShareItem()}
+                  disabled={shareBusy}
+                >
+                  <Share2 className="h-4 w-4" />
+                  {shareBusy ? "Sharing…" : "Share"}
                 </Button>
                 {product.productUrl && (
                   <Button size="sm" variant="ghost" asChild>
