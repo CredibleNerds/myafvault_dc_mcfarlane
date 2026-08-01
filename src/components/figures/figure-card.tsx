@@ -166,13 +166,6 @@ export function FigureCard({
             aria-hidden
           />
         )}
-
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] bg-gradient-to-t from-bg/90 via-bg/40 to-transparent p-2.5 pt-8">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted">
-            {product.line}
-            {product.releaseYear ? ` · ${product.releaseYear}` : ""}
-          </p>
-        </div>
       </div>
 
       <div
@@ -191,8 +184,15 @@ export function FigureCard({
           {wishOnly && <WishlistMark />}
         </div>
         <p className="text-xs text-muted line-clamp-1">{product.character}</p>
+        {(product.line || product.releaseYear) && (
+          <p className="text-[11px] font-medium uppercase tracking-wide text-subtle line-clamp-1">
+            {product.line}
+            {product.line && product.releaseYear ? " · " : ""}
+            {product.releaseYear ?? ""}
+          </p>
+        )}
         {product.accessories.length > 0 && (
-          <p className="mt-1 text-[11px] text-subtle line-clamp-2 leading-snug">
+          <p className="mt-0.5 text-[11px] text-subtle line-clamp-2 leading-snug">
             {product.accessories[0]}
           </p>
         )}
