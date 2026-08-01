@@ -43,10 +43,11 @@ export const Route = createFileRoute("/vault/dc-mcfarlane")({
 
 const PAGE_SIZE = 48;
 
-/** Always appear last in the Vehicles filter (stable pin). */
-const VEHICLE_PIN_BOTTOM_IDS = new Set([
-  "mcf-lobo-s-spacehog-supergirl-movie",
-]);
+/** Always appear last within a category filter (stable pin). */
+const PIN_BOTTOM_BY_CATEGORY: Record<string, Set<string>> = {
+  vehicle: new Set(["mcf-lobo-s-spacehog-supergirl-movie"]),
+  megafig: new Set(["mcf-kaiju-superman-movie-mega-figure"]),
+};
 
 
 function CataloguePage() {
@@ -200,10 +201,11 @@ function CataloguePage() {
     const ownedOf = (id: string) => (entries[id]?.owned ? 1 : 0);
 
     list = [...list].sort((a, b) => {
-      // Vehicles section: keep pinned items at the bottom regardless of sort
-      if (categoryFilter === "vehicle") {
-        const aPin = VEHICLE_PIN_BOTTOM_IDS.has(a.id) ? 1 : 0;
-        const bPin = VEHICLE_PIN_BOTTOM_IDS.has(b.id) ? 1 : 0;
+      // Category pins: keep selected items at the bottom regardless of sort
+      const pinSet = PIN_BOTTOM_BY_CATEGORY[categoryFilter];
+      if (pinSet) {
+        const aPin = pinSet.has(a.id) ? 1 : 0;
+        const bPin = pinSet.has(b.id) ? 1 : 0;
         if (aPin !== bPin) return aPin - bPin;
       }
       switch (sort) {
