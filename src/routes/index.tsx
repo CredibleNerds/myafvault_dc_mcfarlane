@@ -34,7 +34,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "MyAFVault is your multi-franchise action figure vault. Start with DC McFarlane Multiverse — catalogue, photos, ownership, and cloud sync. Lifetime access $1.99.",
+          "MyAFVault is your multi-franchise action figure vault. Start with DC McFarlane Multiverse — catalogue, photos, ownership, and cloud sync. Lifetime access $4.99.",
       },
     ],
   }),
