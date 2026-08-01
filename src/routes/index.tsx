@@ -166,13 +166,10 @@ function LandingPage() {
           <div className="relative mx-auto max-w-6xl lg:max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:py-24">
             <div className="grid gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.15fr)] lg:items-center">
               <div className="space-y-6">
-                <Badge variant="secondary" className="font-medium">
-                  Multi-franchise collector vault
-                </Badge>
                 <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-semibold tracking-tight leading-[1.12] text-balance">
-                  One vault for every line you collect.
+                  The Vault for the figures you collect.
                   <span className="block text-muted font-medium mt-2 text-2xl sm:text-3xl lg:text-[2rem]">
-                    Start with DC McFarlane Multiverse.
+                    Starting with the DC McFarlane Multiverse.
                   </span>
                 </h1>
                 <p className="text-base sm:text-lg text-muted max-w-xl leading-relaxed text-pretty">
