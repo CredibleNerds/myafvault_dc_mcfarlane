@@ -20,6 +20,7 @@ import { FigureForm } from "@/components/figures/figure-form";
 import { AuthSyncBar } from "@/components/figures/auth-sync-bar";
 import { BulkActionBar } from "@/components/figures/bulk-action-bar";
 import { CollectionsPanel } from "@/components/figures/collections-panel";
+import { WishlistShareDialog } from "@/components/figures/wishlist-share-dialog";
 import { Button } from "@/components/ui/button";
 import { OWNERSHIP } from "@/lib/ownership-copy";
 import { useSystemImages } from "@/lib/system-image-store";
@@ -58,6 +59,7 @@ function CataloguePage() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const importRef = useRef<HTMLInputElement>(null);
@@ -409,6 +411,8 @@ function CataloguePage() {
             view={view}
             onView={setView}
             categoryCounts={categoryCounts}
+            wishlistCount={ready ? collectionStats.wishlist : 0}
+            onShareWishlist={() => setShareOpen(true)}
             onAddCustom={() => setFormOpen(true)}
             onExport={handleExport}
             onImport={() => importRef.current?.click()}
@@ -566,6 +570,8 @@ function CataloguePage() {
       </footer>
 
       <ScrollToTop />
+
+      <WishlistShareDialog open={shareOpen} onOpenChange={setShareOpen} />
 
       <FigureDetail
         product={selectedProduct}

@@ -15,6 +15,7 @@ import { Route as AccountSecurityRouteImport } from './routes/account/security'
 import { Route as LoginTwoFactorRouteImport } from './routes/login/two-factor'
 import { Route as VaultDcMcfarlaneRouteImport } from './routes/vault/dc-mcfarlane'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ShareWishlistTokenRouteImport } from './routes/share/wishlist.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +47,11 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShareWishlistTokenRoute = ShareWishlistTokenRouteImport.update({
+  id: '/share/wishlist/$token',
+  path: '/share/wishlist/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/login/two-factor': typeof LoginTwoFactorRoute
   '/vault/dc-mcfarlane': typeof VaultDcMcfarlaneRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/share/wishlist/$token': typeof ShareWishlistTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/login/two-factor': typeof LoginTwoFactorRoute
   '/vault/dc-mcfarlane': typeof VaultDcMcfarlaneRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/share/wishlist/$token': typeof ShareWishlistTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +79,7 @@ export interface FileRoutesById {
   '/login/two-factor': typeof LoginTwoFactorRoute
   '/vault/dc-mcfarlane': typeof VaultDcMcfarlaneRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/share/wishlist/$token': typeof ShareWishlistTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,6 +90,7 @@ export interface FileRouteTypes {
     | '/login/two-factor'
     | '/vault/dc-mcfarlane'
     | '/api/auth/$'
+    | '/share/wishlist/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -89,6 +99,7 @@ export interface FileRouteTypes {
     | '/login/two-factor'
     | '/vault/dc-mcfarlane'
     | '/api/auth/$'
+    | '/share/wishlist/$token'
   id:
     | '__root__'
     | '/'
@@ -97,6 +108,7 @@ export interface FileRouteTypes {
     | '/login/two-factor'
     | '/vault/dc-mcfarlane'
     | '/api/auth/$'
+    | '/share/wishlist/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -105,6 +117,7 @@ export interface RootRouteChildren {
   AccountSecurityRoute: typeof AccountSecurityRoute
   VaultDcMcfarlaneRoute: typeof VaultDcMcfarlaneRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ShareWishlistTokenRoute: typeof ShareWishlistTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -151,6 +164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/share/wishlist/$token': {
+      id: '/share/wishlist/$token'
+      path: '/share/wishlist/$token'
+      fullPath: '/share/wishlist/$token'
+      preLoaderRoute: typeof ShareWishlistTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -170,6 +190,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountSecurityRoute: AccountSecurityRoute,
   VaultDcMcfarlaneRoute: VaultDcMcfarlaneRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ShareWishlistTokenRoute: ShareWishlistTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

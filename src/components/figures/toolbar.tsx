@@ -5,6 +5,7 @@ import {
   List,
   Plus,
   Search,
+  Share2,
   Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,8 @@ interface ToolbarProps {
   view: ViewMode;
   onView: (v: ViewMode) => void;
   categoryCounts: Record<string, number>;
+  wishlistCount: number;
+  onShareWishlist: () => void;
   onAddCustom: () => void;
   onExport: () => void;
   onImport: () => void;
@@ -54,6 +57,8 @@ export function Toolbar({
   view,
   onView,
   categoryCounts,
+  wishlistCount,
+  onShareWishlist,
   onAddCustom,
   onExport,
   onImport,
@@ -178,6 +183,27 @@ export function Toolbar({
         </Select>
 
         <div className="ml-auto flex items-center gap-1">
+          <Button
+            type="button"
+            variant={scopeFilter === "wishlist" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={onShareWishlist}
+            disabled={wishlistCount === 0}
+            className={
+              wishlistCount > 0
+                ? "text-wishlist hover:text-wishlist gap-1.5"
+                : "gap-1.5"
+            }
+            aria-label="Share wishlist"
+            title={
+              wishlistCount === 0
+                ? "Add figures to your wishlist to share"
+                : "Share wishlist link"
+            }
+          >
+            <Share2 className="h-4 w-4" />
+            <span className="hidden sm:inline">Share wishlist</span>
+          </Button>
           <Button
             type="button"
             variant="ghost"
