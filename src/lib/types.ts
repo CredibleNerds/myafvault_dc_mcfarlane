@@ -114,12 +114,6 @@ export const LINES = [
   "Gold Label",
   "Platinum Edition",
   "Page Punchers",
-  "The Dark Knight Trilogy",
-  "Batman 85th Anniversary",
-  "Superman",
-  "The Batman",
-  "Aquaman",
-  "Wonder Woman",
   "Custom",
 ];
 
