@@ -23,6 +23,7 @@ import { CollectionsPanel } from "@/components/figures/collections-panel";
 import { Button } from "@/components/ui/button";
 import { OWNERSHIP } from "@/lib/ownership-copy";
 import { useSystemImages } from "@/lib/system-image-store";
+import { ScrollToTop } from "@/components/scroll-to-top";
 import {
   fetchSystemImages,
   getAdminStatus,
@@ -563,6 +564,8 @@ function CataloguePage() {
           </p>
         </div>
       </footer>
+
+      <ScrollToTop />
 
       <FigureDetail
         product={selectedProduct}

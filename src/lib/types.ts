@@ -110,7 +110,6 @@ export const CATEGORIES: { value: ProductCategory | "all"; label: string }[] =
 
 export const LINES = [
   "DC Multiverse",
-  "Megafig",
   "Gold Label",
   "Platinum Edition",
   "Page Punchers",
