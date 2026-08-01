@@ -221,11 +221,11 @@ export function FigureDetail({
           }
         }}
       >
-        <DialogContent className="max-w-5xl p-0 gap-0 overflow-hidden">
-          <div className="flex max-h-[min(96dvh,1000px)] flex-col overflow-y-auto">
-            <div className="relative border-b border-border bg-surface-2">
-              {/* Pack shots — slightly shorter so actions stay reachable */}
-              <div className="mx-auto flex h-[min(52dvh,560px)] w-full max-w-[760px] items-center justify-center sm:h-[min(56dvh,620px)]">
+        <DialogContent className="flex max-h-[min(92dvh,960px)] w-[calc(100%-1.25rem)] max-w-5xl flex-col gap-0 overflow-hidden p-0 sm:w-[calc(100%-2rem)]">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className="relative shrink-0 border-b border-border bg-surface-2">
+              {/* Pack shots — capped so form fields stay reachable */}
+              <div className="mx-auto flex h-[min(42dvh,420px)] w-full max-w-[720px] items-center justify-center sm:h-[min(46dvh,480px)]">
                 <ProductImage
                   src={activeImage}
                   alt={product.name}
@@ -270,7 +270,8 @@ export function FigureDetail({
               )}
             </div>
 
-            <div className="flex flex-col p-5 sm:p-6">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+              <div className="flex flex-col p-5 pb-10 sm:p-6 sm:pb-12">
               <DialogHeader className="mb-3">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
                   <Badge>{categoryLabel(product.category)}</Badge>
@@ -667,8 +668,12 @@ export function FigureDetail({
               )}
 
               {entry?.owned && (
-                <div className="grid gap-3 sm:grid-cols-2 border-t border-border pt-4">
-                  <div className="grid gap-1.5">
+                <div className="mt-2 rounded-[var(--radius-lg)] border border-border bg-surface-2/50 p-4 sm:p-5">
+                  <h4 className="mb-3 text-[11px] font-medium uppercase tracking-wide text-subtle">
+                    Your vault details
+                  </h4>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-1.5 min-w-0">
                     <Label>Condition</Label>
                     <Select
                       value={entry.condition ?? "none"}
@@ -679,7 +684,7 @@ export function FigureDetail({
                         })
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full bg-surface">
                         <SelectValue placeholder="Condition" />
                       </SelectTrigger>
                       <SelectContent>
@@ -692,22 +697,24 @@ export function FigureDetail({
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="grid gap-1.5">
+                  <div className="grid gap-1.5 min-w-0">
                     <Label>Purchase date</Label>
                     <Input
                       type="date"
+                      className="bg-surface"
                       value={entry.purchaseDate ?? ""}
                       onChange={(e) =>
                         onUpdate({ purchaseDate: e.target.value || null })
                       }
                     />
                   </div>
-                  <div className="grid gap-1.5">
+                  <div className="grid gap-1.5 min-w-0">
                     <Label>Paid ($)</Label>
                     <Input
                       type="number"
                       min={0}
                       step="0.01"
+                      className="bg-surface"
                       value={entry.purchasePrice ?? ""}
                       onChange={(e) =>
                         onUpdate({
@@ -718,12 +725,13 @@ export function FigureDetail({
                       }
                     />
                   </div>
-                  <div className="grid gap-1.5">
+                  <div className="grid gap-1.5 min-w-0">
                     <Label>Est. value ($)</Label>
                     <Input
                       type="number"
                       min={0}
                       step="0.01"
+                      className="bg-surface"
                       value={entry.estimatedValue ?? ""}
                       onChange={(e) =>
                         onUpdate({
@@ -734,13 +742,15 @@ export function FigureDetail({
                       }
                     />
                   </div>
-                  <div className="grid gap-1.5 sm:col-span-2">
-                    <Label>Personal notes</Label>
+                  <div className="grid gap-1.5 sm:col-span-2 min-w-0">
+                    <Label htmlFor={`notes-${product.id}`}>Personal notes</Label>
                     <Textarea
+                      id={`notes-${product.id}`}
                       value={entry.notes}
                       onChange={(e) => onUpdate({ notes: e.target.value })}
                       placeholder="Shelf location, box condition, trade notes…"
-                      rows={2}
+                      rows={4}
+                      className="min-h-[120px] w-full resize-y bg-surface"
                     />
                   </div>
                   {(entry.purchasePrice != null ||
@@ -756,8 +766,10 @@ export function FigureDetail({
                         : ""}
                     </p>
                   )}
+                  </div>
                 </div>
               )}
+              </div>
             </div>
           </div>
         </DialogContent>
