@@ -350,9 +350,22 @@ export function FigureDetail({
                   <Check className="h-4 w-4" />
                   {entry?.owned ? OWNERSHIP.status : OWNERSHIP.add}
                 </Button>
-                <Button size="sm" variant="outline" onClick={onToggleWishlist}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={onToggleWishlist}
+                  className={
+                    entry?.wishlist
+                      ? "border-wishlist bg-wishlist/10 text-wishlist hover:bg-wishlist/15 hover:text-wishlist"
+                      : undefined
+                  }
+                >
                   <Heart
-                    className={`h-4 w-4 ${entry?.wishlist ? "fill-current text-primary" : ""}`}
+                    className={
+                      entry?.wishlist
+                        ? "h-4 w-4 fill-current text-wishlist"
+                        : "h-4 w-4"
+                    }
                   />
                   {entry?.wishlist ? "On wishlist" : "Wishlist"}
                 </Button>
