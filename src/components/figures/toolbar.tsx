@@ -37,7 +37,9 @@ interface ToolbarProps {
   onView: (v: ViewMode) => void;
   categoryCounts: Record<string, number>;
   wishlistCount: number;
+  ownedCount: number;
   onShareWishlist: () => void;
+  onShareVault: () => void;
   onAddCustom: () => void;
   onExport: () => void;
   onImport: () => void;
@@ -58,7 +60,9 @@ export function Toolbar({
   onView,
   categoryCounts,
   wishlistCount,
+  ownedCount,
   onShareWishlist,
+  onShareVault,
   onAddCustom,
   onExport,
   onImport,
@@ -185,6 +189,27 @@ export function Toolbar({
         <div className="ml-auto flex items-center gap-1">
           <Button
             type="button"
+            variant={scopeFilter === "owned" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={onShareVault}
+            disabled={ownedCount === 0}
+            className={
+              ownedCount > 0
+                ? "text-primary hover:text-primary gap-1.5"
+                : "gap-1.5"
+            }
+            aria-label="Share my vault"
+            title={
+              ownedCount === 0
+                ? `Mark figures ${OWNERSHIP.status} to share`
+                : "Share My Vault collection link"
+            }
+          >
+            <Share2 className="h-4 w-4" />
+            <span className="hidden lg:inline">Share vault</span>
+          </Button>
+          <Button
+            type="button"
             variant={scopeFilter === "wishlist" ? "secondary" : "ghost"}
             size="sm"
             onClick={onShareWishlist}
@@ -202,7 +227,7 @@ export function Toolbar({
             }
           >
             <Share2 className="h-4 w-4" />
-            <span className="hidden sm:inline">Share wishlist</span>
+            <span className="hidden lg:inline">Share wishlist</span>
           </Button>
           <Button
             type="button"

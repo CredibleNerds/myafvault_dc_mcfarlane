@@ -21,6 +21,7 @@ import { AuthSyncBar } from "@/components/figures/auth-sync-bar";
 import { BulkActionBar } from "@/components/figures/bulk-action-bar";
 import { CollectionsPanel } from "@/components/figures/collections-panel";
 import { WishlistShareDialog } from "@/components/figures/wishlist-share-dialog";
+import { VaultShareDialog } from "@/components/figures/vault-share-dialog";
 import { Button } from "@/components/ui/button";
 import { OWNERSHIP } from "@/lib/ownership-copy";
 import { useSystemImages } from "@/lib/system-image-store";
@@ -60,6 +61,7 @@ function CataloguePage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [vaultShareOpen, setVaultShareOpen] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const importRef = useRef<HTMLInputElement>(null);
@@ -412,7 +414,9 @@ function CataloguePage() {
             onView={setView}
             categoryCounts={categoryCounts}
             wishlistCount={ready ? collectionStats.wishlist : 0}
+            ownedCount={ready ? collectionStats.owned : 0}
             onShareWishlist={() => setShareOpen(true)}
+            onShareVault={() => setVaultShareOpen(true)}
             onAddCustom={() => setFormOpen(true)}
             onExport={handleExport}
             onImport={() => importRef.current?.click()}
@@ -572,6 +576,7 @@ function CataloguePage() {
       <ScrollToTop />
 
       <WishlistShareDialog open={shareOpen} onOpenChange={setShareOpen} />
+      <VaultShareDialog open={vaultShareOpen} onOpenChange={setVaultShareOpen} />
 
       <FigureDetail
         product={selectedProduct}

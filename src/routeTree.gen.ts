@@ -17,6 +17,7 @@ import { Route as VaultDcMcfarlaneRouteImport } from './routes/vault/dc-mcfarlan
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ShareCollectionTokenRouteImport } from './routes/share/collection.$token'
 import { Route as ShareItemTokenRouteImport } from './routes/share/item.$token'
+import { Route as ShareVaultTokenRouteImport } from './routes/share/vault.$token'
 import { Route as ShareWishlistTokenRouteImport } from './routes/share/wishlist.$token'
 
 const IndexRoute = IndexRouteImport.update({
@@ -59,6 +60,11 @@ const ShareItemTokenRoute = ShareItemTokenRouteImport.update({
   path: '/share/item/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShareVaultTokenRoute = ShareVaultTokenRouteImport.update({
+  id: '/share/vault/$token',
+  path: '/share/vault/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShareWishlistTokenRoute = ShareWishlistTokenRouteImport.update({
   id: '/share/wishlist/$token',
   path: '/share/wishlist/$token',
@@ -74,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/share/collection/$token': typeof ShareCollectionTokenRoute
   '/share/item/$token': typeof ShareItemTokenRoute
+  '/share/vault/$token': typeof ShareVaultTokenRoute
   '/share/wishlist/$token': typeof ShareWishlistTokenRoute
 }
 export interface FileRoutesByTo {
@@ -85,6 +92,7 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/share/collection/$token': typeof ShareCollectionTokenRoute
   '/share/item/$token': typeof ShareItemTokenRoute
+  '/share/vault/$token': typeof ShareVaultTokenRoute
   '/share/wishlist/$token': typeof ShareWishlistTokenRoute
 }
 export interface FileRoutesById {
@@ -97,6 +105,7 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/share/collection/$token': typeof ShareCollectionTokenRoute
   '/share/item/$token': typeof ShareItemTokenRoute
+  '/share/vault/$token': typeof ShareVaultTokenRoute
   '/share/wishlist/$token': typeof ShareWishlistTokenRoute
 }
 export interface FileRouteTypes {
@@ -110,6 +119,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/share/collection/$token'
     | '/share/item/$token'
+    | '/share/vault/$token'
     | '/share/wishlist/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -121,6 +131,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/share/collection/$token'
     | '/share/item/$token'
+    | '/share/vault/$token'
     | '/share/wishlist/$token'
   id:
     | '__root__'
@@ -132,6 +143,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/share/collection/$token'
     | '/share/item/$token'
+    | '/share/vault/$token'
     | '/share/wishlist/$token'
   fileRoutesById: FileRoutesById
 }
@@ -143,6 +155,7 @@ export interface RootRouteChildren {
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ShareCollectionTokenRoute: typeof ShareCollectionTokenRoute
   ShareItemTokenRoute: typeof ShareItemTokenRoute
+  ShareVaultTokenRoute: typeof ShareVaultTokenRoute
   ShareWishlistTokenRoute: typeof ShareWishlistTokenRoute
 }
 
@@ -204,6 +217,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShareItemTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/share/vault/$token': {
+      id: '/share/vault/$token'
+      path: '/share/vault/$token'
+      fullPath: '/share/vault/$token'
+      preLoaderRoute: typeof ShareVaultTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/share/wishlist/$token': {
       id: '/share/wishlist/$token'
       path: '/share/wishlist/$token'
@@ -232,6 +252,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ShareCollectionTokenRoute: ShareCollectionTokenRoute,
   ShareItemTokenRoute: ShareItemTokenRoute,
+  ShareVaultTokenRoute: ShareVaultTokenRoute,
   ShareWishlistTokenRoute: ShareWishlistTokenRoute,
 }
 export const routeTree = rootRouteImport
