@@ -222,10 +222,10 @@ export function FigureDetail({
         }}
       >
         <DialogContent className="max-w-5xl p-0 gap-0 overflow-hidden">
-          <div className="flex max-h-[min(94dvh,980px)] flex-col overflow-y-auto">
+          <div className="flex max-h-[min(96dvh,1000px)] flex-col overflow-y-auto">
             <div className="relative border-b border-border bg-surface-2">
-              {/* Square pack shots (~2200px) shown large for clarity */}
-              <div className="mx-auto flex h-[min(68dvh,760px)] w-full max-w-[760px] items-center justify-center">
+              {/* Pack shots — slightly shorter so actions stay reachable */}
+              <div className="mx-auto flex h-[min(52dvh,560px)] w-full max-w-[760px] items-center justify-center sm:h-[min(56dvh,620px)]">
                 <ProductImage
                   src={activeImage}
                   alt={product.name}
@@ -340,6 +340,75 @@ export function FigureDetail({
                 </div>
               </DialogHeader>
 
+              <div className="flex flex-wrap gap-2 mb-4 sticky top-0 z-10 -mx-1 px-1 py-2 bg-surface/95 backdrop-blur-sm border-b border-border/60 sm:static sm:border-0 sm:bg-transparent sm:backdrop-blur-none sm:py-0">
+                {entry?.owned ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-danger/40 text-danger hover:bg-danger/10 hover:text-danger hover:border-danger/60"
+                    onClick={() => {
+                      onMarkOwned(false);
+                      toast.message(OWNERSHIP.toastRemoved);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    {OWNERSHIP.remove}
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="default"
+                    onClick={() => {
+                      onMarkOwned(true);
+                      toast.success(OWNERSHIP.toastAdded);
+                    }}
+                  >
+                    <Check className="h-4 w-4" />
+                    {OWNERSHIP.add}
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={onToggleWishlist}
+                  className={
+                    entry?.wishlist
+                      ? "border-wishlist bg-wishlist/10 text-wishlist hover:bg-wishlist/15 hover:text-wishlist"
+                      : undefined
+                  }
+                >
+                  <Heart
+                    className={
+                      entry?.wishlist
+                        ? "h-4 w-4 fill-current text-wishlist"
+                        : "h-4 w-4"
+                    }
+                  />
+                  {entry?.wishlist ? "On wishlist" : "Wishlist"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void handleShareItem()}
+                  disabled={shareBusy}
+                >
+                  <Share2 className="h-4 w-4" />
+                  {shareBusy ? "Sharing…" : "Share"}
+                </Button>
+                {product.productUrl && (
+                  <Button size="sm" variant="ghost" asChild>
+                    <a
+                      href={product.productUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      McFarlane
+                    </a>
+                  </Button>
+                )}
+              </div>
+
               {product.description && (
                 <p className="text-sm text-muted leading-relaxed mb-4">
                   {product.description}
@@ -384,57 +453,6 @@ export function FigureDetail({
                   </ul>
                 </details>
               )}
-
-              <div className="flex flex-wrap gap-2 mb-4">
-                <Button
-                  size="sm"
-                  variant={entry?.owned ? "secondary" : "default"}
-                  onClick={() => onMarkOwned(!entry?.owned)}
-                >
-                  <Check className="h-4 w-4" />
-                  {entry?.owned ? OWNERSHIP.status : OWNERSHIP.add}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={onToggleWishlist}
-                  className={
-                    entry?.wishlist
-                      ? "border-wishlist bg-wishlist/10 text-wishlist hover:bg-wishlist/15 hover:text-wishlist"
-                      : undefined
-                  }
-                >
-                  <Heart
-                    className={
-                      entry?.wishlist
-                        ? "h-4 w-4 fill-current text-wishlist"
-                        : "h-4 w-4"
-                    }
-                  />
-                  {entry?.wishlist ? "On wishlist" : "Wishlist"}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => void handleShareItem()}
-                  disabled={shareBusy}
-                >
-                  <Share2 className="h-4 w-4" />
-                  {shareBusy ? "Sharing…" : "Share"}
-                </Button>
-                {product.productUrl && (
-                  <Button size="sm" variant="ghost" asChild>
-                    <a
-                      href={product.productUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      McFarlane
-                    </a>
-                  </Button>
-                )}
-              </div>
 
               {/* Cover status */}
               <div className="mb-4 rounded-[var(--radius-md)] border border-border bg-surface-2/40 p-3 space-y-2">
@@ -738,23 +756,6 @@ export function FigureDetail({
                         : ""}
                     </p>
                   )}
-                </div>
-              )}
-
-              {entry?.owned && (
-                <div className="mt-4 pt-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-danger"
-                    onClick={() => {
-                      onMarkOwned(false);
-                      toast.message(OWNERSHIP.toastRemoved);
-                    }}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    {OWNERSHIP.remove}
-                  </Button>
                 </div>
               )}
             </div>
