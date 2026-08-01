@@ -19,6 +19,9 @@
   --color-primary: #c41e3a;
   --color-primary-fg: #ffffff;
   --color-primary-hover: #a01830;
+  --color-wishlist: #2b6fff;
+  --color-wishlist-fg: #ffffff;
+  --color-wishlist-hover: #1f58d6;
   --color-accent: #d4d8e0;
   --color-accent-fg: #0a0b0e;
   --color-success: #3d9a6a;
@@ -39,6 +42,7 @@
 
   --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.35);
   --shadow-owned: 0 10px 32px rgba(196, 30, 58, 0.3);
+  --shadow-wishlist: 0 10px 32px rgba(43, 111, 255, 0.28);
   --border-width-ui: 1px;
   --focus-ring-width: 2px;
 }
@@ -57,6 +61,9 @@ html.light {
   --color-primary: #c41e3a;
   --color-primary-fg: #ffffff;
   --color-primary-hover: #a01830;
+  --color-wishlist: #2563eb;
+  --color-wishlist-fg: #ffffff;
+  --color-wishlist-hover: #1d4ed8;
   --color-accent: #232833;
   --color-accent-fg: #f4f5f7;
   --color-success: #2f8a5c;
@@ -65,6 +72,7 @@ html.light {
   --color-ring: #c41e3a;
   --shadow-card: 0 8px 24px rgba(18, 20, 26, 0.08);
   --shadow-owned: 0 10px 28px rgba(196, 30, 58, 0.18);
+  --shadow-wishlist: 0 10px 28px rgba(37, 99, 235, 0.18);
 }
 
 /* ── High contrast (dark) ───────────────────────────────────────── */
@@ -82,6 +90,9 @@ html.dark.contrast-more {
   --color-primary: #ff3355;
   --color-primary-fg: #000000;
   --color-primary-hover: #ff5570;
+  --color-wishlist: #4d9fff;
+  --color-wishlist-fg: #000000;
+  --color-wishlist-hover: #7ab6ff;
   --color-accent: #ffffff;
   --color-accent-fg: #000000;
   --color-success: #3dff9a;
@@ -90,6 +101,7 @@ html.dark.contrast-more {
   --color-ring: #ffffff;
   --shadow-card: none;
   --shadow-owned: none;
+  --shadow-wishlist: none;
   --border-width-ui: 2px;
   --focus-ring-width: 3px;
 }
@@ -109,6 +121,9 @@ html.light.contrast-more {
   --color-primary: #b00020;
   --color-primary-fg: #ffffff;
   --color-primary-hover: #8a0018;
+  --color-wishlist: #0047c7;
+  --color-wishlist-fg: #ffffff;
+  --color-wishlist-hover: #0039a0;
   --color-accent: #000000;
   --color-accent-fg: #ffffff;
   --color-success: #006b3f;
@@ -117,6 +132,7 @@ html.light.contrast-more {
   --color-ring: #000000;
   --shadow-card: none;
   --shadow-owned: none;
+  --shadow-wishlist: none;
   --border-width-ui: 2px;
   --focus-ring-width: 3px;
 }
@@ -220,6 +236,14 @@ html.light.contrast-more {
     var(--shadow-owned);
 }
 
+/* Wishlist figures stay blue-highlighted even on hover */
+.figure-card--wishlist:hover {
+  border-color: var(--color-wishlist);
+  box-shadow:
+    0 0 0 1px var(--color-wishlist),
+    var(--shadow-wishlist);
+}
+
 html.contrast-more .figure-card:hover {
   transform: none;
   box-shadow: none;
@@ -231,13 +255,29 @@ html.contrast-more .figure-card--owned {
 html.contrast-more .figure-card--owned:hover {
   box-shadow: none;
 }
+html.contrast-more .figure-card--wishlist {
+  outline: 2px solid var(--color-wishlist);
+  outline-offset: 0;
+}
+html.contrast-more .figure-card--wishlist:hover {
+  box-shadow: none;
+}
 
 .owned-badge {
   letter-spacing: 0.04em;
 }
 
+.wishlist-badge {
+  letter-spacing: 0.04em;
+}
+
 html.contrast-more .owned-badge {
   border: 2px solid var(--color-primary-fg);
+  font-weight: 700;
+}
+
+html.contrast-more .wishlist-badge {
+  border: 2px solid var(--color-wishlist-fg);
   font-weight: 700;
 }
 

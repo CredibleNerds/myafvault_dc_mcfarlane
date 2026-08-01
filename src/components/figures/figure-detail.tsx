@@ -254,6 +254,20 @@ export function FigureDetail({
                           </span>
                         </span>
                       )}
+                      {entry?.wishlist && !entry?.owned && (
+                        <span
+                          className="mt-1 inline-flex shrink-0 items-center gap-1.5"
+                          title="On wishlist"
+                          aria-label="On wishlist"
+                        >
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-wishlist text-wishlist-fg">
+                            <Check className="h-3.5 w-3.5 stroke-[3]" aria-hidden />
+                          </span>
+                          <span className="wishlist-badge inline-flex items-center rounded-full bg-wishlist px-2.5 py-0.5 text-[11px] font-semibold tracking-tight text-wishlist-fg">
+                            Wishlist
+                          </span>
+                        </span>
+                      )}
                     </DialogTitle>
                     <DialogDescription className="text-base text-muted mt-1">
                       {product.character}

@@ -7,7 +7,7 @@ import {
 } from "@/lib/product";
 import { ProductImage } from "@/components/figures/product-image";
 import { OWNERSHIP } from "@/lib/ownership-copy";
-import { Check, Heart, Square, SquareCheck } from "lucide-react";
+import { Check, Square, SquareCheck } from "lucide-react";
 
 interface FigureCardProps {
   product: CatalogProduct;
@@ -22,7 +22,7 @@ interface FigureCardProps {
   onToggleSelect?: () => void;
 }
 
-/** Red checkmark + "Vaulted" chip next to the title (not over the photo). */
+/** Red checkmark + "In My Vault" chip next to the title (not over the photo). */
 function VaultedMark({ className }: { className?: string }) {
   return (
     <span
@@ -43,6 +43,27 @@ function VaultedMark({ className }: { className?: string }) {
   );
 }
 
+/** Blue checkmark + "Wishlist" chip next to the title. */
+function WishlistMark({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        "mt-0.5 inline-flex shrink-0 items-center gap-1.5",
+        className,
+      )}
+      title="On wishlist"
+      aria-label="On wishlist"
+    >
+      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-wishlist text-wishlist-fg">
+        <Check className="h-3 w-3 stroke-[3]" aria-hidden />
+      </span>
+      <span className="wishlist-badge inline-flex items-center rounded-full bg-wishlist px-2 py-0.5 text-[10px] font-semibold tracking-tight text-wishlist-fg">
+        Wishlist
+      </span>
+    </span>
+  );
+}
+
 export function FigureCard({
   product,
   entry,
@@ -56,6 +77,7 @@ export function FigureCard({
   const src = displayImageFor(product, entry, systemCover);
   const owned = entry?.owned;
   const wishlist = entry?.wishlist;
+  const wishOnly = !!wishlist && !owned;
 
   return (
     <button
@@ -72,7 +94,9 @@ export function FigureCard({
         "figure-card group flex w-full flex-col overflow-hidden rounded-[var(--radius-xl)] border bg-surface text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
         owned && !selected
           ? "figure-card--owned border-primary shadow-[0_0_0_1px_var(--color-primary),0_8px_28px_rgba(196,30,58,0.22)]"
-          : "border-border",
+          : wishOnly && !selected
+            ? "figure-card--wishlist border-wishlist shadow-[0_0_0_1px_var(--color-wishlist),0_8px_28px_rgba(43,111,255,0.22)]"
+            : "border-border",
         selected &&
           "border-primary ring-2 ring-primary shadow-[0_0_0_1px_var(--color-primary),0_8px_28px_rgba(196,30,58,0.28)]",
         className,
@@ -82,6 +106,7 @@ export function FigureCard({
         className={cn(
           "relative aspect-square w-full overflow-hidden bg-surface-2",
           owned && "ring-2 ring-inset ring-primary",
+          wishOnly && "ring-2 ring-inset ring-wishlist",
           selected && "ring-2 ring-inset ring-primary",
         )}
       >
@@ -129,19 +154,15 @@ export function FigureCard({
           </Badge>
         </div>
 
-        {/* Wishlist only on the image — vaulted uses the title checkmark + chip */}
-        {!owned && wishlist && (
-          <div className="pointer-events-none absolute right-2 top-2 z-[2]">
-            <span className="inline-flex items-center gap-1 rounded-full border border-border bg-bg/90 px-2.5 py-1 text-[11px] font-semibold text-primary shadow backdrop-blur-sm">
-              <Heart className="h-3.5 w-3.5 fill-current" aria-hidden />
-              Wishlist
-            </span>
-          </div>
-        )}
-
         {owned && (
           <div
             className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-1 bg-primary"
+            aria-hidden
+          />
+        )}
+        {wishOnly && (
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-1 bg-wishlist"
             aria-hidden
           />
         )}
@@ -158,6 +179,7 @@ export function FigureCard({
         className={cn(
           "flex flex-1 flex-col gap-1 p-3.5",
           owned && "bg-primary/[0.06]",
+          wishOnly && "bg-wishlist/[0.07]",
           selected && "bg-primary/10",
         )}
       >
@@ -166,6 +188,7 @@ export function FigureCard({
             {product.name}
           </h3>
           {owned && <VaultedMark />}
+          {wishOnly && <WishlistMark />}
         </div>
         <p className="text-xs text-muted line-clamp-1">{product.character}</p>
         {product.accessories.length > 0 && (
@@ -190,6 +213,7 @@ export function FigureListRow({
   const src = displayImageFor(product, entry, systemCover);
   const owned = entry?.owned;
   const wishlist = entry?.wishlist;
+  const wishOnly = !!wishlist && !owned;
 
   return (
     <button
@@ -206,7 +230,9 @@ export function FigureListRow({
         "figure-list-row flex w-full items-center gap-3 rounded-[var(--radius-lg)] border bg-surface p-2.5 text-left transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:gap-4 sm:p-3",
         owned
           ? "border-primary bg-primary/[0.06] shadow-[inset_3px_0_0_0_var(--color-primary)]"
-          : "border-border hover:border-border-strong",
+          : wishOnly
+            ? "border-wishlist bg-wishlist/[0.07] shadow-[inset_3px_0_0_0_var(--color-wishlist)]"
+            : "border-border hover:border-border-strong",
         selected && "border-primary ring-2 ring-primary bg-primary/10",
       )}
     >
@@ -231,6 +257,7 @@ export function FigureListRow({
         className={cn(
           "relative shrink-0 overflow-hidden rounded-[var(--radius-sm)]",
           owned && "ring-2 ring-primary ring-offset-1 ring-offset-bg",
+          wishOnly && "ring-2 ring-wishlist ring-offset-1 ring-offset-bg",
         )}
       >
         <ProductImage
@@ -247,6 +274,7 @@ export function FigureListRow({
             {product.name}
           </h3>
           {owned && <VaultedMark className="mt-0.5" />}
+          {wishOnly && <WishlistMark className="mt-0.5" />}
         </div>
         <p className="text-xs text-muted truncate">
           {product.character} · {product.line} · {product.scale}
@@ -259,15 +287,6 @@ export function FigureListRow({
             <span className="text-xs text-subtle tabular-nums">
               {product.releaseYear}
             </span>
-          )}
-          {wishlist && !owned && (
-            <Badge
-              variant="outline"
-              className="text-[10px] border-primary/50 text-primary gap-1"
-            >
-              <Heart className="h-3 w-3 fill-current" />
-              Wishlist
-            </Badge>
           )}
         </div>
       </div>
