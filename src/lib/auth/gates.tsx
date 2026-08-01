@@ -26,16 +26,16 @@ export function UserButton() {
   if (!user) return null;
   const label = user.displayName ?? user.primaryEmail ?? "Account";
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5 sm:gap-2">
       {user.profileImageUrl ? (
         <img
           src={user.profileImageUrl}
           alt=""
-          className="h-7 w-7 rounded-full object-cover border border-border"
+          className="h-8 w-8 rounded-full object-cover border border-border sm:h-7 sm:w-7"
         />
       ) : (
         <span
-          className="grid h-7 w-7 place-items-center rounded-full bg-primary/20 text-xs font-semibold text-primary border border-primary/30"
+          className="grid h-8 w-8 place-items-center rounded-full bg-primary/20 text-xs font-semibold text-primary border border-primary/30 sm:h-7 sm:w-7"
           title={label}
         >
           {label.charAt(0).toUpperCase()}
@@ -56,9 +56,11 @@ export function UserButton() {
         <button
           type="button"
           onClick={() => void signOut("/")}
-          className="cursor-pointer text-xs text-muted underline-offset-4 hover:text-fg hover:underline"
+          className="cursor-pointer text-xs text-muted underline-offset-4 hover:text-fg hover:underline px-1"
+          aria-label="Sign out"
         >
-          Sign out
+          <span className="sm:hidden">Out</span>
+          <span className="hidden sm:inline">Sign out</span>
         </button>
       )}
     </div>

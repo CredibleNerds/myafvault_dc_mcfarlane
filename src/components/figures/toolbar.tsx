@@ -68,9 +68,9 @@ export function Toolbar({
   onImport,
 }: ToolbarProps) {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3.5 sm:gap-3">
       {/* Category chips */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
+      <div className="flex gap-2 overflow-x-auto pb-0.5 -mx-1 px-1 scrollbar-none touch-pan-x">
         {CATEGORIES.map((c) => {
           const count =
             c.value === "all"
@@ -83,7 +83,7 @@ export function Toolbar({
               type="button"
               onClick={() => onCategory(c.value)}
               className={cn(
-                "shrink-0 rounded-full border px-3.5 py-2 text-xs font-medium transition-colors whitespace-nowrap",
+                "shrink-0 rounded-full border px-3.5 py-2.5 text-xs font-medium transition-colors whitespace-nowrap min-h-10",
                 active
                   ? "border-primary bg-primary text-primary-fg"
                   : "border-border bg-surface text-muted hover:border-border-strong hover:text-fg",
@@ -103,14 +103,14 @@ export function Toolbar({
         })}
       </div>
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-2">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-subtle" />
           <Input
             value={search}
             onChange={(e) => onSearch(e.target.value)}
             placeholder="Search name, character, accessories, SKU…"
-            className="pl-9"
+            className="pl-9 h-11"
             aria-label="Search catalog"
           />
         </div>
@@ -119,35 +119,40 @@ export function Toolbar({
             <Button
               type="button"
               variant={view === "grid" ? "secondary" : "ghost"}
-              size="icon-sm"
+              size="icon"
               onClick={() => onView("grid")}
               aria-label="Grid view"
+              className="h-10 w-10"
             >
               <Grid3X3 className="h-4 w-4" />
             </Button>
             <Button
               type="button"
               variant={view === "list" ? "secondary" : "ghost"}
-              size="icon-sm"
+              size="icon"
               onClick={() => onView("list")}
               aria-label="List view"
+              className="h-10 w-10"
             >
               <List className="h-4 w-4" />
             </Button>
           </div>
-          <Button onClick={onAddCustom} className="flex-1 sm:flex-none">
+          <Button
+            onClick={onAddCustom}
+            className="flex-1 h-10 sm:flex-none sm:h-10"
+          >
             <Plus className="h-4 w-4" />
             <span>Add custom</span>
           </Button>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
         <Select
           value={scopeFilter}
           onValueChange={(v) => onScope(v as ScopeFilter)}
         >
-          <SelectTrigger className="w-[min(100%,150px)] sm:w-[160px]">
+          <SelectTrigger className="w-full h-10 sm:w-[160px]">
             <SelectValue placeholder="Collection" />
           </SelectTrigger>
           <SelectContent>
@@ -159,7 +164,7 @@ export function Toolbar({
         </Select>
 
         <Select value={lineFilter} onValueChange={onLine}>
-          <SelectTrigger className="w-[min(100%,150px)] sm:w-[170px]">
+          <SelectTrigger className="w-full h-10 sm:w-[170px]">
             <SelectValue placeholder="Line" />
           </SelectTrigger>
           <SelectContent>
@@ -173,7 +178,7 @@ export function Toolbar({
         </Select>
 
         <Select value={sort} onValueChange={(v) => onSort(v as SortKey)}>
-          <SelectTrigger className="w-[min(100%,160px)] sm:w-[180px]">
+          <SelectTrigger className="col-span-2 w-full h-10 sm:col-auto sm:w-[180px]">
             <SelectValue placeholder="Sort" />
           </SelectTrigger>
           <SelectContent>
@@ -186,17 +191,17 @@ export function Toolbar({
           </SelectContent>
         </Select>
 
-        <div className="ml-auto flex items-center gap-1">
+        <div className="col-span-2 flex flex-wrap items-center gap-1.5 sm:ml-auto sm:col-auto">
           <Button
             type="button"
-            variant={scopeFilter === "owned" ? "secondary" : "ghost"}
+            variant={scopeFilter === "owned" ? "secondary" : "outline"}
             size="sm"
             onClick={onShareVault}
             disabled={ownedCount === 0}
             className={
               ownedCount > 0
-                ? "text-primary hover:text-primary gap-1.5"
-                : "gap-1.5"
+                ? "text-primary hover:text-primary gap-1.5 h-9 flex-1 sm:flex-none"
+                : "gap-1.5 h-9 flex-1 sm:flex-none"
             }
             aria-label="Share my vault"
             title={
@@ -206,18 +211,18 @@ export function Toolbar({
             }
           >
             <Share2 className="h-4 w-4" />
-            <span className="hidden lg:inline">Share vault</span>
+            <span>Vault</span>
           </Button>
           <Button
             type="button"
-            variant={scopeFilter === "wishlist" ? "secondary" : "ghost"}
+            variant={scopeFilter === "wishlist" ? "secondary" : "outline"}
             size="sm"
             onClick={onShareWishlist}
             disabled={wishlistCount === 0}
             className={
               wishlistCount > 0
-                ? "text-wishlist hover:text-wishlist gap-1.5"
-                : "gap-1.5"
+                ? "text-wishlist hover:text-wishlist gap-1.5 h-9 flex-1 sm:flex-none"
+                : "gap-1.5 h-9 flex-1 sm:flex-none"
             }
             aria-label="Share wishlist"
             title={
@@ -227,25 +232,27 @@ export function Toolbar({
             }
           >
             <Share2 className="h-4 w-4" />
-            <span className="hidden lg:inline">Share wishlist</span>
+            <span>Wish</span>
           </Button>
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="icon-sm"
             onClick={onImport}
             aria-label="Import collection"
             title="Import collection JSON"
+            className="h-9 w-9"
           >
             <Upload className="h-4 w-4" />
           </Button>
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="icon-sm"
             onClick={onExport}
             aria-label="Export collection"
             title="Export collection JSON"
+            className="h-9 w-9"
           >
             <Download className="h-4 w-4" />
           </Button>

@@ -334,24 +334,28 @@ function CataloguePage() {
   return (
     <div className="min-h-dvh">
       <header className="sticky top-0 z-40 border-b border-border/80 bg-bg/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
-          <div className="min-w-0">
-            <Link
-              to="/"
-              className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary hover:underline"
-            >
-              MyAFVault · DC McFarlane
-            </Link>
-            <h1 className="truncate text-lg font-semibold tracking-tight sm:text-xl">
-              Figure Catalogue
-            </h1>
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 sm:py-4">
+          <div className="min-w-0 flex items-start justify-between gap-3 sm:block">
+            <div className="min-w-0">
+              <Link
+                to="/"
+                className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary hover:underline sm:text-[11px]"
+              >
+                <span className="sm:hidden">MyAFVault</span>
+                <span className="hidden sm:inline">MyAFVault · DC McFarlane</span>
+              </Link>
+              <h1 className="text-base font-semibold tracking-tight sm:text-xl">
+                <span className="sm:hidden">DC McFarlane</span>
+                <span className="hidden sm:inline">Figure Catalogue</span>
+              </h1>
+            </div>
           </div>
           <AuthSyncBar />
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-8">
-        <div className="flex flex-col gap-5 sm:gap-6">
+      <main className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-8">
+        <div className="flex flex-col gap-4 sm:gap-6">
           <div
             role="tablist"
             aria-label="Main sections"
