@@ -32,7 +32,8 @@ function SecurityPage() {
   const [backupCodes, setBackupCodes] = useState<string[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [disableCode, setDisableCode] = useState("");
-  const [resetConfirm, setResetConfirm] = useState("");
+  const [resetPassword, setResetPassword] = useState("");
+
   const replaceEntries = useCatalogue((s) => s.replaceEntries);
   const replaceCollections = useCatalogue((s) => s.replaceCollections);
 
@@ -81,16 +82,16 @@ function SecurityPage() {
 
   async function onResetVault(e: React.FormEvent) {
     e.preventDefault();
-    if (resetConfirm.trim().toUpperCase() !== "RESET") {
-      toast.error("Type RESET to confirm");
+    if (!resetPassword.trim()) {
+      toast.error("Enter your password to reset this vault");
       return;
     }
     setBusy(true);
     try {
-      await resetCloudVault();
+      await resetCloudVault({ data: { password: resetPassword } });
       replaceEntries({});
       replaceCollections({});
-      setResetConfirm("");
+      setResetPassword("");
       toast.success("This account’s vault is empty now");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not reset vault");
@@ -301,21 +302,22 @@ function SecurityPage() {
               <p className="text-xs text-muted leading-relaxed">
                 Clears In My Vault, Wishlist, notes, photos, and collections for{" "}
                 <span className="text-fg">{user?.primaryEmail}</span> only.
-                Other accounts are not changed.
+                Other accounts are not changed. Enter your password to confirm.
               </p>
-              <Label htmlFor="reset-vault">Type RESET to confirm</Label>
+              <Label htmlFor="reset-vault-password">Password</Label>
               <Input
-                id="reset-vault"
-                value={resetConfirm}
-                onChange={(e) => setResetConfirm(e.target.value)}
-                placeholder="RESET"
-                autoComplete="off"
+                id="reset-vault-password"
+                type="password"
+                value={resetPassword}
+                onChange={(e) => setResetPassword(e.target.value)}
+                placeholder="Your account password"
+                autoComplete="current-password"
               />
               <Button
                 type="submit"
                 variant="outline"
                 className="text-danger"
-                disabled={busy || resetConfirm.trim().toUpperCase() !== "RESET"}
+                disabled={busy || resetPassword.length === 0}
               >
                 Reset my collection
               </Button>

@@ -79,6 +79,22 @@ async function createSession(userId: string): Promise<string> {
   return token;
 }
 
+export async function verifyUserPassword(
+  userId: string,
+  password: string,
+): Promise<boolean> {
+  const sql = await getSql();
+  const rows = await sql.query<{ password: string | null }>(
+    `select "password" from "account"
+     where "userId" = $1 and "providerId" = 'credential'
+     limit 1`,
+    [userId],
+  );
+  const hash = rows[0]?.password;
+  if (!hash || !password) return false;
+  return verifyPassword({ hash, password });
+}
+
 export const signUpWithEmail = createServerFn({ method: "POST" })
   .validator((data: { email: string; password: string; name: string }) => {
     const email = String(data?.email ?? "")

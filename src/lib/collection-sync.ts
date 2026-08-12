@@ -95,7 +95,17 @@ export const saveCloudVault = createServerFn({ method: "POST" })
 /** Wipe this account's cloud vault only (other users are untouched). */
 export const resetCloudVault = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .handler(async ({ context }): Promise<VaultPayload> => {
+  .validator((data: { password?: string }) => {
+    const password = String(data?.password ?? "");
+    if (password.length < 1) throw new Error("Enter your password to reset.");
+    return { password };
+  })
+  .handler(async ({ context, data }): Promise<VaultPayload> => {
+    const { verifyUserPassword } = await import("@/lib/auth/email-auth");
+    const ok = await verifyUserPassword(context.userId, data.password);
+    if (!ok) {
+      throw new Error("Incorrect password. Vault was not reset.");
+    }
     const sql = await getSql();
     await sql.query(
       `insert into collection_vaults (user_id, entries, collections, updated_at)
