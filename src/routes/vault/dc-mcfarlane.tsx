@@ -34,6 +34,14 @@ import { VaultShareDialog } from "@/components/figures/vault-share-dialog";
 import { Button } from "@/components/ui/button";
 import { OWNERSHIP } from "@/lib/ownership-copy";
 import { useSystemImages } from "@/lib/system-image-store";
+import { useCatalogOverrides } from "@/lib/catalog-override-store";
+import {
+  applyCatalogOverride,
+  fetchCatalogOverrides,
+  saveCatalogOverride,
+  clearCatalogOverride,
+} from "@/lib/catalog-overrides";
+
 import { ScrollToTop } from "@/components/scroll-to-top";
 import { InstallPrompt } from "@/components/install/install-prompt";
 import { FeedbackButton } from "@/components/feedback-button";
@@ -123,7 +131,12 @@ function CataloguePage() {
   const setSystemAll = useSystemImages((s) => s.setAll);
   const setSystemOne = useSystemImages((s) => s.setOne);
   const clearSystemOne = useSystemImages((s) => s.clearOne);
+  const catalogOverrides = useCatalogOverrides((s) => s.overrides);
+  const setCatalogOverrideAll = useCatalogOverrides((s) => s.setAll);
+  const setCatalogOverrideOne = useCatalogOverrides((s) => s.setOne);
+  const clearCatalogOverrideOne = useCatalogOverrides((s) => s.clearOne);
   const [isAdmin, setIsAdmin] = useState(false);
+
   const importEntries = useCatalogue((s) => s.importEntries);
 
   useEffect(() => {
@@ -179,7 +192,15 @@ function CataloguePage() {
       .catch(() => {
         /* non-fatal — catalogue still works with pack shots */
       });
+    void fetchCatalogOverrides()
+      .then((map) => {
+        if (!cancelled) setCatalogOverrideAll(map);
+      })
+      .catch(() => {
+        /* non-fatal */
+      });
     void getAdminStatus()
+
       .then((s) => {
         if (!cancelled) setIsAdmin(!!s.isAdmin);
       })
@@ -189,7 +210,8 @@ function CataloguePage() {
     return () => {
       cancelled = true;
     };
-  }, [ready, signedIn, setSystemAll]);
+  }, [ready, signedIn, setSystemAll, setCatalogOverrideAll]);
+
 
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
@@ -212,10 +234,20 @@ function CataloguePage() {
       .filter((e) => e.isCustom)
       .map((e) => resolveProduct(e.productId, e))
       .filter(Boolean);
-    return [...CATALOG, ...customs] as NonNullable<
-      ReturnType<typeof resolveProduct>
-    >[];
-  }, [entries]);
+    const merged = [...CATALOG, ...customs]
+      .map((p) => {
+        if (!p) return null;
+        return applyCatalogOverride(p, catalogOverrides[p.id]);
+      })
+      .filter((p): p is NonNullable<typeof p> => {
+        if (!p) return false;
+        const hidden = catalogOverrides[p.id]?.hidden;
+        if (hidden && !isAdmin) return false;
+        return true;
+      });
+    return merged;
+  }, [entries, catalogOverrides, isAdmin]);
+
 
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {
@@ -332,8 +364,14 @@ function CataloguePage() {
 
   const visible = filtered.slice(0, visibleCount);
   const selectedProduct = selectedId
-    ? resolveProduct(selectedId, entries[selectedId])
+    ? (() => {
+        const base = resolveProduct(selectedId, entries[selectedId]);
+        return base
+          ? applyCatalogOverride(base, catalogOverrides[selectedId])
+          : null;
+      })()
     : null;
+
   const selectedEntry = selectedId ? (entries[selectedId] ?? null) : null;
 
   function toggleSelect(id: string) {
@@ -628,11 +666,13 @@ function CataloguePage() {
                   product={p}
                   entry={entries[p.id]}
                   systemCover={systemOverrides[p.id] ?? null}
+                  hiddenFromCollectors={!!catalogOverrides[p.id]?.hidden}
                   selectMode={selectMode}
                   selected={selectedIds.has(p.id)}
                   onToggleSelect={() => toggleSelect(p.id)}
                   onClick={() => setSelectedId(p.id)}
                 />
+
               ))}
             </div>
           ) : (
@@ -705,7 +745,29 @@ function CataloguePage() {
           selectedId ? (systemOverrides[selectedId] ?? null) : null
         }
         isAdmin={isAdmin}
+        listingHidden={
+          selectedId ? !!catalogOverrides[selectedId]?.hidden : false
+        }
+        onSaveCatalogOverride={
+          selectedId && isAdmin
+            ? async (patch, hidden) => {
+                const saved = await saveCatalogOverride({
+                  data: { productId: selectedId, patch, hidden },
+                });
+                setCatalogOverrideOne(saved);
+              }
+            : undefined
+        }
+        onRevertCatalogOverride={
+          selectedId && isAdmin
+            ? async () => {
+                await clearCatalogOverride({ data: { productId: selectedId } });
+                clearCatalogOverrideOne(selectedId);
+              }
+            : undefined
+        }
         open={!!selectedProduct && !selectMode}
+
         onOpenChange={(o) => {
           if (!o) setSelectedId(null);
         }}

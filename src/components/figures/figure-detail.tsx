@@ -47,6 +47,9 @@ import {
 import { compressImage } from "@/lib/image";
 import { ProductImage } from "@/components/figures/product-image";
 import { PlatinumMark } from "@/components/figures/platinum-mark";
+import { AdminListingEditor } from "@/components/figures/admin-listing-editor";
+import type { CatalogOverridePatch } from "@/lib/catalog-overrides";
+
 
 import { ImageLightbox } from "@/components/figures/image-lightbox";
 import { publishItemShare } from "@/lib/public-share";
@@ -69,7 +72,14 @@ interface FigureDetailProps {
   onClearPersonalCover?: () => void;
   onSetSystemCover?: (imageUrl: string) => void | Promise<void>;
   onClearSystemCover?: () => void | Promise<void>;
+  onSaveCatalogOverride?: (
+    patch: CatalogOverridePatch,
+    hidden: boolean,
+  ) => Promise<void>;
+  onRevertCatalogOverride?: () => Promise<void>;
+  listingHidden?: boolean;
   onDeleteListing?: () => void;
+
 }
 
 export function FigureDetail({
@@ -88,8 +98,12 @@ export function FigureDetail({
   onClearPersonalCover,
   onSetSystemCover,
   onClearSystemCover,
+  onSaveCatalogOverride,
+  onRevertCatalogOverride,
+  listingHidden = false,
   onDeleteListing,
 }: FigureDetailProps) {
+
 
   const fileRef = useRef<HTMLInputElement>(null);
   const adminFileRef = useRef<HTMLInputElement>(null);
@@ -709,8 +723,17 @@ export function FigureDetail({
                       onChange={(e) => void onAdminFile(e.target.files)}
                     />
                   </div>
+                  {onSaveCatalogOverride && onRevertCatalogOverride && (
+                    <AdminListingEditor
+                      product={product}
+                      hidden={listingHidden}
+                      onSave={onSaveCatalogOverride}
+                      onRevert={onRevertCatalogOverride}
+                    />
+                  )}
                 </div>
               )}
+
 
               {entry?.owned && (
                 <div className="mt-2 rounded-[var(--radius-lg)] border border-border bg-surface-2/50 p-4 sm:p-5">

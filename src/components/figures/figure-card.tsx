@@ -25,7 +25,9 @@ interface FigureCardProps {
   selectMode?: boolean;
   selected?: boolean;
   onToggleSelect?: () => void;
+  hiddenFromCollectors?: boolean;
 }
+
 
 /** Red checkmark + "In My Vault" chip next to the title (not over the photo). */
 function VaultedMark({ className }: { className?: string }) {
@@ -78,7 +80,9 @@ export function FigureCard({
   selectMode = false,
   selected = false,
   onToggleSelect,
+  hiddenFromCollectors = false,
 }: FigureCardProps) {
+
   const src = displayImageFor(product, entry, systemCover);
   const owned = entry?.owned;
   const wishlist = entry?.wishlist;
@@ -165,6 +169,12 @@ export function FigureCard({
               My listing
             </Badge>
           )}
+          {hiddenFromCollectors && (
+            <Badge className="bg-warning/90 text-[10px] text-bg backdrop-blur-sm">
+              Hidden
+            </Badge>
+          )}
+
         </div>
 
         {platinum && (
