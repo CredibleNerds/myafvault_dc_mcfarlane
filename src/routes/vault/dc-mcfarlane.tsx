@@ -3,6 +3,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Layers, Loader2, PackageOpen } from "lucide-react";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { authEnabled } from "@/lib/auth/client";
+import { getAccessStatus } from "@/lib/billing";
+
+
 import { toast } from "sonner";
 import {
   hydrateCatalogue,
@@ -66,6 +69,9 @@ function CataloguePage() {
   const { user, isPending: authPending } = useCurrentUserState();
   const signedIn = !!user && !user.isDevFallback;
   const [ready, setReady] = useState(false);
+  const [accessPending, setAccessPending] = useState(true);
+  const [hasPaidAccess, setHasPaidAccess] = useState(false);
+
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -119,6 +125,35 @@ function CataloguePage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!authEnabled) {
+      setHasPaidAccess(true);
+      setAccessPending(false);
+      return;
+    }
+    if (authPending) return;
+    if (!signedIn) {
+      setAccessPending(false);
+      setHasPaidAccess(false);
+      return;
+    }
+    let cancelled = false;
+    setAccessPending(true);
+    void getAccessStatus()
+      .then((s) => {
+        if (!cancelled) setHasPaidAccess(s.paid);
+      })
+      .catch(() => {
+        if (!cancelled) setHasPaidAccess(false);
+      })
+      .finally(() => {
+        if (!cancelled) setAccessPending(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [authPending, signedIn]);
 
   // Load shared admin system covers (once signed in / vault ready)
   useEffect(() => {
@@ -332,7 +367,7 @@ function CataloguePage() {
   const selectedList = useMemo(() => [...selectedIds], [selectedIds]);
 
   // Vault requires an account — no free browse
-  if (authEnabled && authPending) {
+  if (authEnabled && (authPending || (signedIn && accessPending))) {
     return (
       <div className="min-h-dvh grid place-items-center bg-bg text-muted">
         <div className="flex items-center gap-2 text-sm">
@@ -348,11 +383,24 @@ function CataloguePage() {
         <div className="max-w-sm text-center space-y-3">
           <p className="text-sm text-muted">Vault access requires an account.</p>
           <a
-            href="/login?mode=signup"
+            href="/login?mode=signup&next=/pay"
             className="inline-flex items-center justify-center rounded-[var(--radius-sm)] bg-primary px-4 py-2.5 text-sm font-medium text-primary-fg"
           >
             Sign up for access
           </a>
+        </div>
+      </div>
+    );
+  }
+  if (authEnabled && signedIn && !hasPaidAccess) {
+    if (typeof window !== "undefined") {
+      window.location.replace("/pay");
+    }
+    return (
+      <div className="min-h-dvh grid place-items-center bg-bg text-muted">
+        <div className="flex items-center gap-2 text-sm">
+          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+          Redirecting to checkout…
         </div>
       </div>
     );

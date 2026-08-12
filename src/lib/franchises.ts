@@ -83,6 +83,7 @@ export const VAULT_ACCESS = {
   productName: "MyAFVault Lifetime Access",
   description:
     "One-time unlock for the DC McFarlane vault, cloud sync, and multi-device access.",
-  /** Placeholder until Stripe Checkout is connected */
-  stripeReady: false,
+  /** Checkout is live when STRIPE_SECRET_KEY is set on the server */
+  stripeReady: true,
 } as const;
+

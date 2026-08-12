@@ -49,8 +49,9 @@ function LoginPage() {
   const [password, setPassword] = useState("");
 
   if (!isPending && user && !user.isDevFallback) {
-    return <Navigate to="/vault/dc-mcfarlane" />;
+    return <Navigate to="/pay" />;
   }
+
 
   async function onEmailSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -100,7 +101,13 @@ function LoginPage() {
           : "Signed in — syncing your collection",
       );
 
-      window.location.href = "/vault/dc-mcfarlane";
+      const next =
+        typeof window !== "undefined"
+          ? new URLSearchParams(window.location.search).get("next")
+          : null;
+      window.location.href =
+        next && next.startsWith("/") ? next : "/pay";
+
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed");
     } finally {
