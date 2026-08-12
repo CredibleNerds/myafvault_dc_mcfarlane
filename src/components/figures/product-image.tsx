@@ -7,32 +7,32 @@ type ProductImageProps = {
   alt: string;
   className?: string;
   imgClassName?: string;
-  /** Hint for responsive loading (CSS width of the slot). */
+  /** Extra official shots to try if the cover URL fails. */
+  fallbacks?: string[];
   sizes?: string;
   priority?: boolean;
   onClick?: () => void;
-  /** Intrinsic size hint — McFarlane product shots are typically square ~2200. */
   width?: number;
   height?: number;
 };
 
-/**
- * Renders official / personal product photos with crisp downscaling
- * and a high-quality source hint for retina displays.
- */
 export function ProductImage({
   src,
   alt,
   className,
   imgClassName,
+  fallbacks = [],
   sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px",
   priority = false,
   onClick,
   width = 2200,
   height = 2200,
 }: ProductImageProps) {
-  const [failed, setFailed] = useState(false);
-  const displaySrc = failed ? figurePlaceholder(alt || "Figure") : src;
+  const [failIndex, setFailIndex] = useState(0);
+  const candidates = [src, ...fallbacks.filter((u) => u && u !== src)];
+  const current = candidates[Math.min(failIndex, candidates.length)] ?? src;
+  const exhausted = failIndex >= candidates.length;
+  const displaySrc = exhausted ? figurePlaceholder(alt || "Figure") : current;
 
   return (
     <div className={cn("relative overflow-hidden bg-surface-2", className)}>
@@ -49,7 +49,7 @@ export function ProductImage({
         draggable={false}
         onClick={onClick}
         onError={() => {
-          if (!failed) setFailed(true);
+          if (!exhausted) setFailIndex((i) => i + 1);
         }}
         className={cn(
           "figure-img h-full w-full object-contain",

@@ -247,7 +247,9 @@ export function FigureDetail({
                   className="h-full w-full bg-transparent"
                   imgClassName="p-2 sm:p-3"
                   onClick={() => setLightboxOpen(true)}
+                  fallbacks={officialGallery}
                 />
+
                 {platinum && (
                   <div className="pointer-events-none absolute right-3 top-3 z-[2] sm:right-4 sm:top-4">
                     <PlatinumMark kind={platinum} size={20} />

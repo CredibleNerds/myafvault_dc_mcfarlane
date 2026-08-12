@@ -122,7 +122,9 @@ export function FigureCard({
           className="absolute inset-0 h-full w-full"
           imgClassName="p-1 sm:p-1.5"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          fallbacks={product.gallery}
         />
+
 
         {/* Selection control */}
         {selectMode && (
@@ -285,7 +287,9 @@ export function FigureListRow({
           className="h-20 w-20 sm:h-24 sm:w-24"
           imgClassName="p-0.5"
           sizes="96px"
+          fallbacks={product.gallery}
         />
+
         {platinum && (
           <div className="pointer-events-none absolute right-0.5 top-0.5">
             <PlatinumMark kind={platinum} size={16} labeled={false} />
