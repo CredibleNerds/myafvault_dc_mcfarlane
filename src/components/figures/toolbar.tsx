@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { CATEGORIES, LINES } from "@/lib/types";
 import type { ProductCategory } from "@/lib/types";
 import type { ScopeFilter, SortKey, ViewMode } from "@/lib/store";
@@ -25,12 +26,14 @@ import { cn } from "@/lib/utils";
 interface ToolbarProps {
   search: string;
   onSearch: (v: string) => void;
-  categoryFilter: ProductCategory | "all";
-  onCategory: (v: ProductCategory | "all") => void;
-  lineFilter: string;
-  onLine: (v: string) => void;
-  scopeFilter: ScopeFilter;
-  onScope: (v: ScopeFilter) => void;
+  categoryFilters: ProductCategory[];
+  onToggleCategory: (v: ProductCategory | "all") => void;
+  lineFilters: string[];
+  onToggleLine: (v: string) => void;
+  onClearLines: () => void;
+  scopeFilters: ScopeFilter[];
+  onToggleScope: (v: ScopeFilter) => void;
+  onClearScopes: () => void;
   sort: SortKey;
   onSort: (v: SortKey) => void;
   view: ViewMode;
@@ -45,15 +48,24 @@ interface ToolbarProps {
   onImport: () => void;
 }
 
+const SCOPE_OPTIONS: { value: ScopeFilter; label: string }[] = [
+  { value: "owned", label: OWNERSHIP.filterOnly },
+  { value: "wishlist", label: "Wishlist" },
+  { value: "custom", label: "My listings" },
+  { value: "unowned", label: OWNERSHIP.filterNot },
+];
+
 export function Toolbar({
   search,
   onSearch,
-  categoryFilter,
-  onCategory,
-  lineFilter,
-  onLine,
-  scopeFilter,
-  onScope,
+  categoryFilters,
+  onToggleCategory,
+  lineFilters,
+  onToggleLine,
+  onClearLines,
+  scopeFilters,
+  onToggleScope,
+  onClearScopes,
   sort,
   onSort,
   view,
@@ -69,19 +81,21 @@ export function Toolbar({
 }: ToolbarProps) {
   return (
     <div className="flex flex-col gap-3.5 sm:gap-3">
-      {/* Category chips */}
       <div className="flex gap-2 overflow-x-auto pb-0.5 -mx-1 px-1 scrollbar-none touch-pan-x">
         {CATEGORIES.map((c) => {
           const count =
             c.value === "all"
               ? categoryCounts.all
               : (categoryCounts[c.value] ?? 0);
-          const active = categoryFilter === c.value;
+          const active =
+            c.value === "all"
+              ? categoryFilters.length === 0
+              : categoryFilters.includes(c.value);
           return (
             <button
               key={c.value}
               type="button"
-              onClick={() => onCategory(c.value)}
+              onClick={() => onToggleCategory(c.value)}
               className={cn(
                 "shrink-0 rounded-full border px-3.5 py-2.5 text-xs font-medium transition-colors whitespace-nowrap min-h-10",
                 active
@@ -149,35 +163,23 @@ export function Toolbar({
       </div>
 
       <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
-        <Select
-          value={scopeFilter}
-          onValueChange={(v) => onScope(v as ScopeFilter)}
-        >
-          <SelectTrigger className="w-full h-10 sm:w-[160px]">
-            <SelectValue placeholder="Collection" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Full catalog</SelectItem>
-            <SelectItem value="owned">{OWNERSHIP.filterOnly}</SelectItem>
-            <SelectItem value="wishlist">Wishlist</SelectItem>
-            <SelectItem value="custom">My listings</SelectItem>
-            <SelectItem value="unowned">{OWNERSHIP.filterNot}</SelectItem>
-          </SelectContent>
-        </Select>
+        <MultiSelect
+          label="Full catalog"
+          values={scopeFilters}
+          options={SCOPE_OPTIONS}
+          onToggle={onToggleScope}
+          onClear={onClearScopes}
+          className="w-full sm:w-[180px]"
+        />
 
-        <Select value={lineFilter} onValueChange={onLine}>
-          <SelectTrigger className="w-full h-10 sm:w-[170px]">
-            <SelectValue placeholder="Line" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All lines</SelectItem>
-            {LINES.map((l) => (
-              <SelectItem key={l} value={l}>
-                {l}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <MultiSelect
+          label="All lines"
+          values={lineFilters}
+          options={LINES.map((l) => ({ value: l, label: l }))}
+          onToggle={onToggleLine}
+          onClear={onClearLines}
+          className="w-full sm:w-[180px]"
+        />
 
         <Select value={sort} onValueChange={(v) => onSort(v as SortKey)}>
           <SelectTrigger className="col-span-2 w-full h-10 sm:col-auto sm:w-[180px]">
@@ -196,7 +198,7 @@ export function Toolbar({
         <div className="col-span-2 flex flex-wrap items-center gap-1.5 sm:ml-auto sm:col-auto">
           <Button
             type="button"
-            variant={scopeFilter === "owned" ? "secondary" : "outline"}
+            variant={scopeFilters.includes("owned") ? "secondary" : "outline"}
             size="sm"
             onClick={onShareVault}
             disabled={ownedCount === 0}
@@ -217,7 +219,7 @@ export function Toolbar({
           </Button>
           <Button
             type="button"
-            variant={scopeFilter === "wishlist" ? "secondary" : "outline"}
+            variant={scopeFilters.includes("wishlist") ? "secondary" : "outline"}
             size="sm"
             onClick={onShareWishlist}
             disabled={wishlistCount === 0}

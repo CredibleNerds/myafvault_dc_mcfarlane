@@ -83,17 +83,20 @@ function CataloguePage() {
 
   const entries = useCatalogue((s) => s.entries);
   const search = useCatalogue((s) => s.search);
-  const categoryFilter = useCatalogue((s) => s.categoryFilter);
-  const lineFilter = useCatalogue((s) => s.lineFilter);
-  const scopeFilter = useCatalogue((s) => s.scopeFilter);
+  const categoryFilters = useCatalogue((s) => s.categoryFilters);
+  const lineFilters = useCatalogue((s) => s.lineFilters);
+  const scopeFilters = useCatalogue((s) => s.scopeFilters);
   const sort = useCatalogue((s) => s.sort);
   const view = useCatalogue((s) => s.view);
   const section = useCatalogue((s) => s.section);
 
   const setSearch = useCatalogue((s) => s.setSearch);
-  const setCategoryFilter = useCatalogue((s) => s.setCategoryFilter);
-  const setLineFilter = useCatalogue((s) => s.setLineFilter);
-  const setScopeFilter = useCatalogue((s) => s.setScopeFilter);
+  const toggleCategoryFilter = useCatalogue((s) => s.toggleCategoryFilter);
+  const toggleLineFilter = useCatalogue((s) => s.toggleLineFilter);
+  const setLineFilters = useCatalogue((s) => s.setLineFilters);
+  const toggleScopeFilter = useCatalogue((s) => s.toggleScopeFilter);
+  const setScopeFilters = useCatalogue((s) => s.setScopeFilters);
+
   const setSort = useCatalogue((s) => s.setSort);
   const setView = useCatalogue((s) => s.setView);
   const setSection = useCatalogue((s) => s.setSection);
@@ -183,7 +186,7 @@ function CataloguePage() {
 
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
-  }, [search, categoryFilter, lineFilter, scopeFilter, sort]);
+  }, [search, categoryFilters, lineFilters, scopeFilters, sort]);
 
   // Drop selection for figures no longer in the filtered set (optional cleanup)
   useEffect(() => {
@@ -225,15 +228,27 @@ function CataloguePage() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     let list = allProducts.filter((p) => {
-      if (categoryFilter !== "all" && p.category !== categoryFilter)
+      if (
+        categoryFilters.length > 0 &&
+        !categoryFilters.includes(p.category)
+      ) {
         return false;
-      if (lineFilter !== "all" && p.line !== lineFilter) return false;
+      }
+      if (lineFilters.length > 0 && !lineFilters.includes(p.line)) {
+        return false;
+      }
 
       const entry = entries[p.id];
-      if (scopeFilter === "owned" && !entry?.owned) return false;
-      if (scopeFilter === "wishlist" && !entry?.wishlist) return false;
-      if (scopeFilter === "unowned" && entry?.owned) return false;
-      if (scopeFilter === "custom" && !entry?.isCustom) return false;
+      if (scopeFilters.length > 0) {
+        const matchesScope = scopeFilters.some((scope) => {
+          if (scope === "owned") return !!entry?.owned;
+          if (scope === "wishlist") return !!entry?.wishlist;
+          if (scope === "unowned") return !entry?.owned;
+          if (scope === "custom") return !!entry?.isCustom;
+          return false;
+        });
+        if (!matchesScope) return false;
+      }
 
 
       if (!q) return true;
@@ -257,8 +272,11 @@ function CataloguePage() {
 
     list = [...list].sort((a, b) => {
       // Category pins: keep selected items at the bottom regardless of sort
-      const pinSet = PIN_BOTTOM_BY_CATEGORY[categoryFilter];
-      if (pinSet) {
+      const pinSet = new Set<string>();
+      for (const cat of categoryFilters) {
+        for (const id of PIN_BOTTOM_BY_CATEGORY[cat] ?? []) pinSet.add(id);
+      }
+      if (pinSet.size > 0) {
         const aPin = pinSet.has(a.id) ? 1 : 0;
         const bPin = pinSet.has(b.id) ? 1 : 0;
         if (aPin !== bPin) return aPin - bPin;
@@ -299,9 +317,9 @@ function CataloguePage() {
     allProducts,
     entries,
     search,
-    categoryFilter,
-    lineFilter,
-    scopeFilter,
+    categoryFilters,
+    lineFilters,
+    scopeFilters,
     sort,
   ]);
 
@@ -483,12 +501,15 @@ function CataloguePage() {
           <Toolbar
             search={search}
             onSearch={setSearch}
-            categoryFilter={categoryFilter}
-            onCategory={setCategoryFilter}
-            lineFilter={lineFilter}
-            onLine={setLineFilter}
-            scopeFilter={scopeFilter}
-            onScope={setScopeFilter}
+            categoryFilters={categoryFilters}
+            onToggleCategory={toggleCategoryFilter}
+            lineFilters={lineFilters}
+            onToggleLine={toggleLineFilter}
+            onClearLines={() => setLineFilters([])}
+            scopeFilters={scopeFilters}
+            onToggleScope={toggleScopeFilter}
+            onClearScopes={() => setScopeFilters([])}
+
             sort={sort}
             onSort={setSort}
             view={view}

@@ -15,7 +15,8 @@ export type SortKey =
   | "owned-first";
 
 export type ViewMode = "grid" | "list";
-export type ScopeFilter = "all" | "owned" | "wishlist" | "unowned" | "custom";
+export type ScopeFilter = "owned" | "wishlist" | "unowned" | "custom";
+
 
 export type AppSection = "catalogue" | "collections";
 
@@ -23,17 +24,21 @@ interface CatalogueState {
   entries: Record<string, UserEntry>;
   collections: Record<string, UserCollection>;
   search: string;
-  categoryFilter: ProductCategory | "all";
-  lineFilter: string;
-  scopeFilter: ScopeFilter;
+  categoryFilters: ProductCategory[];
+  lineFilters: string[];
+  scopeFilters: ScopeFilter[];
   sort: SortKey;
   view: ViewMode;
   section: AppSection;
 
   setSearch: (q: string) => void;
-  setCategoryFilter: (c: ProductCategory | "all") => void;
-  setLineFilter: (l: string) => void;
-  setScopeFilter: (s: ScopeFilter) => void;
+  setCategoryFilters: (c: ProductCategory[]) => void;
+  toggleCategoryFilter: (c: ProductCategory | "all") => void;
+  setLineFilters: (l: string[]) => void;
+  toggleLineFilter: (l: string) => void;
+  setScopeFilters: (s: ScopeFilter[]) => void;
+  toggleScopeFilter: (s: ScopeFilter) => void;
+
   setSort: (s: SortKey) => void;
   setView: (v: ViewMode) => void;
   setSection: (s: AppSection) => void;
@@ -129,18 +134,46 @@ export const useCatalogue = create<CatalogueState>()(
       entries: {},
       collections: {},
       search: "",
-      categoryFilter: "all",
-      lineFilter: "all",
-      scopeFilter: "all",
+      categoryFilters: [],
+      lineFilters: [],
+      scopeFilters: [],
       sort: "year-desc",
       view: "grid",
       section: "catalogue",
       ownerUserId: null,
 
       setSearch: (search) => set({ search }),
-      setCategoryFilter: (categoryFilter) => set({ categoryFilter }),
-      setLineFilter: (lineFilter) => set({ lineFilter }),
-      setScopeFilter: (scopeFilter) => set({ scopeFilter }),
+      setCategoryFilters: (categoryFilters) => set({ categoryFilters }),
+      toggleCategoryFilter: (c) => {
+        if (c === "all") {
+          set({ categoryFilters: [] });
+          return;
+        }
+        const cur = get().categoryFilters;
+        set({
+          categoryFilters: cur.includes(c)
+            ? cur.filter((x) => x !== c)
+            : [...cur, c],
+        });
+      },
+      setLineFilters: (lineFilters) => set({ lineFilters }),
+      toggleLineFilter: (l) => {
+        const cur = get().lineFilters;
+        set({
+          lineFilters: cur.includes(l)
+            ? cur.filter((x) => x !== l)
+            : [...cur, l],
+        });
+      },
+      setScopeFilters: (scopeFilters) => set({ scopeFilters }),
+      toggleScopeFilter: (s) => {
+        const cur = get().scopeFilters;
+        set({
+          scopeFilters: cur.includes(s)
+            ? cur.filter((x) => x !== s)
+            : [...cur, s],
+        });
+      },
       setSort: (sort) => set({ sort }),
       setView: (view) => set({ view }),
       setSection: (section) => set({ section }),
