@@ -84,8 +84,9 @@ export function getLiveFranchises(): FranchiseVault[] {
 
 /** Stripe product meta — wire Checkout Session later. */
 export const VAULT_ACCESS = {
-  priceUsd: 4.99,
-  priceLabel: "$4.99",
+  priceUsd: 3.99,
+  priceLabel: "$3.99",
+
   billing: "one-time" as const,
   productName: "MyAFVault Lifetime Access",
   description:

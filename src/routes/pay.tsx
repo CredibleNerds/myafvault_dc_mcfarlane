@@ -15,11 +15,13 @@ export const Route = createFileRoute("/pay")({
   component: PayPage,
   head: () => ({
     meta: [
-      { title: "Unlock MyAFVault — $4.99 lifetime access" },
+      { title: "Unlock MyAFVault — $3.99 lifetime access" },
+
       {
         name: "description",
         content:
-          "One-time $4.99 payment unlocks the DC McFarlane vault, cloud sync, and your collection.",
+          "One-time $3.99 payment unlocks the DC McFarlane vault, cloud sync, and your collection.",
+
       },
     ],
   }),

@@ -45,7 +45,8 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "MyAFVault is the DC McFarlane collector vault — 1,000+ official listings, In My Vault tracking, wishlist, photos, collections, sharing, and a collector board. Lifetime access $4.99.",
+          "MyAFVault is the DC McFarlane collector vault — 1,000+ official listings, In My Vault tracking, wishlist, photos, collections, sharing, and a collector board. Lifetime access $3.99.",
+
       },
     ],
   }),
