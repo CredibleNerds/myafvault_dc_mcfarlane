@@ -15,6 +15,7 @@ export type SharedFigureCard = {
   description?: string;
   accessories?: string[];
   productUrl?: string;
+  isCustom?: boolean;
 };
 
 export type SharedItemPayload = SharedFigureCard;
@@ -202,6 +203,7 @@ export const publishItemShare = createServerFn({ method: "POST" })
         scale: c.scale ?? '7"',
         description: c.description?.slice(0, 600),
         accessories: (c.accessories ?? []).slice(0, 12),
+        isCustom: true,
       };
     }
 

@@ -15,7 +15,8 @@ export type SortKey =
   | "owned-first";
 
 export type ViewMode = "grid" | "list";
-export type ScopeFilter = "all" | "owned" | "wishlist" | "unowned";
+export type ScopeFilter = "all" | "owned" | "wishlist" | "unowned" | "custom";
+
 export type AppSection = "catalogue" | "collections";
 
 interface CatalogueState {

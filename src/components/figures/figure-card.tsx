@@ -152,6 +152,11 @@ export function FigureCard({
           >
             {categoryLabel(product.category)}
           </Badge>
+          {entry?.isCustom && (
+            <Badge className="bg-fg/85 text-[10px] text-bg backdrop-blur-sm">
+              My listing
+            </Badge>
+          )}
         </div>
 
         {owned && (
