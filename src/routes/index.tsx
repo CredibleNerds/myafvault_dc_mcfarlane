@@ -67,7 +67,8 @@ const FEATURES = [
   },
   {
     icon: Star,
-    title: "Platinum & Red Plat seals",
+    title: "Platinum & Red Platinum seals",
+
     body: "Chase variants are labeled so you can tell a standard Platinum from a Red Platinum at a glance.",
   },
   {
@@ -223,15 +224,16 @@ function LandingPage() {
                 <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-semibold tracking-tight leading-[1.12] text-balance">
                   The vault for the DC McFarlane figures you collect.
                   <span className="block text-muted font-medium mt-2 text-2xl sm:text-3xl lg:text-[2rem]">
-                    Index the line. Mark the shelf. Share the hunt.
+                    Catalog the line. Claim the shelf. Share the hunt.
                   </span>
                 </h1>
                 <p className="text-base sm:text-lg text-muted max-w-xl leading-relaxed text-pretty">
-                  A living catalogue of McFarlane’s DC figures — official pack
-                  shots, accessories, Platinum chases — plus In My Vault,
-                  wishlist, your photos, collections, a collector board, and
-                  Home Screen install. One account. One-time unlock.
+                  A living catalogue of McFarlane’s DC figures — official
+                  figure pics, accessories list, Platinum chases — add your
+                  figures to In My Vault, create a wishlist, add your own
+                  photos, create your collections, a collector board.
                 </p>
+
 
                 <div className="flex flex-col sm:flex-row flex-wrap gap-3">
                   {signedIn ? (
