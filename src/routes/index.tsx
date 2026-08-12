@@ -34,7 +34,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "MyAFVault is your multi-franchise action figure vault. Start with DC McFarlane Multiverse — catalogue, photos, ownership, and cloud sync. Lifetime access $4.99.",
+          "MyAFVault is your DC McFarlane Multiverse vault — catalogue, photos, ownership, and cloud sync. Lifetime access $4.99.",
       },
     ],
   }),
@@ -167,9 +167,9 @@ function LandingPage() {
             <div className="grid gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.15fr)] lg:items-center">
               <div className="space-y-6">
                 <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-semibold tracking-tight leading-[1.12] text-balance">
-                  The Vault for the figures you collect.
+                  The Vault for the DC McFarlane figures you collect.
                   <span className="block text-muted font-medium mt-2 text-2xl sm:text-3xl lg:text-[2rem]">
-                    Starting with the DC McFarlane Multiverse.
+                    7" figures, megafigs, statues, multipacks, and vehicles.
                   </span>
                 </h1>
                 <p className="text-base sm:text-lg text-muted max-w-xl leading-relaxed text-pretty">
@@ -284,8 +284,8 @@ function LandingPage() {
                 Everything in the vault
               </h2>
               <p className="text-muted mt-2 text-sm sm:text-base max-w-xl">
-                The same tools power every franchise database as we add them —
-                start on DC McFarlane today.
+                Built for DC McFarlane Multiverse collectors — catalogue, track,
+                and display every figure in one vault.
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -305,25 +305,25 @@ function LandingPage() {
           </div>
         </section>
 
-        {/* Franchise vaults */}
+        {/* DC McFarlane vault */}
         <section className="border-b border-border" id="vaults">
           <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
               <div className="max-w-2xl">
                 <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary mb-2">
-                  Franchise vaults
+                  The vault
                 </p>
                 <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-                  DC McFarlane first. More lines next.
+                  DC McFarlane Multiverse
                 </h2>
                 <p className="text-muted mt-2 text-sm sm:text-base">
-                  Each franchise is its own database inside MyAFVault. One
-                  account unlocks every vault as it launches.
+                  One dedicated database for McFarlane’s DC line — official
+                  listings, accessories, and your personal collection.
                 </p>
               </div>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {FRANCHISES.map((f) => {
+            <div className="grid gap-3 sm:grid-cols-1 max-w-xl">
+              {FRANCHISES.filter((f) => f.status === "live").map((f) => {
                 const live = f.status === "live";
                 const CardInner = (
                   <>
@@ -423,7 +423,7 @@ function LandingPage() {
               </h2>
               <p className="text-muted mt-2 text-sm sm:text-base">
                 Sign up for vault access. Unlock the full DC McFarlane catalogue, cloud
-                sync, multi-device storage, and future franchise databases with a single payment.
+                sync, and multi-device storage with a single payment.
               </p>
             </div>
 
@@ -446,7 +446,7 @@ function LandingPage() {
                     "Cloud backup of ownership, notes, and photos",
                     "Collections & multi-figure displays",
                     "Optional two-factor security",
-                    "Access to new franchise vaults when they launch",
+                    "Full DC McFarlane Multiverse catalogue",
                     "No subscription — pay once",
                   ].map((item) => (
                     <li
@@ -492,8 +492,7 @@ function LandingPage() {
                     DC McFarlane
                   </strong>{" "}
                   database. There is no free browse mode — the vault unlocks after
-                  you sign up. When Marvel, Star Wars, Fallout, and other vaults
-                  launch, the same account covers them too.
+                  you sign up.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2">
                   {signedIn ? (
@@ -570,7 +569,7 @@ function LandingPage() {
           <div>
             <p className="text-sm font-semibold">MyAFVault</p>
             <p className="text-xs text-subtle mt-0.5">
-              Multi-franchise figure catalogues. DC McFarlane live.
+              DC McFarlane Multiverse catalogue.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted">

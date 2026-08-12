@@ -102,6 +102,8 @@ function CataloguePage() {
   const setPersonalCover = useCatalogue((s) => s.setPersonalCover);
   const clearPersonalCover = useCatalogue((s) => s.clearPersonalCover);
   const addCustomEntry = useCatalogue((s) => s.addCustomEntry);
+  const removeEntry = useCatalogue((s) => s.removeEntry);
+
   const systemOverrides = useSystemImages((s) => s.overrides);
   const setSystemAll = useSystemImages((s) => s.setAll);
   const setSystemOne = useSystemImages((s) => s.setOne);
@@ -195,6 +197,8 @@ function CataloguePage() {
       if (scopeFilter === "owned" && !entry?.owned) return false;
       if (scopeFilter === "wishlist" && !entry?.wishlist) return false;
       if (scopeFilter === "unowned" && entry?.owned) return false;
+      if (scopeFilter === "custom" && !entry?.isCustom) return false;
+
 
       if (!q) return true;
       const hay = [
@@ -650,21 +654,28 @@ function CataloguePage() {
           await clearSystemProductImage({ data: { productId: selectedId } });
           clearSystemOne(selectedId);
         }}
+        onDeleteListing={() => {
+          if (!selectedId) return;
+          removeEntry(selectedId);
+          setSelectedId(null);
+          toast.message("Listing removed from your vault");
+        }}
       />
 
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle>Add custom figure</DialogTitle>
+            <DialogTitle>Create my listing</DialogTitle>
             <DialogDescription>
-              Create an entry for a piece not in the master McFarlane list.
+              Private to your account. Share it later if you want others to add
+              a copy to their vault.
             </DialogDescription>
           </DialogHeader>
           <FigureForm
             onSubmit={(entry) => {
               addCustomEntry(entry);
               setFormOpen(false);
-              toast.success("Custom figure added");
+              toast.success("Listing added to your vault");
               setSelectedId(entry.productId);
             }}
             onCancel={() => setFormOpen(false)}

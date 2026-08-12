@@ -64,6 +64,7 @@ interface FigureDetailProps {
   onClearPersonalCover?: () => void;
   onSetSystemCover?: (imageUrl: string) => void | Promise<void>;
   onClearSystemCover?: () => void | Promise<void>;
+  onDeleteListing?: () => void;
 }
 
 export function FigureDetail({
@@ -82,7 +83,9 @@ export function FigureDetail({
   onClearPersonalCover,
   onSetSystemCover,
   onClearSystemCover,
+  onDeleteListing,
 }: FigureDetailProps) {
+
   const fileRef = useRef<HTMLInputElement>(null);
   const adminFileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -131,9 +134,12 @@ export function FigureDetail({
       const ok = await copyText(url);
       toast.success(
         ok
-          ? "Share link copied — anyone can open it"
+          ? entry?.isCustom
+            ? "Listing link copied — others can add a copy to their vault"
+            : "Share link copied — anyone can open it"
           : "Share link ready",
       );
+
       if (!ok) {
         window.prompt("Copy this share link:", url);
       }
@@ -394,8 +400,25 @@ export function FigureDetail({
                   disabled={shareBusy}
                 >
                   <Share2 className="h-4 w-4" />
-                  {shareBusy ? "Sharing…" : "Share"}
+                  {shareBusy
+                    ? "Sharing…"
+                    : entry?.isCustom
+                      ? "Share listing"
+                      : "Share"}
                 </Button>
+                {entry?.isCustom && onDeleteListing && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-danger hover:text-danger"
+                    onClick={() => {
+                      onDeleteListing();
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete listing
+                  </Button>
+                )}
                 {product.productUrl && (
                   <Button size="sm" variant="ghost" asChild>
                     <a

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ExternalLink, Loader2, Share2 } from "lucide-react";
+import { toast } from "sonner";
 import {
   fetchPublicShare,
   type SharedItemPayload,
@@ -12,6 +13,11 @@ import { categoryLabel } from "@/lib/product";
 import { figurePlaceholder } from "@/lib/image";
 import type { ProductCategory } from "@/lib/types";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { hydrateCatalogue, useCatalogue } from "@/lib/store";
+
+import { listingFromSharedItem } from "@/lib/import-shared-listing";
+import { PRIMARY_VAULT_PATH } from "@/lib/franchises";
 
 export const Route = createFileRoute("/share/item/$token")({
   component: PublicItemSharePage,
@@ -26,10 +32,15 @@ export const Route = createFileRoute("/share/item/$token")({
 
 function PublicItemSharePage() {
   const { token } = Route.useParams();
+  const { user, isPending } = useCurrentUserState();
+  const signedIn = !isPending && !!user && !user.isDevFallback;
+  const addCustom = useCatalogue((s) => s.addCustomEntry);
   const [item, setItem] = useState<SharedItemPayload | null>(null);
   const [title, setTitle] = useState("Shared figure");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [importing, setImporting] = useState(false);
+  const [imported, setImported] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -57,6 +68,26 @@ function PublicItemSharePage() {
     };
   }, [token]);
 
+  async function addToMyVault() {
+    if (!item) return;
+    setImporting(true);
+    try {
+      await hydrateCatalogue();
+      const entry = listingFromSharedItem(item);
+      addCustom(entry);
+      setImported(true);
+      toast.success("Added to your vault — only you can see this copy");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Could not add listing",
+      );
+    } finally {
+      setImporting(false);
+    }
+  }
+
+  const canImport = !!item?.isCustom;
+
   return (
     <div className="min-h-dvh bg-bg text-fg">
       <header className="sticky top-0 z-20 border-b border-border bg-surface/80 backdrop-blur-md">
@@ -66,9 +97,15 @@ function PublicItemSharePage() {
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button size="sm" variant="outline" asChild>
-              <Link to="/login">Sign in</Link>
-            </Button>
+            {signedIn ? (
+              <Button size="sm" variant="outline" asChild>
+                <Link to={PRIMARY_VAULT_PATH}>Open vault</Link>
+              </Button>
+            ) : (
+              <Button size="sm" variant="outline" asChild>
+                <Link to="/login">Sign in</Link>
+              </Button>
+            )}
           </div>
         </div>
       </header>
@@ -115,6 +152,9 @@ function PublicItemSharePage() {
                   {item.scale ? (
                     <Badge variant="outline">{item.scale}</Badge>
                   ) : null}
+                  {item.isCustom ? (
+                    <Badge variant="outline">Shared listing</Badge>
+                  ) : null}
                 </div>
                 <h1 className="text-2xl font-semibold tracking-tight text-fg">
                   {title || item.name}
@@ -140,6 +180,25 @@ function PublicItemSharePage() {
                   </div>
                 ) : null}
                 <div className="mt-auto flex flex-wrap gap-2 pt-2">
+                  {canImport && signedIn && !imported && (
+                    <Button
+                      size="sm"
+                      disabled={importing}
+                      onClick={() => void addToMyVault()}
+                    >
+                      {importing ? "Adding…" : "Add to my vault"}
+                    </Button>
+                  )}
+                  {canImport && signedIn && imported && (
+                    <Button size="sm" asChild>
+                      <Link to={PRIMARY_VAULT_PATH}>Open in my vault</Link>
+                    </Button>
+                  )}
+                  {canImport && !signedIn && (
+                    <Button size="sm" asChild>
+                      <Link to="/login">Sign in to add this listing</Link>
+                    </Button>
+                  )}
                   {item.productUrl ? (
                     <Button size="sm" variant="outline" asChild>
                       <a
@@ -152,10 +211,18 @@ function PublicItemSharePage() {
                       </a>
                     </Button>
                   ) : null}
-                  <Button size="sm" asChild>
-                    <Link to="/login">Start your vault</Link>
-                  </Button>
+                  {!canImport && (
+                    <Button size="sm" asChild>
+                      <Link to="/login">Start your vault</Link>
+                    </Button>
+                  )}
                 </div>
+                {canImport && (
+                  <p className="text-xs text-subtle">
+                    Adding creates a private copy in your account. It does not
+                    change the original listing.
+                  </p>
+                )}
               </div>
             </div>
           </article>

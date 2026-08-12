@@ -127,8 +127,8 @@ export function FigureForm({ onSubmit, onCancel }: FigureFormProps) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <p className="text-sm text-muted">
-        For figures not yet in the McFarlane master list — add your own entry
-        with photos and accessories.
+        Create a listing that only you can see. Add photos and accessories, then
+        share a link if you want other collectors to add a copy to their vault.
       </p>
       <div className="flex flex-col gap-3 sm:flex-row">
         <button

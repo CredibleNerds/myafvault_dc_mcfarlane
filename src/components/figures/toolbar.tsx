@@ -142,7 +142,8 @@ export function Toolbar({
             className="flex-1 h-10 sm:flex-none sm:h-10"
           >
             <Plus className="h-4 w-4" />
-            <span>Add custom</span>
+            <span className="sm:hidden">My listing</span>
+            <span className="hidden sm:inline">Create listing</span>
           </Button>
         </div>
       </div>
@@ -159,6 +160,7 @@ export function Toolbar({
             <SelectItem value="all">Full catalog</SelectItem>
             <SelectItem value="owned">{OWNERSHIP.filterOnly}</SelectItem>
             <SelectItem value="wishlist">Wishlist</SelectItem>
+            <SelectItem value="custom">My listings</SelectItem>
             <SelectItem value="unowned">{OWNERSHIP.filterNot}</SelectItem>
           </SelectContent>
         </Select>

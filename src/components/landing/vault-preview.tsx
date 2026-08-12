@@ -387,7 +387,7 @@ function FeaturePanel({
           </li>
           <li className="flex gap-2">
             <Check className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-            One account for DC McFarlane and future franchise vaults
+            One account for your DC McFarlane vault
           </li>
         </ul>
       )}
