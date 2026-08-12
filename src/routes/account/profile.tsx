@@ -1,14 +1,7 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Camera,
-  Check,
-  Loader2,
-  Search,
-  Sparkles,
-  Trash2,
-  UserRound,
-} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Check, Loader2, Search, Sparkles, Trash2 } from "lucide-react";
+
 import { toast } from "sonner";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import {
@@ -18,15 +11,17 @@ import {
   type UserProfile,
 } from "@/lib/profile";
 import { AccountShell } from "@/components/account/account-shell";
+import { AvatarStudio } from "@/components/account/avatar-studio";
+import { CollectorAvatar } from "@/components/account/collector-avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { compressImage } from "@/lib/image";
 import { CATALOG } from "@/data/catalog";
 import { LINES } from "@/lib/types";
 import { useCatalogue } from "@/lib/store";
 import { ProductImage } from "@/components/figures/product-image";
+import { DEFAULT_AVATAR } from "@/lib/avatar";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/account/profile")({
@@ -43,10 +38,8 @@ function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [figureQuery, setFigureQuery] = useState("");
-  const [pickerMode, setPickerMode] = useState<"avatar" | "favorite" | null>(
-    null,
-  );
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [pickerMode, setPickerMode] = useState<"favorite" | null>(null);
+  const [studioOpen, setStudioOpen] = useState(false);
 
   useEffect(() => {
     if (isPending || !user || user.isDevFallback) return;
@@ -70,15 +63,8 @@ function ProfilePage() {
     };
   }, [isPending, user?.id]);
 
-  const avatarProduct = profile.avatarProductId
-    ? CATALOG.find((p) => p.id === profile.avatarProductId)
-    : undefined;
-  const avatarSrc =
-    profile.avatarKind === "upload"
-      ? profile.avatarData
-      : avatarProduct?.imageUrl ?? null;
-
   const figureHits = useMemo(() => {
+
     const q = figureQuery.trim().toLowerCase();
     const list = q
       ? CATALOG.filter((p) =>
@@ -92,31 +78,7 @@ function ProfilePage() {
     return <Navigate to="/login" />;
   }
 
-  async function onUpload(file: File) {
-    try {
-      const data = await compressImage(file, 480, 0.82);
-      setProfile((p) => ({
-        ...p,
-        avatarKind: "upload",
-        avatarData: data,
-        avatarProductId: null,
-      }));
-    } catch {
-      toast.error("Could not read that photo");
-    }
-  }
-
   function pickFigure(id: string) {
-    if (pickerMode === "avatar") {
-      setProfile((p) => ({
-        ...p,
-        avatarKind: "figure",
-        avatarProductId: id,
-        avatarData: null,
-      }));
-      setPickerMode(null);
-      return;
-    }
     setProfile((p) => {
       if (p.favoriteProductIds.includes(id)) return p;
       if (p.favoriteProductIds.length >= 8) {
@@ -126,6 +88,7 @@ function ProfilePage() {
       return { ...p, favoriteProductIds: [...p.favoriteProductIds, id] };
     });
   }
+
 
   function toggleLine(line: string) {
     setProfile((p) => ({
@@ -171,47 +134,26 @@ function ProfilePage() {
         <form onSubmit={onSave} className="space-y-8">
           <section className="rounded-[var(--radius-lg)] border border-border bg-surface p-5 space-y-4">
             <div className="flex items-start gap-4">
-              <div className="relative shrink-0">
-                <div className="h-24 w-24 overflow-hidden rounded-2xl border border-border bg-surface-2">
-                  {avatarSrc ? (
-                    <ProductImage
-                      src={avatarSrc || ""}
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <span className="grid h-full w-full place-items-center text-primary">
-                      <UserRound className="h-10 w-10" />
-                    </span>
-                  )}
-                </div>
-              </div>
+              <CollectorAvatar
+                config={profile.avatarConfig}
+                uploadSrc={profile.avatarData}
+                name={profile.displayName || user?.displayName}
+                size={96}
+              />
               <div className="min-w-0 flex-1 space-y-2">
                 <p className="text-sm font-medium">Avatar</p>
                 <p className="text-xs text-muted leading-relaxed">
-                  Upload a photo or use a figure from the vault as your avatar.
+                  Customize a collector avatar: figure, photo, crop, frame, and
+                  badge.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <Button
                     type="button"
                     size="sm"
-                    variant="outline"
-                    onClick={() => fileRef.current?.click()}
-                  >
-                    <Camera className="h-3.5 w-3.5" />
-                    Upload photo
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setPickerMode("avatar");
-                      setFigureQuery("");
-                    }}
+                    onClick={() => setStudioOpen(true)}
                   >
                     <Sparkles className="h-3.5 w-3.5" />
-                    Use a figure
+                    Customize
                   </Button>
                   {profile.avatarKind !== "none" && (
                     <Button
@@ -224,6 +166,7 @@ function ProfilePage() {
                           avatarKind: "none",
                           avatarData: null,
                           avatarProductId: null,
+                          avatarConfig: { ...DEFAULT_AVATAR },
                         }))
                       }
                     >
@@ -232,17 +175,6 @@ function ProfilePage() {
                     </Button>
                   )}
                 </div>
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*"
-                  className="sr-only"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) void onUpload(file);
-                    e.target.value = "";
-                  }}
-                />
               </div>
             </div>
           </section>
@@ -461,11 +393,8 @@ function ProfilePage() {
         <div className="fixed inset-0 z-50 grid place-items-end bg-bg/70 p-0 sm:place-items-center sm:p-4">
           <div className="flex max-h-[88dvh] w-full max-w-lg flex-col rounded-t-[var(--radius-xl)] border border-border bg-surface shadow-card sm:rounded-[var(--radius-lg)]">
             <div className="border-b border-border px-4 py-3">
-              <p className="font-medium">
-                {pickerMode === "avatar"
-                  ? "Choose a figure avatar"
-                  : "Add a favorite figure"}
-              </p>
+              <p className="font-medium">Add a favorite figure</p>
+
               <div className="relative mt-2">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-subtle" />
                 <Input
@@ -514,6 +443,31 @@ function ProfilePage() {
             </div>
           </div>
         </div>
+      )}
+
+      {studioOpen && (
+        <AvatarStudio
+          config={profile.avatarConfig}
+          uploadSrc={profile.avatarData}
+          name={profile.displayName || user?.displayName || "Collector"}
+          onChange={(avatarConfig) =>
+            setProfile((p) => ({
+              ...p,
+              avatarKind: "custom",
+              avatarConfig,
+              avatarProductId: avatarConfig.productId,
+            }))
+          }
+          onUpload={(avatarData) =>
+            setProfile((p) => ({
+              ...p,
+              avatarKind: "custom",
+              avatarData,
+              avatarConfig: { ...p.avatarConfig, source: "upload" },
+            }))
+          }
+          onClose={() => setStudioOpen(false)}
+        />
       )}
     </AccountShell>
   );
