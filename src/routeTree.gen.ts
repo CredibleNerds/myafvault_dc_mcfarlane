@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ForumRouteImport } from './routes/forum'
+import { Route as InstallRouteImport } from './routes/install'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PayRouteImport } from './routes/pay'
 import { Route as AccountIndexRouteImport } from './routes/account/index'
@@ -34,6 +35,11 @@ const IndexRoute = IndexRouteImport.update({
 const ForumRoute = ForumRouteImport.update({
   id: '/forum',
   path: '/forum',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InstallRoute = InstallRouteImport.update({
+  id: '/install',
+  path: '/install',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -110,6 +116,7 @@ const ShareWishlistTokenRoute = ShareWishlistTokenRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/forum': typeof ForumRoute
+  '/install': typeof InstallRoute
   '/login': typeof LoginRouteWithChildren
   '/pay': typeof PayRouteWithChildren
   '/account/profile': typeof AccountProfileRoute
@@ -128,6 +135,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/forum': typeof ForumRoute
+  '/install': typeof InstallRoute
   '/login': typeof LoginRouteWithChildren
   '/pay': typeof PayRouteWithChildren
   '/account/profile': typeof AccountProfileRoute
@@ -147,6 +155,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/forum': typeof ForumRoute
+  '/install': typeof InstallRoute
   '/login': typeof LoginRouteWithChildren
   '/pay': typeof PayRouteWithChildren
   '/account/profile': typeof AccountProfileRoute
@@ -167,6 +176,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/forum'
+    | '/install'
     | '/login'
     | '/pay'
     | '/account/profile'
@@ -185,6 +195,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/forum'
+    | '/install'
     | '/login'
     | '/pay'
     | '/account/profile'
@@ -203,6 +214,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/forum'
+    | '/install'
     | '/login'
     | '/pay'
     | '/account/profile'
@@ -222,6 +234,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ForumRoute: typeof ForumRoute
+  InstallRoute: typeof InstallRoute
   LoginRoute: typeof LoginRouteWithChildren
   PayRoute: typeof PayRouteWithChildren
   AccountProfileRoute: typeof AccountProfileRoute
@@ -250,6 +263,13 @@ declare module '@tanstack/react-router' {
       path: '/forum'
       fullPath: '/forum'
       preLoaderRoute: typeof ForumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/install': {
+      id: '/install'
+      path: '/install'
+      fullPath: '/install'
+      preLoaderRoute: typeof InstallRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -376,6 +396,7 @@ const PayRouteWithChildren = PayRoute._addFileChildren(PayRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ForumRoute: ForumRoute,
+  InstallRoute: InstallRoute,
   LoginRoute: LoginRouteWithChildren,
   PayRoute: PayRouteWithChildren,
   AccountProfileRoute: AccountProfileRoute,

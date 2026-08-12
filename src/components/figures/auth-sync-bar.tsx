@@ -18,6 +18,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { authEnabled } from "@/lib/auth/client";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { InstallLink } from "@/components/install/install-link";
+
 
 export function AuthSyncBar() {
   const { user, isPending } = useCurrentUserState();
@@ -47,6 +49,8 @@ export function AuthSyncBar() {
     <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end sm:gap-3">
 
       <ThemeToggle />
+      <InstallLink />
+
 
       {authEnabled && (
         <>

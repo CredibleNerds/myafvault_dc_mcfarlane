@@ -1,0 +1,24 @@
+{
+  "name": "MyAFVault",
+  "short_name": "AFVault",
+  "description": "Your DC McFarlane figure vault",
+  "start_url": "/vault/dc-mcfarlane",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a0b0e",
+  "theme_color": "#c41e3a",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

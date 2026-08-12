@@ -7,6 +7,9 @@ import { getAccessStatus } from "@/lib/billing";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserButton } from "@/lib/auth/gates";
 import { ForumBoard } from "@/components/forum/forum-board";
+import { InstallLink } from "@/components/install/install-link";
+import { InstallPrompt } from "@/components/install/install-prompt";
+
 
 export const Route = createFileRoute("/forum")({
   component: ForumPage,
@@ -60,6 +63,7 @@ function ForumPage() {
             Vault
           </Link>
           <div className="flex items-center gap-3">
+            <InstallLink />
             <ThemeToggle />
             <UserButton />
           </div>
@@ -68,6 +72,7 @@ function ForumPage() {
       <main className="px-4 py-6 sm:py-8">
         <ForumBoard />
       </main>
+      <InstallPrompt />
     </div>
   );
 }
