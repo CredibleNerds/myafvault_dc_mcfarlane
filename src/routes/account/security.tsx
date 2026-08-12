@@ -1,13 +1,6 @@
-import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import {
-  ArrowLeft,
-  Copy,
-  Loader2,
-  Shield,
-  ShieldCheck,
-  ShieldOff,
-} from "lucide-react";
+import { Copy, Loader2, Shield, ShieldCheck, ShieldOff } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import {
@@ -21,6 +14,7 @@ import { useCatalogue } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AccountShell } from "@/components/account/account-shell";
 
 export const Route = createFileRoute("/account/security")({
   component: SecurityPage,
@@ -122,33 +116,11 @@ function SecurityPage() {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col">
-      <div className="h-1 w-full bg-primary" aria-hidden />
-      <header className="border-b border-border/80">
-        <div className="mx-auto flex max-w-lg items-center gap-3 px-4 py-4">
-          <Link
-            to="/vault/dc-mcfarlane"
-            className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-fg"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Catalogue
-          </Link>
-        </div>
-      </header>
-
-      <main className="mx-auto w-full max-w-lg flex-1 px-4 py-8 space-y-6">
-        <div className="space-y-2">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/15 text-primary">
-            <Shield className="h-5 w-5" />
-          </div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Account security
-          </h1>
-          <p className="text-sm text-muted leading-relaxed">
-            Protect your vault with an authenticator app (Google Authenticator,
-            1Password, Authy, etc.). You'll enter a code after signing in.
-          </p>
-        </div>
+    <AccountShell title="Account security" active="security">
+      <p className="-mt-2 text-sm text-muted leading-relaxed">
+        Protect your vault with an authenticator app (Google Authenticator,
+        1Password, Authy, etc.). You'll enter a code after signing in.
+      </p>
 
         {loading ? (
           <p className="text-sm text-muted flex items-center gap-2">
@@ -350,7 +322,6 @@ function SecurityPage() {
             </form>
           </div>
         )}
-      </main>
-    </div>
+    </AccountShell>
   );
 }
