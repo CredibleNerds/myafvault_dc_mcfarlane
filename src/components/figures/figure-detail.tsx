@@ -48,6 +48,8 @@ import { compressImage } from "@/lib/image";
 import { ProductImage } from "@/components/figures/product-image";
 import { PlatinumMark } from "@/components/figures/platinum-mark";
 import { AdminListingEditor } from "@/components/figures/admin-listing-editor";
+import { SiteCredit } from "@/components/site-credit";
+
 import type { CatalogOverridePatch } from "@/lib/catalog-overrides";
 
 
@@ -837,10 +839,12 @@ export function FigureDetail({
                   </div>
                 </div>
               )}
+              <SiteCredit className="pt-4" />
               </div>
             </div>
           </div>
         </DialogContent>
+
       </Dialog>
 
       <ImageLightbox

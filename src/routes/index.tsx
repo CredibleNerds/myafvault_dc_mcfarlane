@@ -31,6 +31,8 @@ import { catalogStats } from "@/data/catalog";
 import { cn } from "@/lib/utils";
 import { VaultPreview } from "@/components/landing/vault-preview";
 import { FeedbackButton } from "@/components/feedback-button";
+import { SiteCredit } from "@/components/site-credit";
+
 
 
 export const Route = createFileRoute("/")({
@@ -691,7 +693,11 @@ function LandingPage() {
             <ThemeToggle className="sm:hidden" />
           </div>
         </div>
+        <div className="mx-auto max-w-6xl px-4 pb-6 sm:px-6">
+          <SiteCredit />
+        </div>
       </footer>
+
     </div>
   );
 }
