@@ -11,6 +11,8 @@ import {
 } from "@/lib/store";
 import type { UserEntry } from "@/lib/types";
 import { CATALOG, catalogStats } from "@/data/catalog";
+
+
 import { resolveProduct } from "@/lib/product";
 import { StatsBar } from "@/components/figures/stats-bar";
 import { Toolbar } from "@/components/figures/toolbar";
@@ -51,9 +53,15 @@ const CATALOG_INDEX: Record<string, number> = Object.fromEntries(
   CATALOG.map((p, i) => [p.id, i]),
 );
 
-function yearValue(year: number | null | undefined, newestFirst: boolean) {
-  if (year == null || year === 0) return newestFirst ? -1 : 9999;
-  return year;
+function yearValue(year: number | string | null | undefined, newestFirst: boolean) {
+  const n =
+    typeof year === "number"
+      ? year
+      : typeof year === "string"
+        ? Number.parseInt(year, 10)
+        : NaN;
+  if (!Number.isFinite(n) || n <= 0) return newestFirst ? -1 : 9999;
+  return n;
 }
 
 /** Always appear last within a category filter (stable pin). */

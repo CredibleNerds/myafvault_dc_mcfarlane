@@ -371,7 +371,6 @@ export const useCatalogue = create<CatalogueState>()(
         entries: s.entries,
         collections: s.collections,
         view: s.view,
-        sort: s.sort,
         section: s.section,
       }),
     },
@@ -381,6 +380,8 @@ export const useCatalogue = create<CatalogueState>()(
 export async function hydrateCatalogue(): Promise<void> {
   if (typeof window === "undefined") return;
   await useCatalogue.persist.rehydrate();
+  // Always open the vault newest-year-first (do not restore an old sort).
+  useCatalogue.setState({ sort: "year-desc" });
 }
 
 export function selectCollectionStats(entries: Record<string, UserEntry>) {
