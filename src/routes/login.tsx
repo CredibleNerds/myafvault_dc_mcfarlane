@@ -1,5 +1,7 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+
 import {
   ArrowLeft,
   Check,
@@ -25,7 +27,10 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { oauthErrorMessage } from "@/lib/auth-errors";
 import { cn } from "@/lib/utils";
+
+
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -42,7 +47,11 @@ function LoginPage() {
   });
   const [busyProvider, setBusyProvider] = useState<string | null>(null);
   const [emailBusy, setEmailBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return oauthErrorMessage(new URLSearchParams(window.location.search).get("error"));
+  });
+
   const [showPassword, setShowPassword] = useState(false);
 
   const [name, setName] = useState("");
@@ -223,6 +232,14 @@ function LoginPage() {
               </div>
 
               <div className="space-y-2.5">
+                {error && (
+                  <p
+                    className="rounded-[var(--radius-sm)] border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger"
+                    role="alert"
+                  >
+                    {error}
+                  </p>
+                )}
                 {GROK_PROVIDERS.map((p) => (
                   <Button
                     key={p.providerId}
@@ -334,15 +351,6 @@ function LoginPage() {
                     </button>
                   </div>
                 </div>
-
-                {error && (
-                  <p
-                    className="rounded-[var(--radius-sm)] border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger"
-                    role="alert"
-                  >
-                    {error}
-                  </p>
-                )}
 
                 <Button type="submit" className="w-full h-11" disabled={anyBusy}>
                   {emailBusy ? (

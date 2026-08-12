@@ -101,7 +101,12 @@ const LOCAL_DEV_ORIGINS: string[] = [
   "http://127.0.0.1:8080",
   "http://[::1]:8080",
 ];
+const PRODUCTION_ORIGINS: string[] = [
+  "https://www.myafvault.com",
+  "https://myafvault.com",
+];
 const baseURL = explicitBaseURL ?? {
+
   // Include loopback hosts so dynamic baseURL resolves for local email/password
   // (not only the preview wildcard).
   allowedHosts: [...previewAllowedHosts, "localhost", "127.0.0.1", "[::1]"],
@@ -114,12 +119,13 @@ const baseURL = explicitBaseURL ?? {
 // Origins Better Auth accepts on credentialed POSTs (sign-up/sign-in, etc.).
 // Missing entries here surface as FORBIDDEN "Invalid origin".
 const trustedOrigins: string[] = explicitBaseURL
-  ? [explicitBaseURL, ...LOCAL_DEV_ORIGINS]
+  ? [explicitBaseURL, ...PRODUCTION_ORIGINS, ...LOCAL_DEV_ORIGINS]
   : [
       // Host wildcards (matched against Origin's host)
       ...previewAllowedHosts,
       // Full-origin wildcards (matched against Origin)
       ...previewAllowedHosts.flatMap((host) => [`https://${host}`, `http://${host}`]),
+      ...PRODUCTION_ORIGINS,
       ...LOCAL_DEV_ORIGINS,
     ];
 
@@ -180,12 +186,44 @@ const grokOAuthPlugin = authConfigured
         tokenUrl: grokTokenUrl,
         userInfoUrl: grokUserInfoUrl,
         scopes: ["openid", "profile", "email"],
+        pkce: true,
         // `prompt: "login"` forces the broker to re-authenticate against the
         // upstream on every sign-in instead of silently reusing an existing
         // broker session. Combined with the broker sending Google
         // `prompt=select_account`, the user always gets the account chooser
         // and can pick (or switch) which account to sign in with.
         authorizationUrlParams: { idp, prompt: "login" },
+        // X often omits email (and sometimes name). Better Auth requires both
+        // and otherwise redirects to ?error=email_is_missing / name_is_missing.
+        mapProfileToUser: (profile: Record<string, unknown>) => {
+          const rawId =
+            profile.sub ?? profile.id ?? profile.user_id ?? profile.accountId;
+          const id = rawId != null ? String(rawId) : "";
+          const emailRaw =
+            typeof profile.email === "string" ? profile.email.trim() : "";
+          const nameRaw =
+            (typeof profile.name === "string" && profile.name.trim()) ||
+            (typeof profile.preferred_username === "string" &&
+              profile.preferred_username.trim()) ||
+            (typeof profile.username === "string" && profile.username.trim()) ||
+            (typeof profile.screen_name === "string" &&
+              profile.screen_name.trim()) ||
+            "";
+          return {
+            id,
+            email:
+              emailRaw ||
+              (id ? `${idp}-${id}@users.myafvault.local` : `${idp}@users.myafvault.local`),
+            name: nameRaw || (idp === "twitter" ? "X collector" : "Collector"),
+            image:
+              typeof profile.picture === "string"
+                ? profile.picture
+                : typeof profile.avatar_url === "string"
+                  ? profile.avatar_url
+                  : undefined,
+            emailVerified: Boolean(profile.email_verified),
+          };
+        },
       })),
     })
   : null;
@@ -201,6 +239,10 @@ export const auth = betterAuth({
   // See `trustedOrigins` construction above — must cover live preview hosts AND
   // local loopback variants, or clients get "Invalid origin".
   trustedOrigins,
+
+  onAPIError: {
+    errorURL: "/login",
+  },
 
   // Encrypt broker-issued OAuth tokens at rest, and treat the broker's upstreams
   // as trusted first-party identities. The broker owns identity and X emails are

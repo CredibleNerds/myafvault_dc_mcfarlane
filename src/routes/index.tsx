@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect } from "react";
+
 import {
   ArrowRight,
   Camera,
@@ -95,6 +97,13 @@ function LandingPage() {
   const { user, isPending } = useCurrentUserState();
   const signedIn = !isPending && !!user && !user.isDevFallback;
   const stats = catalogStats();
+
+  useEffect(() => {
+    const err = new URLSearchParams(window.location.search).get("error");
+    if (err) {
+      window.location.replace(`/login?error=${encodeURIComponent(err)}`);
+    }
+  }, []);
 
   return (
     <div className="min-h-dvh bg-bg text-fg">
