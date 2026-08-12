@@ -11,10 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as PayRouteImport } from './routes/pay'
 import { Route as AccountSecurityRouteImport } from './routes/account/security'
 import { Route as LoginTwoFactorRouteImport } from './routes/login/two-factor'
+import { Route as PaySuccessRouteImport } from './routes/pay.success'
 import { Route as VaultDcMcfarlaneRouteImport } from './routes/vault/dc-mcfarlane'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhook'
 import { Route as ShareCollectionTokenRouteImport } from './routes/share/collection.$token'
 import { Route as ShareItemTokenRouteImport } from './routes/share/item.$token'
 import { Route as ShareVaultTokenRouteImport } from './routes/share/vault.$token'
@@ -30,6 +33,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PayRoute = PayRouteImport.update({
+  id: '/pay',
+  path: '/pay',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountSecurityRoute = AccountSecurityRouteImport.update({
   id: '/account/security',
   path: '/account/security',
@@ -40,6 +48,11 @@ const LoginTwoFactorRoute = LoginTwoFactorRouteImport.update({
   path: '/two-factor',
   getParentRoute: () => LoginRoute,
 } as any)
+const PaySuccessRoute = PaySuccessRouteImport.update({
+  id: '/success',
+  path: '/success',
+  getParentRoute: () => PayRoute,
+} as any)
 const VaultDcMcfarlaneRoute = VaultDcMcfarlaneRouteImport.update({
   id: '/vault/dc-mcfarlane',
   path: '/vault/dc-mcfarlane',
@@ -48,6 +61,11 @@ const VaultDcMcfarlaneRoute = VaultDcMcfarlaneRouteImport.update({
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
+  id: '/api/stripe/webhook',
+  path: '/api/stripe/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShareCollectionTokenRoute = ShareCollectionTokenRouteImport.update({
@@ -74,10 +92,13 @@ const ShareWishlistTokenRoute = ShareWishlistTokenRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRouteWithChildren
+  '/pay': typeof PayRouteWithChildren
   '/account/security': typeof AccountSecurityRoute
   '/login/two-factor': typeof LoginTwoFactorRoute
+  '/pay/success': typeof PaySuccessRoute
   '/vault/dc-mcfarlane': typeof VaultDcMcfarlaneRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/share/collection/$token': typeof ShareCollectionTokenRoute
   '/share/item/$token': typeof ShareItemTokenRoute
   '/share/vault/$token': typeof ShareVaultTokenRoute
@@ -86,10 +107,13 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRouteWithChildren
+  '/pay': typeof PayRouteWithChildren
   '/account/security': typeof AccountSecurityRoute
   '/login/two-factor': typeof LoginTwoFactorRoute
+  '/pay/success': typeof PaySuccessRoute
   '/vault/dc-mcfarlane': typeof VaultDcMcfarlaneRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/share/collection/$token': typeof ShareCollectionTokenRoute
   '/share/item/$token': typeof ShareItemTokenRoute
   '/share/vault/$token': typeof ShareVaultTokenRoute
@@ -99,10 +123,13 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRouteWithChildren
+  '/pay': typeof PayRouteWithChildren
   '/account/security': typeof AccountSecurityRoute
   '/login/two-factor': typeof LoginTwoFactorRoute
+  '/pay/success': typeof PaySuccessRoute
   '/vault/dc-mcfarlane': typeof VaultDcMcfarlaneRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/share/collection/$token': typeof ShareCollectionTokenRoute
   '/share/item/$token': typeof ShareItemTokenRoute
   '/share/vault/$token': typeof ShareVaultTokenRoute
@@ -113,10 +140,13 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/pay'
     | '/account/security'
     | '/login/two-factor'
+    | '/pay/success'
     | '/vault/dc-mcfarlane'
     | '/api/auth/$'
+    | '/api/stripe/webhook'
     | '/share/collection/$token'
     | '/share/item/$token'
     | '/share/vault/$token'
@@ -125,10 +155,13 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/pay'
     | '/account/security'
     | '/login/two-factor'
+    | '/pay/success'
     | '/vault/dc-mcfarlane'
     | '/api/auth/$'
+    | '/api/stripe/webhook'
     | '/share/collection/$token'
     | '/share/item/$token'
     | '/share/vault/$token'
@@ -137,10 +170,13 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/login'
+    | '/pay'
     | '/account/security'
     | '/login/two-factor'
+    | '/pay/success'
     | '/vault/dc-mcfarlane'
     | '/api/auth/$'
+    | '/api/stripe/webhook'
     | '/share/collection/$token'
     | '/share/item/$token'
     | '/share/vault/$token'
@@ -150,9 +186,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRouteWithChildren
+  PayRoute: typeof PayRouteWithChildren
   AccountSecurityRoute: typeof AccountSecurityRoute
   VaultDcMcfarlaneRoute: typeof VaultDcMcfarlaneRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   ShareCollectionTokenRoute: typeof ShareCollectionTokenRoute
   ShareItemTokenRoute: typeof ShareItemTokenRoute
   ShareVaultTokenRoute: typeof ShareVaultTokenRoute
@@ -175,6 +213,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pay': {
+      id: '/pay'
+      path: '/pay'
+      fullPath: '/pay'
+      preLoaderRoute: typeof PayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/security': {
       id: '/account/security'
       path: '/account/security'
@@ -189,6 +234,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginTwoFactorRouteImport
       parentRoute: typeof LoginRoute
     }
+    '/pay/success': {
+      id: '/pay/success'
+      path: '/success'
+      fullPath: '/pay/success'
+      preLoaderRoute: typeof PaySuccessRouteImport
+      parentRoute: typeof PayRoute
+    }
     '/vault/dc-mcfarlane': {
       id: '/vault/dc-mcfarlane'
       path: '/vault/dc-mcfarlane'
@@ -201,6 +253,13 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stripe/webhook': {
+      id: '/api/stripe/webhook'
+      path: '/api/stripe/webhook'
+      fullPath: '/api/stripe/webhook'
+      preLoaderRoute: typeof ApiStripeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/share/collection/$token': {
@@ -244,12 +303,24 @@ const LoginRouteChildren: LoginRouteChildren = {
 
 const LoginRouteWithChildren = LoginRoute._addFileChildren(LoginRouteChildren)
 
+interface PayRouteChildren {
+  PaySuccessRoute: typeof PaySuccessRoute
+}
+
+const PayRouteChildren: PayRouteChildren = {
+  PaySuccessRoute: PaySuccessRoute,
+}
+
+const PayRouteWithChildren = PayRoute._addFileChildren(PayRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRouteWithChildren,
+  PayRoute: PayRouteWithChildren,
   AccountSecurityRoute: AccountSecurityRoute,
   VaultDcMcfarlaneRoute: VaultDcMcfarlaneRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   ShareCollectionTokenRoute: ShareCollectionTokenRoute,
   ShareItemTokenRoute: ShareItemTokenRoute,
   ShareVaultTokenRoute: ShareVaultTokenRoute,
