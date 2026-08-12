@@ -80,7 +80,8 @@ export function ThemeToggle({ className }: { className?: string }) {
         size="sm"
         variant="outline"
         className={cn(
-          "h-9 gap-1.5 px-2.5 sm:hidden",
+          "h-9 w-9 shrink-0 px-0 sm:hidden",
+
 
           highContrast && contrast !== "normal"
             ? "border-fg bg-fg text-bg hover:bg-fg hover:text-bg"
@@ -93,8 +94,9 @@ export function ThemeToggle({ className }: { className?: string }) {
         onClick={() => setContrast(nextContrast(contrast))}
       >
         <Contrast className="h-3.5 w-3.5 shrink-0" />
-        <span className="text-xs font-medium">{contrastMeta.short}</span>
+        <span className="sr-only">{contrastMeta.short}</span>
       </Button>
+
 
       {/* sm+: full contrast segment control */}
       <div

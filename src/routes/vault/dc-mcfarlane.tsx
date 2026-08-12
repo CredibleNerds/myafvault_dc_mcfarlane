@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Layers, Loader2, MessagesSquare, PackageOpen, Smartphone } from "lucide-react";
+import { Layers, Loader2, MessagesSquare, PackageOpen } from "lucide-react";
+
 
 
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
@@ -456,7 +457,7 @@ function CataloguePage() {
           <div
             role="tablist"
             aria-label="Main sections"
-            className="grid w-full grid-cols-2 gap-1 rounded-[var(--radius-md)] border border-border bg-surface p-1 sm:inline-flex sm:w-auto sm:grid-cols-none"
+            className="inline-flex w-full gap-1 rounded-[var(--radius-md)] border border-border bg-surface p-1 sm:w-auto"
           >
             <button
               type="button"
@@ -465,8 +466,8 @@ function CataloguePage() {
               onClick={() => setSection("catalogue")}
               className={
                 section === "catalogue"
-                  ? "inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-sm)] bg-primary px-3 py-2.5 text-sm font-medium text-primary-fg"
-                  : "inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-sm)] px-3 py-2.5 text-sm font-medium text-muted hover:text-fg"
+                  ? "flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-sm)] bg-primary px-2.5 py-2 text-sm font-medium text-primary-fg"
+                  : "flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-sm)] px-2.5 py-2 text-sm font-medium text-muted hover:text-fg"
               }
             >
               <PackageOpen className="h-4 w-4 shrink-0" />
@@ -479,8 +480,8 @@ function CataloguePage() {
               onClick={() => setSection("collections")}
               className={
                 section === "collections"
-                  ? "inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-sm)] bg-primary px-3 py-2.5 text-sm font-medium text-primary-fg"
-                  : "inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-sm)] px-3 py-2.5 text-sm font-medium text-muted hover:text-fg"
+                  ? "flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-sm)] bg-primary px-2.5 py-2 text-sm font-medium text-primary-fg"
+                  : "flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-sm)] px-2.5 py-2 text-sm font-medium text-muted hover:text-fg"
               }
             >
               <Layers className="h-4 w-4 shrink-0" />
@@ -488,17 +489,10 @@ function CataloguePage() {
             </button>
             <Link
               to="/forum"
-              className="inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-sm)] px-3 py-2.5 text-sm font-medium text-muted hover:text-fg"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-sm)] px-2.5 py-2 text-sm font-medium text-muted hover:text-fg"
             >
               <MessagesSquare className="h-4 w-4 shrink-0" />
               Board
-            </Link>
-            <Link
-              to="/install"
-              className="inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-sm)] px-3 py-2.5 text-sm font-medium text-muted hover:text-fg"
-            >
-              <Smartphone className="h-4 w-4 shrink-0" />
-              App
             </Link>
           </div>
 

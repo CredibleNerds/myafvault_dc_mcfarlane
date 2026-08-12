@@ -88,12 +88,13 @@ export function UserButton() {
         <button
           type="button"
           onClick={() => setConfirmOut(true)}
-          className="inline-flex h-9 items-center gap-1.5 rounded-[var(--radius-sm)] border border-border bg-surface px-2.5 text-xs font-medium text-muted hover:text-fg hover:border-border-strong sm:h-auto sm:border-0 sm:bg-transparent sm:px-1 sm:underline-offset-4 sm:hover:underline"
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-surface text-muted hover:text-fg hover:border-border-strong sm:h-auto sm:w-auto sm:gap-1.5 sm:rounded-[var(--radius-sm)] sm:border-0 sm:bg-transparent sm:px-1 sm:underline-offset-4 sm:hover:underline"
           aria-label="Sign out"
         >
           <LogOut className="h-3.5 w-3.5" />
-          <span>Sign out</span>
+          <span className="hidden sm:inline">Sign out</span>
         </button>
+
       )}
 
       <Dialog open={confirmOut} onOpenChange={setConfirmOut}>
