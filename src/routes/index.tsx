@@ -30,6 +30,8 @@ import {
 import { catalogStats } from "@/data/catalog";
 import { cn } from "@/lib/utils";
 import { VaultPreview } from "@/components/landing/vault-preview";
+import { FeedbackButton } from "@/components/feedback-button";
+
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -673,9 +675,11 @@ function LandingPage() {
             <a href="/install" className="hover:text-fg">
               Install app
             </a>
+            <FeedbackButton />
             <a href="#pricing" className="hover:text-fg">
               Pricing
             </a>
+
 
             <a href="/login?mode=signin" className="hover:text-fg">
               Sign in

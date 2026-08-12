@@ -2,7 +2,9 @@ import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Shield, UserRound } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { FeedbackButton } from "@/components/feedback-button";
 import { cn } from "@/lib/utils";
+
 
 export function AccountShell({
   title,
@@ -59,7 +61,11 @@ export function AccountShell({
           </nav>
         </div>
         {children}
+        <div className="pt-4">
+          <FeedbackButton />
+        </div>
       </main>
+
     </div>
   );
 }

@@ -36,6 +36,8 @@ import { OWNERSHIP } from "@/lib/ownership-copy";
 import { useSystemImages } from "@/lib/system-image-store";
 import { ScrollToTop } from "@/components/scroll-to-top";
 import { InstallPrompt } from "@/components/install/install-prompt";
+import { FeedbackButton } from "@/components/feedback-button";
+
 
 import {
   fetchSystemImages,
@@ -682,6 +684,10 @@ function CataloguePage() {
           <p className="text-center text-xs text-subtle">
             Sign in for cloud sync. Export JSON anytime as a backup.
           </p>
+          <div className="flex justify-center pt-1">
+            <FeedbackButton />
+          </div>
+
         </div>
       </footer>
 
