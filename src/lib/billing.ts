@@ -125,6 +125,10 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
         userId: context.userId,
         email: user?.email ?? "",
       },
+      payment_intent_data: {
+        statement_descriptor: "MYAFVAULT",
+        description: VAULT_ACCESS.productName,
+      },
       line_items: priceId
         ? [{ price: priceId, quantity: 1 }]
         : [
