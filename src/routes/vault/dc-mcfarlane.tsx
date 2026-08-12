@@ -13,7 +13,8 @@ import type { UserEntry } from "@/lib/types";
 import { CATALOG, catalogStats } from "@/data/catalog";
 
 
-import { resolveProduct } from "@/lib/product";
+import { resolveProduct, releaseSortValue } from "@/lib/product";
+
 import { StatsBar } from "@/components/figures/stats-bar";
 import { Toolbar } from "@/components/figures/toolbar";
 import { FigureCard, FigureListRow } from "@/components/figures/figure-card";
@@ -53,16 +54,6 @@ const CATALOG_INDEX: Record<string, number> = Object.fromEntries(
   CATALOG.map((p, i) => [p.id, i]),
 );
 
-function yearValue(year: number | string | null | undefined, newestFirst: boolean) {
-  const n =
-    typeof year === "number"
-      ? year
-      : typeof year === "string"
-        ? Number.parseInt(year, 10)
-        : NaN;
-  if (!Number.isFinite(n) || n <= 0) return newestFirst ? -1 : 9999;
-  return n;
-}
 
 /** Always appear last within a category filter (stable pin). */
 const PIN_BOTTOM_BY_CATEGORY: Record<string, Set<string>> = {
@@ -241,8 +232,8 @@ function CataloguePage() {
         case "name-desc":
           return b.name.localeCompare(a.name);
         case "year-asc": {
-          const ay = yearValue(a.releaseYear, false);
-          const by = yearValue(b.releaseYear, false);
+          const ay = releaseSortValue(a, false);
+          const by = releaseSortValue(b, false);
           if (ay !== by) return ay - by;
           return (
             (CATALOG_INDEX[b.id] ?? 99999) - (CATALOG_INDEX[a.id] ?? 99999) ||
@@ -250,8 +241,8 @@ function CataloguePage() {
           );
         }
         case "year-desc": {
-          const ay = yearValue(a.releaseYear, true);
-          const by = yearValue(b.releaseYear, true);
+          const ay = releaseSortValue(a, true);
+          const by = releaseSortValue(b, true);
           if (ay !== by) return by - ay;
           return (
             (CATALOG_INDEX[a.id] ?? 99999) - (CATALOG_INDEX[b.id] ?? 99999) ||

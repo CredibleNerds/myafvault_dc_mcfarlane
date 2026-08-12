@@ -1,18 +1,21 @@
 import type { CatalogProduct } from "@/lib/types";
 import raw from "./catalog.json";
 
-function releaseYearValue(year: CatalogProduct["releaseYear"]): number {
-  if (typeof year === "number" && Number.isFinite(year) && year > 0) return year;
-  if (typeof year === "string") {
-    const n = Number.parseInt(year, 10);
-    if (Number.isFinite(n) && n > 0) return n;
-  }
-  return -1;
+function releaseKey(product: CatalogProduct): number {
+  const year = product.releaseYear;
+  if (typeof year !== "number" || !Number.isFinite(year) || year <= 0) return -1;
+  const month =
+    typeof product.releaseMonth === "number" &&
+    product.releaseMonth >= 1 &&
+    product.releaseMonth <= 12
+      ? product.releaseMonth
+      : 0;
+  return year * 12 + month;
 }
 
-/** Newest release year first; original catalog order is kept within a year. */
+/** Newest year+month first; original order kept when dates match. */
 export const CATALOG: CatalogProduct[] = [...(raw as CatalogProduct[])].sort(
-  (a, b) => releaseYearValue(b.releaseYear) - releaseYearValue(a.releaseYear),
+  (a, b) => releaseKey(b) - releaseKey(a),
 );
 
 export const CATALOG_BY_ID: Record<string, CatalogProduct> = Object.fromEntries(
@@ -20,8 +23,10 @@ export const CATALOG_BY_ID: Record<string, CatalogProduct> = Object.fromEntries(
 );
 
 export function catalogYear(product: Pick<CatalogProduct, "releaseYear">): number {
-  return releaseYearValue(product.releaseYear);
+  const year = product.releaseYear;
+  return typeof year === "number" && year > 0 ? year : -1;
 }
+
 
 export function catalogStats() {
   const byCategory: Record<string, number> = {

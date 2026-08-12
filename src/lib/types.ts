@@ -26,6 +26,9 @@ export interface CatalogProduct {
   genre: string;
   series: string;
   releaseYear: number | null;
+  /** 1–12 when known; derived from McFarlane product photo dates when the site has no street date */
+  releaseMonth?: number | null;
+
   sku: string;
   description: string;
   features: string[];
