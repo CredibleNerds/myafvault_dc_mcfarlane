@@ -67,12 +67,13 @@ export function FeedbackButton({
           type="button"
           onClick={() => setOpen(true)}
           className={cn(
-            "inline-flex items-center gap-1.5 text-xs text-muted hover:text-fg",
+            "inline-flex items-center gap-2 text-sm font-medium text-muted hover:text-fg",
             className,
           )}
         >
-          <Mail className="h-3.5 w-3.5" />
+          <Mail className="h-4 w-4" />
           Questions & feedback
+
         </button>
       )}
 
