@@ -3,6 +3,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Layers, Loader2, PackageOpen } from "lucide-react";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { authEnabled } from "@/lib/auth/client";
+import { getAccessStatus } from "@/lib/billing";
+
+
 import { toast } from "sonner";
 import {
   hydrateCatalogue,
@@ -13,7 +16,8 @@ import type { UserEntry } from "@/lib/types";
 import { CATALOG, catalogStats } from "@/data/catalog";
 
 
-import { resolveProduct } from "@/lib/product";
+import { resolveProduct, releaseSortValue } from "@/lib/product";
+
 import { StatsBar } from "@/components/figures/stats-bar";
 import { Toolbar } from "@/components/figures/toolbar";
 import { FigureCard, FigureListRow } from "@/components/figures/figure-card";
@@ -53,16 +57,6 @@ const CATALOG_INDEX: Record<string, number> = Object.fromEntries(
   CATALOG.map((p, i) => [p.id, i]),
 );
 
-function yearValue(year: number | string | null | undefined, newestFirst: boolean) {
-  const n =
-    typeof year === "number"
-      ? year
-      : typeof year === "string"
-        ? Number.parseInt(year, 10)
-        : NaN;
-  if (!Number.isFinite(n) || n <= 0) return newestFirst ? -1 : 9999;
-  return n;
-}
 
 /** Always appear last within a category filter (stable pin). */
 const PIN_BOTTOM_BY_CATEGORY: Record<string, Set<string>> = {
@@ -75,6 +69,9 @@ function CataloguePage() {
   const { user, isPending: authPending } = useCurrentUserState();
   const signedIn = !!user && !user.isDevFallback;
   const [ready, setReady] = useState(false);
+  const [accessPending, setAccessPending] = useState(true);
+  const [hasPaidAccess, setHasPaidAccess] = useState(false);
+
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -128,6 +125,35 @@ function CataloguePage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!authEnabled) {
+      setHasPaidAccess(true);
+      setAccessPending(false);
+      return;
+    }
+    if (authPending) return;
+    if (!signedIn) {
+      setAccessPending(false);
+      setHasPaidAccess(false);
+      return;
+    }
+    let cancelled = false;
+    setAccessPending(true);
+    void getAccessStatus()
+      .then((s) => {
+        if (!cancelled) setHasPaidAccess(s.paid);
+      })
+      .catch(() => {
+        if (!cancelled) setHasPaidAccess(false);
+      })
+      .finally(() => {
+        if (!cancelled) setAccessPending(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [authPending, signedIn]);
 
   // Load shared admin system covers (once signed in / vault ready)
   useEffect(() => {
@@ -241,8 +267,8 @@ function CataloguePage() {
         case "name-desc":
           return b.name.localeCompare(a.name);
         case "year-asc": {
-          const ay = yearValue(a.releaseYear, false);
-          const by = yearValue(b.releaseYear, false);
+          const ay = releaseSortValue(a, false);
+          const by = releaseSortValue(b, false);
           if (ay !== by) return ay - by;
           return (
             (CATALOG_INDEX[b.id] ?? 99999) - (CATALOG_INDEX[a.id] ?? 99999) ||
@@ -250,8 +276,8 @@ function CataloguePage() {
           );
         }
         case "year-desc": {
-          const ay = yearValue(a.releaseYear, true);
-          const by = yearValue(b.releaseYear, true);
+          const ay = releaseSortValue(a, true);
+          const by = releaseSortValue(b, true);
           if (ay !== by) return by - ay;
           return (
             (CATALOG_INDEX[a.id] ?? 99999) - (CATALOG_INDEX[b.id] ?? 99999) ||
@@ -341,7 +367,7 @@ function CataloguePage() {
   const selectedList = useMemo(() => [...selectedIds], [selectedIds]);
 
   // Vault requires an account — no free browse
-  if (authEnabled && authPending) {
+  if (authEnabled && (authPending || (signedIn && accessPending))) {
     return (
       <div className="min-h-dvh grid place-items-center bg-bg text-muted">
         <div className="flex items-center gap-2 text-sm">
@@ -357,11 +383,24 @@ function CataloguePage() {
         <div className="max-w-sm text-center space-y-3">
           <p className="text-sm text-muted">Vault access requires an account.</p>
           <a
-            href="/login?mode=signup"
+            href="/login?mode=signup&next=/pay"
             className="inline-flex items-center justify-center rounded-[var(--radius-sm)] bg-primary px-4 py-2.5 text-sm font-medium text-primary-fg"
           >
             Sign up for access
           </a>
+        </div>
+      </div>
+    );
+  }
+  if (authEnabled && signedIn && !hasPaidAccess) {
+    if (typeof window !== "undefined") {
+      window.location.replace("/pay");
+    }
+    return (
+      <div className="min-h-dvh grid place-items-center bg-bg text-muted">
+        <div className="flex items-center gap-2 text-sm">
+          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+          Redirecting to checkout…
         </div>
       </div>
     );

@@ -26,6 +26,7 @@ export function resolveProduct(
       genre: c.genre ?? "Comics",
       series: c.series ?? "",
       releaseYear: c.releaseYear ?? null,
+      releaseMonth: c.releaseMonth ?? null,
       sku: c.sku ?? "",
       description: c.description ?? "",
       features: c.features ?? [],
@@ -124,4 +125,49 @@ export function categoryLabel(c: ProductCategory): string {
     default:
       return c;
   }
+}
+
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+] as const;
+
+export function formatRelease(
+  product: Pick<CatalogProduct, "releaseYear" | "releaseMonth">,
+): string {
+  const year = product.releaseYear;
+  if (!year) return "";
+  const month = product.releaseMonth;
+  if (typeof month === "number" && month >= 1 && month <= 12) {
+    return `${MONTHS[month - 1]} ${year}`;
+  }
+  return String(year);
+}
+
+/** Higher = newer. Year * 12 + month; missing month sorts before January. */
+export function releaseSortValue(
+  product: Pick<CatalogProduct, "releaseYear" | "releaseMonth">,
+  newestFirst = true,
+): number {
+  const year = product.releaseYear;
+  if (typeof year !== "number" || !Number.isFinite(year) || year <= 0) {
+    return newestFirst ? -1 : 9999 * 12;
+  }
+  const month =
+    typeof product.releaseMonth === "number" &&
+    product.releaseMonth >= 1 &&
+    product.releaseMonth <= 12
+      ? product.releaseMonth
+      : 0;
+  return year * 12 + month;
 }

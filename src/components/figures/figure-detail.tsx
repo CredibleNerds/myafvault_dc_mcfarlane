@@ -40,7 +40,9 @@ import {
   displayImageFor,
   formatAccessories,
   officialImagesFor,
+  formatRelease,
 } from "@/lib/product";
+
 import { compressImage } from "@/lib/image";
 import { ProductImage } from "@/components/figures/product-image";
 import { ImageLightbox } from "@/components/figures/image-lightbox";
@@ -322,7 +324,7 @@ export function FigureDetail({
                     </DialogTitle>
                     <DialogDescription className="text-base text-muted mt-1">
                       {product.character}
-                      {product.releaseYear ? ` · ${product.releaseYear}` : ""}
+                      {product.releaseYear ? ` · ${formatRelease(product)}` : ""}
                       {product.sku ? ` · SKU ${product.sku}` : ""}
                     </DialogDescription>
                   </div>

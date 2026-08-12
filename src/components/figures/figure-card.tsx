@@ -4,7 +4,9 @@ import { cn } from "@/lib/utils";
 import {
   categoryLabel,
   displayImageFor,
+  formatRelease,
 } from "@/lib/product";
+
 import { ProductImage } from "@/components/figures/product-image";
 import { OWNERSHIP } from "@/lib/ownership-copy";
 import { Check, Square, SquareCheck } from "lucide-react";
@@ -193,9 +195,10 @@ export function FigureCard({
           <p className="text-[11px] font-medium uppercase tracking-wide text-subtle line-clamp-1">
             {product.line}
             {product.line && product.releaseYear ? " · " : ""}
-            {product.releaseYear ?? ""}
+            {formatRelease(product)}
           </p>
         )}
+
         {product.accessories.length > 0 && (
           <p className="mt-0.5 text-[11px] text-subtle line-clamp-2 leading-snug">
             {product.accessories[0]}
@@ -290,7 +293,7 @@ export function FigureListRow({
           </Badge>
           {product.releaseYear && (
             <span className="text-xs text-subtle tabular-nums">
-              {product.releaseYear}
+              {formatRelease(product)}
             </span>
           )}
         </div>

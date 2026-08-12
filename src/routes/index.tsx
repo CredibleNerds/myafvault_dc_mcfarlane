@@ -197,7 +197,7 @@ function LandingPage() {
                   ) : (
                     <>
                       <Button asChild size="lg" className="h-11 px-5">
-                        <a href="/login?mode=signup">
+                        <a href="/login?mode=signup&next=/pay">
                           Sign up for access
                           <ArrowRight className="h-4 w-4" />
                         </a>
@@ -420,7 +420,7 @@ function LandingPage() {
           </div>
         </section>
 
-        {/* Pricing — Stripe later */}
+        {/* Pricing */}
         <section className="border-b border-border" id="pricing">
           <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16">
             <div className="max-w-2xl mb-8">
@@ -431,8 +431,8 @@ function LandingPage() {
                 Lifetime vault access
               </h2>
               <p className="text-muted mt-2 text-sm sm:text-base">
-                Sign up for vault access. Unlock the full DC McFarlane catalogue, cloud
-                sync, and multi-device storage with a single payment.
+                Sign up, then pay once with Stripe. Unlock the full DC McFarlane
+                catalogue, cloud sync, and multi-device storage.
               </p>
             </div>
 
@@ -468,26 +468,23 @@ function LandingPage() {
                   ))}
                 </ul>
                 <div className="mt-6 flex flex-col sm:flex-row gap-2">
-                  <Button
-                    type="button"
-                    size="lg"
-                    className="h-11"
-                    disabled
-                    title="Stripe checkout will be connected next"
-                  >
-                    <Lock className="h-4 w-4" />
-                    Pay {VAULT_ACCESS.priceLabel} — Stripe coming soon
-                  </Button>
-                  <Button asChild size="lg" variant="outline" className="h-11">
-                    <a href="/login?mode=signup">
-                      Sign up for access
+                  <Button asChild size="lg" className="h-11">
+                    <a href={signedIn ? "/pay" : "/login?mode=signup&next=/pay"}>
+                      <Lock className="h-4 w-4" />
+                      Pay {VAULT_ACCESS.priceLabel} with Stripe
                     </a>
                   </Button>
+                  {!signedIn && (
+                    <Button asChild size="lg" variant="outline" className="h-11">
+                      <a href="/login?mode=signup&next=/pay">
+                        Sign up first
+                      </a>
+                    </Button>
+                  )}
                 </div>
                 <p className="mt-3 text-xs text-subtle flex items-start gap-1.5">
                   <Sparkles className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-                  Secure Stripe Checkout will be wired next. You can already
-                  create an account and use the DC McFarlane vault.
+                  Secure Stripe Checkout. Pay once — no subscription.
                 </p>
               </div>
 
@@ -514,7 +511,7 @@ function LandingPage() {
                   ) : (
                     <>
                       <Button asChild size="lg" className="h-11">
-                        <a href="/login?mode=signup">
+                        <a href="/login?mode=signup&next=/pay">
                           Sign up for access
                         </a>
                       </Button>
@@ -542,8 +539,8 @@ function LandingPage() {
               Ready to index your McFarlane shelf?
             </h2>
             <p className="text-muted mt-2 max-w-lg mx-auto text-sm sm:text-base">
-              Sign up for access to the DC vault, then claim lifetime cloud access
-              for {VAULT_ACCESS.priceLabel} when Stripe goes live.
+              Create an account, then unlock lifetime access for{" "}
+              {VAULT_ACCESS.priceLabel} with Stripe.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3">
               {signedIn ? (
@@ -556,7 +553,7 @@ function LandingPage() {
               ) : (
                 <>
                   <Button asChild size="lg" className="h-11 px-6">
-                    <a href="/login?mode=signup">
+                    <a href="/login?mode=signup&next=/pay">
                       Sign up for access
                       <ArrowRight className="h-4 w-4" />
                     </a>
@@ -587,7 +584,7 @@ function LandingPage() {
                 DC vault
               </Link>
             ) : (
-              <a href="/login?mode=signup" className="hover:text-fg">
+              <a href="/login?mode=signup&next=/pay" className="hover:text-fg">
                 Sign up for access
               </a>
             )}

@@ -184,8 +184,8 @@ export function Toolbar({
             <SelectValue placeholder="Sort" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="year-desc">Year (newest)</SelectItem>
-            <SelectItem value="year-asc">Year (oldest)</SelectItem>
+            <SelectItem value="year-desc">Newest first</SelectItem>
+            <SelectItem value="year-asc">Oldest first</SelectItem>
             <SelectItem value="name-asc">Name A–Z</SelectItem>
             <SelectItem value="name-desc">Name Z–A</SelectItem>
             <SelectItem value="character-asc">Character</SelectItem>
