@@ -430,20 +430,18 @@ function CataloguePage() {
     <div className="min-h-dvh">
       <header className="sticky top-0 z-40 border-b border-border/80 bg-bg/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6 sm:py-4">
-          <div className="min-w-0 flex items-start justify-between gap-3 sm:block">
-            <div className="min-w-0">
-              <Link
-                to="/"
-                className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary hover:underline sm:text-[11px]"
-              >
-                <span className="sm:hidden">MyAFVault</span>
-                <span className="hidden sm:inline">MyAFVault · DC McFarlane</span>
-              </Link>
-              <h1 className="text-base font-semibold tracking-tight sm:text-xl">
-                <span className="sm:hidden">DC McFarlane</span>
-                <span className="hidden sm:inline">Figure Catalogue</span>
-              </h1>
-            </div>
+          <div className="min-w-0">
+            <Link
+              to="/"
+              className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary hover:underline sm:text-[11px]"
+            >
+              <span className="sm:hidden">MyAFVault</span>
+              <span className="hidden sm:inline">MyAFVault · DC McFarlane</span>
+            </Link>
+            <h1 className="text-base font-semibold tracking-tight sm:text-xl">
+              <span className="sm:hidden">DC McFarlane</span>
+              <span className="hidden sm:inline">Figure Catalogue</span>
+            </h1>
           </div>
           <AuthSyncBar />
         </div>

@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { Link, Navigate } from "@tanstack/react-router";
+import { LogOut } from "lucide-react";
 import { authEnabled, signOut } from "./client";
+
 import { useCurrentUser, useCurrentUserState } from "./use-current-user";
 import { getMyProfile, type UserProfile } from "@/lib/profile";
 import { CollectorAvatar } from "@/components/account/collector-avatar";
@@ -46,7 +48,7 @@ export function UserButton() {
   const label =
     profile?.displayName || user.displayName || user.primaryEmail || "Account";
   return (
-    <div className="flex items-center gap-1.5 sm:gap-2">
+    <div className="flex items-center gap-2.5 sm:gap-2">
       <Link
         to="/account/profile"
         className="inline-flex items-center gap-1.5 text-muted hover:text-fg"
@@ -66,11 +68,11 @@ export function UserButton() {
         <button
           type="button"
           onClick={() => void signOut("/")}
-          className="cursor-pointer text-xs text-muted underline-offset-4 hover:text-fg hover:underline px-1"
+          className="inline-flex h-9 items-center gap-1.5 rounded-[var(--radius-sm)] border border-border bg-surface px-2.5 text-xs font-medium text-muted hover:text-fg hover:border-border-strong sm:h-auto sm:border-0 sm:bg-transparent sm:px-1 sm:underline-offset-4 sm:hover:underline"
           aria-label="Sign out"
         >
-          <span className="sm:hidden">Out</span>
-          <span className="hidden sm:inline">Sign out</span>
+          <LogOut className="h-3.5 w-3.5" />
+          <span>Sign out</span>
         </button>
       )}
     </div>

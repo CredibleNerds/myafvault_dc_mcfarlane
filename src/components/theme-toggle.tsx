@@ -34,7 +34,8 @@ export function ThemeToggle({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end",
+        "flex items-center gap-3 sm:gap-2 flex-wrap",
+
         className,
       )}
     >
@@ -56,7 +57,8 @@ export function ThemeToggle({ className }: { className?: string }) {
               title={label}
               onClick={() => setMode(id)}
               className={cn(
-                "h-8 w-8 px-0 sm:h-8 sm:w-auto sm:px-2.5 gap-1.5",
+                "h-9 w-9 px-0 sm:h-8 sm:w-auto sm:px-2.5 gap-1.5",
+
                 active
                   ? "bg-primary text-primary-fg hover:bg-primary hover:text-primary-fg shadow-sm"
                   : "text-muted hover:text-fg hover:bg-surface-2",
@@ -77,7 +79,8 @@ export function ThemeToggle({ className }: { className?: string }) {
         size="sm"
         variant="outline"
         className={cn(
-          "h-8 gap-1.5 px-2 sm:hidden",
+          "h-9 gap-1.5 px-2.5 sm:hidden",
+
           highContrast && contrast !== "normal"
             ? "border-fg bg-fg text-bg hover:bg-fg hover:text-bg"
             : contrast === "high"
