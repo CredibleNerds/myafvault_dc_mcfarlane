@@ -113,9 +113,6 @@ export async function signIn(
     const token = await waitForPopupToken(popup);
     if (!token) throw new Error("Sign-in was cancelled or failed");
     setSessionBearer(token);
-    // Refresh the client session store with the bearer attached (onRequest).
-    // Avoid a full iframe reload when we're already on the destination — that
-    // reload was the slow "still loading after the popup closed" feeling.
     try {
       await authClient.getSession();
     } catch {
@@ -128,6 +125,25 @@ export async function signIn(
         window.location.href = callbackURL;
       }
     }
+    return;
+  }
+
+  // Production custom domain cannot use the Grok preview OAuth client
+  // (redirect URI is rejected). Prefer native Google / X when configured.
+  const native =
+    providerId === "grok-google"
+      ? "google"
+      : providerId === "grok-x"
+        ? "twitter"
+        : null;
+  if (native) {
+    const { data, error } = await authClient.signIn.social({
+      provider: native,
+      callbackURL,
+      errorCallbackURL,
+    });
+    if (error) throw new Error(error.message ?? "Sign-in failed");
+    if (data?.url) window.location.href = data.url;
     return;
   }
 

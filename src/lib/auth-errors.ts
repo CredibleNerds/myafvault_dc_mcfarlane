@@ -1,10 +1,17 @@
 /** Friendly copy for Better Auth / OAuth callback query errors. */
 export function oauthErrorMessage(code: string | null | undefined): string | null {
   if (!code) return null;
-  const key = code.trim().toLowerCase().replace(/[\s+]+/g, "_");
+  let raw = code.trim();
+  try {
+    const parsed = JSON.parse(raw) as { message?: string; error?: string };
+    raw = parsed.message || parsed.error || raw;
+  } catch {
+    /* not JSON */
+  }
+  const key = raw.toLowerCase().replace(/[\s+]+/g, "_");
   const messages: Record<string, string> = {
     email_is_missing:
-      "X did not share an email for this account. Try again — we can still create your vault from your X profile.",
+      "X did not share an email for this account. Try again, or use email sign-in.",
     email_not_found:
       "X did not share an email for this account. Try Continue with X again, or use email sign-in.",
     name_is_missing: "Could not read your name from that account. Try again.",
@@ -27,11 +34,16 @@ export function oauthErrorMessage(code: string | null | undefined): string | nul
       "Could not load your Google or X profile. Please try again.",
     signup_disabled: "New accounts cannot be created this way right now.",
     access_denied: "Sign-in was cancelled.",
-    "email_doesn't_match":
-      "That Google or X email does not match the account you are linking.",
+    invalid_redirect_uri:
+      "Google and X are not connected on this website yet. Sign in with email for now.",
+    "invalid_redirect_url":
+      "Google and X are not connected on this website yet. Sign in with email for now.",
+    provider_not_found:
+      "Google and X are not connected on this website yet. Sign in with email for now.",
   };
-  return (
-    messages[key] ??
-    "Google or X sign-in did not finish. Please try again, or use email."
-  );
+  if (messages[key]) return messages[key];
+  if (key.includes("redirect")) {
+    return "Google and X are not connected on this website yet. Sign in with email for now.";
+  }
+  return "Google or X sign-in did not finish. Please try again, or use email.";
 }

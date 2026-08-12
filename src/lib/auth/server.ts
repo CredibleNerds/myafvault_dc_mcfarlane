@@ -172,6 +172,31 @@ const database = databaseUrl
 /** Session token cookie name — also read by the live-preview popup completion page. */
 export const SESSION_TOKEN_COOKIE = "__Host-grok-auth.session_token";
 
+const googleClientId = env("GOOGLE_CLIENT_ID");
+const googleClientSecret = env("GOOGLE_CLIENT_SECRET");
+const twitterClientId = env("TWITTER_CLIENT_ID");
+const twitterClientSecret = env("TWITTER_CLIENT_SECRET");
+
+const socialProviders = {
+  ...(googleClientId && googleClientSecret
+    ? {
+        google: {
+          clientId: googleClientId,
+          clientSecret: googleClientSecret,
+          prompt: "select_account" as const,
+        },
+      }
+    : {}),
+  ...(twitterClientId && twitterClientSecret
+    ? {
+        twitter: {
+          clientId: twitterClientId,
+          clientSecret: twitterClientSecret,
+        },
+      }
+    : {}),
+};
+
 // Built separately so the `betterAuth({...})` call stays easy to edit without
 // breaking brackets (models often trip on the conditional plugin spread).
 const grokOAuthPlugin = authConfigured
@@ -243,6 +268,8 @@ export const auth = betterAuth({
   onAPIError: {
     errorURL: "/login",
   },
+
+  ...(Object.keys(socialProviders).length > 0 ? { socialProviders } : {}),
 
   // Encrypt broker-issued OAuth tokens at rest, and treat the broker's upstreams
   // as trusted first-party identities. The broker owns identity and X emails are

@@ -27,8 +27,10 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getSocialAuthStatus } from "@/lib/auth/social-status";
 import { oauthErrorMessage } from "@/lib/auth-errors";
 import { cn } from "@/lib/utils";
+
 
 
 
@@ -53,10 +55,20 @@ function LoginPage() {
   });
 
   const [showPassword, setShowPassword] = useState(false);
-
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const [social, setSocial] = useState<{ google: boolean; twitter: boolean } | null>(
+    null,
+  );
+
+  useEffect(() => {
+    void getSocialAuthStatus()
+      .then(setSocial)
+      .catch(() => setSocial({ google: false, twitter: false }));
+  }, []);
+
 
   if (!isPending && user && !user.isDevFallback) {
     return <Navigate to="/vault/dc-mcfarlane" />;
@@ -64,6 +76,27 @@ function LoginPage() {
 
   async function onProvider(providerId: string) {
     setError(null);
+    const native =
+      providerId === "grok-google"
+        ? "google"
+        : providerId === "grok-x"
+          ? "twitter"
+          : null;
+    const onSandbox =
+      typeof window !== "undefined" &&
+      window.location.hostname.endsWith(".grok-sandbox.com");
+    if (
+      !onSandbox &&
+      native &&
+      social &&
+      ((native === "google" && !social.google) ||
+        (native === "twitter" && !social.twitter))
+    ) {
+      setError(
+        "Google and X are not connected on this website yet. Sign in with email for now — we can turn those buttons on next.",
+      );
+      return;
+    }
     setBusyProvider(providerId);
     try {
       await signIn(providerId, {
@@ -71,10 +104,14 @@ function LoginPage() {
         errorCallbackURL: "/login",
       });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Sign-in failed");
+      setError(
+        oauthErrorMessage(e instanceof Error ? e.message : null) ??
+          (e instanceof Error ? e.message : "Sign-in failed"),
+      );
       setBusyProvider(null);
     }
   }
+
 
   async function onEmailSubmit(e: React.FormEvent) {
     e.preventDefault();
