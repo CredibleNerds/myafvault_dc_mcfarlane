@@ -250,7 +250,7 @@ export function FigureDetail({
                 />
                 {platinum && (
                   <div className="pointer-events-none absolute right-3 top-3 z-[2] sm:right-4 sm:top-4">
-                    <PlatinumMark kind={platinum} size={56} />
+                    <PlatinumMark kind={platinum} size={20} />
                   </div>
                 )}
               </div>

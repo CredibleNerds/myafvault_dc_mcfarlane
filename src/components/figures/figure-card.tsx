@@ -167,7 +167,7 @@ export function FigureCard({
 
         {platinum && (
           <div className="pointer-events-none absolute right-2 top-2 z-[2]">
-            <PlatinumMark kind={platinum} size={38} />
+            <PlatinumMark kind={platinum} size={18} />
           </div>
         )}
 
@@ -288,7 +288,7 @@ export function FigureListRow({
         />
         {platinum && (
           <div className="pointer-events-none absolute right-0.5 top-0.5">
-            <PlatinumMark kind={platinum} size={22} />
+            <PlatinumMark kind={platinum} size={16} labeled={false} />
           </div>
         )}
       </div>
@@ -307,6 +307,7 @@ export function FigureListRow({
           <Badge variant="secondary" className="text-[10px]">
             {categoryLabel(product.category)}
           </Badge>
+          {platinum && <PlatinumMark kind={platinum} size={16} />}
           {product.releaseYear && (
             <span className="text-xs text-subtle tabular-nums">
               {formatRelease(product)}
