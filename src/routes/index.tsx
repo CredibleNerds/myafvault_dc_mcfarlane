@@ -6,12 +6,17 @@ import {
   Camera,
   Check,
   Cloud,
+  Heart,
   Layers,
   Lock,
+  MessagesSquare,
   Package,
   Search,
+  Share2,
   Shield,
+  Smartphone,
   Sparkles,
+  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +41,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "MyAFVault is your DC McFarlane Multiverse vault — catalogue, photos, ownership, and cloud sync. Lifetime access $4.99.",
+          "MyAFVault is the DC McFarlane collector vault — 1,000+ official listings, In My Vault tracking, wishlist, photos, collections, sharing, and a collector board. Lifetime access $4.99.",
       },
     ],
   }),
@@ -45,23 +50,48 @@ export const Route = createFileRoute("/")({
 const FEATURES = [
   {
     icon: Search,
-    title: "Master catalogue",
-    body: "Browse official product shots, scales, lines, and package accessories — not a blank spreadsheet.",
+    title: "The full McFarlane DC list",
+    body: "1,000+ official 7\" figures, Megafigs, statues, multipacks, vehicles, Super Powers, Super Friends, and chase variants — with pack shots and every accessory called out.",
   },
   {
     icon: Package,
-    title: "In My Vault tracking",
-    body: "Mark figures you have, build a wishlist, bulk-update ownership, and see your vault grow.",
+    title: "In My Vault",
+    body: "Mark what you own, set condition and price, add notes, and bulk-update a whole wave. See the collection grow without a spreadsheet.",
+  },
+  {
+    icon: Heart,
+    title: "Wishlist that stays separate",
+    body: "Park grails and gaps on a blue Wishlist. Share it. Keep it out of your owned count until they land on the shelf.",
+  },
+  {
+    icon: Star,
+    title: "Platinum & Red Plat seals",
+    body: "Chase variants are labeled so you can tell a standard Platinum from a Red Platinum at a glance.",
   },
   {
     icon: Camera,
-    title: "Your photos",
-    body: "Upload shelf shots and loose figure photos. Prefer yours as the cover without losing the official pack art.",
+    title: "Your photos, your cover",
+    body: "Upload loose shots and shelf photos. Set the picture you see without changing what anyone else sees.",
   },
   {
     icon: Layers,
     title: "Displays & collections",
-    body: "Group Justice League, Teen Titans, or The Dark Knight shelf photos in one place — multi-figure sets included.",
+    body: "Group Justice League, Teen Titans, or The Dark Knight shelf. Custom listings stay private unless you share them.",
+  },
+  {
+    icon: Share2,
+    title: "Share the shelf",
+    body: "Send a link to a figure, a collection, your wishlist, or your whole vault — no login required for the person you send it to.",
+  },
+  {
+    icon: MessagesSquare,
+    title: "Collector board",
+    body: "Opt in to post photos, ask questions, like other collectors’ shots, and talk McFarlane without mixing it into your private vault.",
+  },
+  {
+    icon: Smartphone,
+    title: "App on every device",
+    body: "Install to the Home Screen on iPhone, Android, Windows, or Mac. Cloud sync keeps ownership, notes, and photos with the account.",
   },
   {
     icon: Cloud,
@@ -70,8 +100,8 @@ const FEATURES = [
   },
   {
     icon: Shield,
-    title: "Optional 2FA",
-    body: "Lock the vault with two-factor authentication when you want extra protection on your collection data.",
+    title: "Locked down if you want",
+    body: "Email sign-in, optional 2FA, and a password-protected vault reset. Your collection is yours.",
   },
 ] as const;
 
@@ -79,18 +109,31 @@ const PREVIEW_STEPS = [
   {
     step: "01",
     title: "Browse the master list",
-    body: "Filter by 7\", Megafig, statue, multipack, or vehicle. Search character, line, or SKU.",
+    body: "Filter by 7\", Megafig, statue, multipack, or vehicle. Search character, line, SKU, or Platinum chase.",
   },
   {
     step: "02",
-    title: "Mark what you own",
-    body: "Tap In My Vault, set condition and price, add notes — or bulk-select a whole wave.",
+    title: "Mark the shelf",
+    body: "Tap In My Vault or Wishlist. Bulk-select a wave. Add condition, price paid, and notes.",
   },
   {
     step: "03",
     title: "Photograph & display",
-    body: "Attach personal photos, then build Collections for team shelves and movie lineups.",
+    body: "Drop in personal photos, pin a favorite cover, then build Collections for team shelves and movie lineups.",
   },
+  {
+    step: "04",
+    title: "Share or talk shop",
+    body: "Send a wishlist or vault link, or join the collector board to show a shelf and ask questions.",
+  },
+] as const;
+
+const WHY = [
+  "Stop guessing which McFarlane DC figures exist — the catalogue is already built.",
+  "Know what you own vs. what you still need without mixing the two.",
+  "Keep pack art and your own photos, including custom listings only you see.",
+  "Show the shelf to friends without handing them your login.",
+  "Open it like an app on your phone or computer. Pay once.",
 ] as const;
 
 function LandingPage() {
@@ -176,16 +219,18 @@ function LandingPage() {
             <div className="grid gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.15fr)] lg:items-center">
               <div className="space-y-6">
                 <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-semibold tracking-tight leading-[1.12] text-balance">
-                  The Vault for the DC McFarlane figures you collect.
+                  The vault for the DC McFarlane figures you collect.
                   <span className="block text-muted font-medium mt-2 text-2xl sm:text-3xl lg:text-[2rem]">
-                    7" figures, megafigs, statues, multipacks, and vehicles.
+                    Index the line. Mark the shelf. Share the hunt.
                   </span>
                 </h1>
                 <p className="text-base sm:text-lg text-muted max-w-xl leading-relaxed text-pretty">
-                  Catalogue official figures with accessories and pack shots,
-                  mark what is In My Vault, upload your photos, and build shelf
-                  Collections — synced to the cloud when you sign in.
+                  A living catalogue of McFarlane’s DC figures — official pack
+                  shots, accessories, Platinum chases — plus In My Vault,
+                  wishlist, your photos, collections, a collector board, and
+                  Home Screen install. One account. One-time unlock.
                 </p>
+
                 <div className="flex flex-col sm:flex-row flex-wrap gap-3">
                   {signedIn ? (
                     <Button asChild size="lg" className="h-11 px-5">
@@ -217,8 +262,9 @@ function LandingPage() {
                 </div>
                 {!signedIn && (
                   <p className="text-xs text-subtle">
-                    Account required — catalogue and vault tools unlock after sign-up.
-                    Lifetime cloud access is {VAULT_ACCESS.priceLabel} one-time.
+                    Account required. Lifetime cloud access is {VAULT_ACCESS.priceLabel}{" "}
+                    one-time — catalogue, vault, board, and install included.
+
                   </p>
                 )}
                 <dl className="grid grid-cols-3 gap-3 max-w-md pt-2">
@@ -262,10 +308,10 @@ function LandingPage() {
                 How it works
               </p>
               <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-                Built for how collectors actually track a line
+                Built for how collectors actually run a line
               </h2>
             </div>
-            <ol className="grid gap-4 md:grid-cols-3">
+            <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {PREVIEW_STEPS.map((s) => (
                 <li
                   key={s.step}
@@ -282,6 +328,31 @@ function LandingPage() {
           </div>
         </section>
 
+        {/* Why */}
+        <section className="border-b border-border" id="why">
+          <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16">
+            <div className="max-w-2xl mb-8">
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary mb-2">
+                Why this exists
+              </p>
+              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+                Built because the line is huge and the shelf is personal
+              </h2>
+            </div>
+            <ul className="grid gap-3 sm:grid-cols-2">
+              {WHY.map((reason) => (
+                <li
+                  key={reason}
+                  className="flex items-start gap-3 rounded-[var(--radius-lg)] border border-border bg-surface p-4"
+                >
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <span className="text-sm leading-relaxed">{reason}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
         {/* Features */}
         <section className="border-b border-border" id="features">
           <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16">
@@ -290,11 +361,11 @@ function LandingPage() {
                 Features
               </p>
               <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-                Everything in the vault
+                Why collectors use the vault
               </h2>
               <p className="text-muted mt-2 text-sm sm:text-base max-w-xl">
-                Built for DC McFarlane Multiverse collectors — catalogue, track,
-                and display every figure in one vault.
+                Spreadsheets forget accessories. Camera rolls hide the shelf.
+                MyAFVault is the index and the display case.
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -327,7 +398,9 @@ function LandingPage() {
                 </h2>
                 <p className="text-muted mt-2 text-sm sm:text-base">
                   One dedicated database for McFarlane’s DC line — official
-                  listings, accessories, and your personal collection.
+                  listings, accessories, Platinum chases, your photos, and a
+                  board for other collectors.
+
                 </p>
               </div>
             </div>
@@ -432,7 +505,9 @@ function LandingPage() {
               </h2>
               <p className="text-muted mt-2 text-sm sm:text-base">
                 Sign up, then pay once with Stripe. Unlock the full DC McFarlane
-                catalogue, cloud sync, and multi-device storage.
+                catalogue, In My Vault, wishlist, photos, collections, collector
+                board, and Home Screen install.
+
               </p>
             </div>
 
@@ -452,10 +527,13 @@ function LandingPage() {
                 </p>
                 <ul className="mt-5 space-y-2.5">
                   {[
-                    "Cloud backup of ownership, notes, and photos",
-                    "Collections & multi-figure displays",
-                    "Optional two-factor security",
                     "Full DC McFarlane Multiverse catalogue",
+                    "In My Vault, Wishlist, notes, and price paid",
+                    "Your photos plus official pack shots",
+                    "Collections, custom listings, and share links",
+                    "Collector board — photos, questions, likes",
+                    "Install as an app on phone or computer",
+                    "Cloud sync and optional two-factor security",
                     "No subscription — pay once",
                   ].map((item) => (
                     <li
@@ -497,8 +575,10 @@ function LandingPage() {
                   <strong className="text-fg font-medium">
                     DC McFarlane
                   </strong>{" "}
-                  database. There is no free browse mode — the vault unlocks after
-                  you sign up.
+                  database. After sign-up, pay {VAULT_ACCESS.priceLabel} once
+                  to unlock the catalogue, your vault, the collector board, and
+                  install-as-app.
+
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2">
                   {signedIn ? (
@@ -536,7 +616,8 @@ function LandingPage() {
         <section className="border-b border-border">
           <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16 text-center">
             <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-balance">
-              Ready to index your McFarlane shelf?
+            Ready to put the McFarlane shelf in one place?
+
             </h2>
             <p className="text-muted mt-2 max-w-lg mx-auto text-sm sm:text-base">
               Create an account, then unlock lifetime access for{" "}
@@ -575,7 +656,8 @@ function LandingPage() {
           <div>
             <p className="text-sm font-semibold">MyAFVault</p>
             <p className="text-xs text-subtle mt-0.5">
-              DC McFarlane Multiverse catalogue.
+              DC McFarlane Multiverse catalogue, collector vault, and board.
+
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted">
@@ -588,9 +670,13 @@ function LandingPage() {
                 Sign up for access
               </a>
             )}
+            <a href="/install" className="hover:text-fg">
+              Install app
+            </a>
             <a href="#pricing" className="hover:text-fg">
               Pricing
             </a>
+
             <a href="/login?mode=signin" className="hover:text-fg">
               Sign in
             </a>

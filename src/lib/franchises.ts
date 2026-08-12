@@ -29,11 +29,18 @@ export const FRANCHISES: FranchiseVault[] = [
     name: "DC McFarlane Multiverse",
     shortLabel: "DC McFarlane",
     tagline:
-      "7\" figures, Megafigs, statues, multipacks, and vehicles — full accessories and collection tracking.",
+      "The living DC McFarlane catalogue — 7\" figures, Megafigs, statues, multipacks, vehicles, Super Powers, Super Friends, and chase Platinum editions.",
     status: "live",
     path: PRIMARY_VAULT_PATH,
-    highlights: ['7" Figures', "Megafigs", "Statues", "Multipacks", "Vehicles"],
-    scopeNote: "600+ catalog entries",
+    highlights: [
+      '7" Figures',
+      "Megafigs",
+      "Statues",
+      "Multipacks",
+      "Vehicles",
+      "Platinum / Red Plat",
+    ],
+    scopeNote: "1,000+ catalog entries",
   },
   {
     id: "marvel",
@@ -82,7 +89,7 @@ export const VAULT_ACCESS = {
   billing: "one-time" as const,
   productName: "MyAFVault Lifetime Access",
   description:
-    "One-time unlock for the DC McFarlane vault, cloud sync, and multi-device access.",
+    "One-time unlock for the full DC McFarlane vault — catalogue, In My Vault, wishlist, photos, collections, collector board, and cloud sync.",
   /** Checkout is live when STRIPE_SECRET_KEY is set on the server */
   stripeReady: true,
 } as const;

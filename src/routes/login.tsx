@@ -2,16 +2,20 @@ import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   ArrowLeft,
-  Check,
   Cloud,
   Eye,
+
   EyeOff,
+  Heart,
+  Layers,
   Loader2,
   Lock,
   Mail,
   Package,
+  Smartphone,
   User,
 } from "lucide-react";
+
 import { toast } from "sonner";
 import { authEnabled, setSessionBearer } from "@/lib/auth/client";
 import { signInWithEmail, signUpWithEmail } from "@/lib/auth/email-auth";
@@ -21,7 +25,9 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { oauthErrorMessage } from "@/lib/auth-errors";
+import { VAULT_ACCESS } from "@/lib/franchises";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -145,27 +151,48 @@ function LoginPage() {
             </div>
             <div className="space-y-1.5">
               <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-                {mode === "signin" ? "Sign in" : "Create account"}
+                {mode === "signin"
+                  ? "Welcome back to the vault"
+                  : "Start your McFarlane vault"}
               </h1>
               <p className="text-sm text-muted leading-relaxed max-w-sm mx-auto">
-                Use your email to save owned figures, wishlist, notes, and
-                photos — then open your vault on any device.
+                {mode === "signin"
+                  ? "Sign in to sync In My Vault, wishlist, photos, and collections on this device."
+                  : "Create an account, then unlock the full DC McFarlane catalogue for a one-time payment."}
               </p>
             </div>
           </div>
 
           <ul className="grid gap-2 rounded-[var(--radius-lg)] border border-border bg-surface p-3.5 text-sm">
             {[
-              "Cloud backup of your collection",
-              "Optional two-factor authentication",
-              "Sync across phone, tablet, and desktop",
-            ].map((t) => (
-              <li key={t} className="flex items-start gap-2 text-muted">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                <span>{t}</span>
+              {
+                Icon: Package,
+                text: "1,000+ official DC McFarlane listings with accessories",
+              },
+              {
+                Icon: Heart,
+                text: "In My Vault and Wishlist stay separate — share either",
+              },
+              {
+                Icon: Layers,
+                text: "Collections, your photos, and custom listings",
+              },
+              {
+                Icon: Smartphone,
+                text: "Install as an app on phone or computer",
+              },
+              {
+                Icon: Cloud,
+                text: `${VAULT_ACCESS.priceLabel} one-time — cloud sync, no subscription`,
+              },
+            ].map(({ Icon, text }) => (
+              <li key={text} className="flex items-start gap-2 text-muted">
+                <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <span>{text}</span>
               </li>
             ))}
           </ul>
+
 
           {!authEnabled ? (
             <p className="text-sm text-muted text-center">
@@ -300,9 +327,9 @@ function LoginPage() {
                       {mode === "signup" ? "Creating account…" : "Signing in…"}
                     </>
                   ) : mode === "signup" ? (
-                    "Create account & sync"
+                    "Create account — then unlock"
                   ) : (
-                    "Sign in & sync collection"
+                    "Sign in to your vault"
                   )}
                 </Button>
               </form>
@@ -310,8 +337,8 @@ function LoginPage() {
               <p className="text-xs text-subtle text-center leading-relaxed flex items-start justify-center gap-1.5">
                 <Cloud className="h-3.5 w-3.5 mt-0.5 shrink-0 text-primary" />
                 <span>
-                  After sign-in, enable 2FA under Security (header) for extra
-                  protection.
+                  After sign-in, pay {VAULT_ACCESS.priceLabel} once if you have
+                  not already. Optional 2FA lives under Security on your profile.
                 </span>
               </p>
             </div>
