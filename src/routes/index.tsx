@@ -231,7 +231,8 @@ function LandingPage() {
                   A living catalogue of McFarlane’s DC figures — official
                   figure pics, accessories list, Platinum chases — add your
                   figures to In My Vault, create a wishlist, add your own
-                  photos, create your collections, a collector board.
+                  photos, create your collections, and join the collector's forum.
+
                 </p>
 
 
