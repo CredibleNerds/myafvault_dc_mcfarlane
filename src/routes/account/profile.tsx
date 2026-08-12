@@ -17,7 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { CATALOG } from "@/data/catalog";
+import { CATALOG_LITE, CATALOG_LITE_BY_ID } from "@/data/catalog-lite";
+
 import { LINES } from "@/lib/types";
 import { useCatalogue } from "@/lib/store";
 import { ProductImage } from "@/components/figures/product-image";
@@ -67,16 +68,28 @@ function ProfilePage() {
 
     const q = figureQuery.trim().toLowerCase();
     const list = q
-      ? CATALOG.filter((p) =>
+      ? CATALOG_LITE.filter((p) =>
           `${p.name} ${p.character} ${p.line}`.toLowerCase().includes(q),
         )
-      : CATALOG;
+      : CATALOG_LITE;
+
     return list.slice(0, 24);
   }, [figureQuery]);
 
-  if (!isPending && (!user || user.isDevFallback)) {
+  if (isPending) {
+    return (
+      <AccountShell title="Your collector profile" active="profile">
+        <p className="text-sm text-muted flex items-center gap-2">
+          <Loader2 className="h-4 w-4 animate-spin" /> Loading profile…
+        </p>
+      </AccountShell>
+    );
+  }
+
+  if (!user || user.isDevFallback) {
     return <Navigate to="/login" />;
   }
+
 
   function pickFigure(id: string) {
     setProfile((p) => {
@@ -280,7 +293,8 @@ function ProfilePage() {
             ) : (
               <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {profile.favoriteProductIds.map((id) => {
-                  const fig = CATALOG.find((p) => p.id === id);
+                  const fig = CATALOG_LITE_BY_ID[id];
+
                   if (!fig) return null;
                   return (
                     <li

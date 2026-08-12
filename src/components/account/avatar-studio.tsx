@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CollectorAvatar } from "@/components/account/collector-avatar";
 import { compressImage } from "@/lib/image";
-import { CATALOG } from "@/data/catalog";
+import { CATALOG_LITE } from "@/data/catalog-lite";
+
 import {
   AVATAR_BG,
   AVATAR_FRAMES,
@@ -37,10 +38,11 @@ export function AvatarStudio({
   const hits = useMemo(() => {
     const q = query.trim().toLowerCase();
     const list = q
-      ? CATALOG.filter((p) =>
+      ? CATALOG_LITE.filter((p) =>
           `${p.name} ${p.character} ${p.line}`.toLowerCase().includes(q),
         )
-      : CATALOG;
+      : CATALOG_LITE;
+
     return list.slice(0, 20);
   }, [query]);
 

@@ -6,7 +6,8 @@ import {
   initialsFrom,
   type AvatarConfig,
 } from "@/lib/avatar";
-import { CATALOG_BY_ID } from "@/data/catalog";
+import { CATALOG_LITE_BY_ID } from "@/data/catalog-lite";
+
 import { cn } from "@/lib/utils";
 
 export function CollectorAvatar({
@@ -29,7 +30,8 @@ export function CollectorAvatar({
     "border-transparent";
   const figureSrc =
     cfg.source === "figure" && cfg.productId
-      ? (CATALOG_BY_ID[cfg.productId]?.imageUrl ?? null)
+      ? (CATALOG_LITE_BY_ID[cfg.productId]?.imageUrl ?? null)
+
       : null;
   const photoSrc = cfg.source === "upload" ? uploadSrc : figureSrc;
   const initials = initialsFrom(name);
