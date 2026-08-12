@@ -46,6 +46,16 @@ export const Route = createFileRoute("/vault/dc-mcfarlane")({
 
 const PAGE_SIZE = 48;
 
+/** Lower index = earlier in master catalog (newest waves are listed first). */
+const CATALOG_INDEX: Record<string, number> = Object.fromEntries(
+  CATALOG.map((p, i) => [p.id, i]),
+);
+
+function yearValue(year: number | null | undefined, newestFirst: boolean) {
+  if (year == null || year === 0) return newestFirst ? -1 : 9999;
+  return year;
+}
+
 /** Always appear last within a category filter (stable pin). */
 const PIN_BOTTOM_BY_CATEGORY: Record<string, Set<string>> = {
   vehicle: new Set(["mcf-lobo-s-spacehog-supergirl-movie"]),
@@ -218,10 +228,24 @@ function CataloguePage() {
           return a.name.localeCompare(b.name);
         case "name-desc":
           return b.name.localeCompare(a.name);
-        case "year-asc":
-          return (a.releaseYear ?? 0) - (b.releaseYear ?? 0);
-        case "year-desc":
-          return (b.releaseYear ?? 0) - (a.releaseYear ?? 0);
+        case "year-asc": {
+          const ay = yearValue(a.releaseYear, false);
+          const by = yearValue(b.releaseYear, false);
+          if (ay !== by) return ay - by;
+          return (
+            (CATALOG_INDEX[b.id] ?? 99999) - (CATALOG_INDEX[a.id] ?? 99999) ||
+            a.name.localeCompare(b.name)
+          );
+        }
+        case "year-desc": {
+          const ay = yearValue(a.releaseYear, true);
+          const by = yearValue(b.releaseYear, true);
+          if (ay !== by) return by - ay;
+          return (
+            (CATALOG_INDEX[a.id] ?? 99999) - (CATALOG_INDEX[b.id] ?? 99999) ||
+            a.name.localeCompare(b.name)
+          );
+        }
         case "character-asc":
           return a.character.localeCompare(b.character);
         case "owned-first":
