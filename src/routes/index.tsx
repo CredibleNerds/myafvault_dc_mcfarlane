@@ -224,7 +224,8 @@ function LandingPage() {
                 <h1 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-semibold tracking-tight leading-[1.12] text-balance">
                   The vault for the DC McFarlane figures you collect.
                   <span className="block text-muted font-medium mt-2 text-2xl sm:text-3xl lg:text-[2rem]">
-                    Catalog the line. Claim the shelf. Share the hunt.
+                    Track your collection. Build your shelf. Share the hunt.
+
                   </span>
                 </h1>
                 <p className="text-base sm:text-lg text-muted max-w-xl leading-relaxed text-pretty">
