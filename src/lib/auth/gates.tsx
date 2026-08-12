@@ -3,10 +3,18 @@ import { useEffect, useState } from "react";
 import { Link, Navigate } from "@tanstack/react-router";
 import { LogOut } from "lucide-react";
 import { authEnabled, signOut } from "./client";
-
 import { useCurrentUser, useCurrentUserState } from "./use-current-user";
 import { getMyProfile, type UserProfile } from "@/lib/profile";
 import { CollectorAvatar } from "@/components/account/collector-avatar";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const SIGN_IN_PATH = "/login";
 
@@ -28,6 +36,8 @@ export function RedirectToSignIn({ to = SIGN_IN_PATH }: { to?: string }) {
 export function UserButton() {
   const user = useCurrentUser();
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [confirmOut, setConfirmOut] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
     if (!user || user.isDevFallback) return;
@@ -47,6 +57,16 @@ export function UserButton() {
   if (!user) return null;
   const label =
     profile?.displayName || user.displayName || user.primaryEmail || "Account";
+
+  async function confirmSignOut() {
+    setSigningOut(true);
+    try {
+      await signOut("/");
+    } finally {
+      setSigningOut(false);
+    }
+  }
+
   return (
     <div className="flex items-center gap-2.5 sm:gap-2">
       <Link
@@ -67,7 +87,7 @@ export function UserButton() {
       {authEnabled && (
         <button
           type="button"
-          onClick={() => void signOut("/")}
+          onClick={() => setConfirmOut(true)}
           className="inline-flex h-9 items-center gap-1.5 rounded-[var(--radius-sm)] border border-border bg-surface px-2.5 text-xs font-medium text-muted hover:text-fg hover:border-border-strong sm:h-auto sm:border-0 sm:bg-transparent sm:px-1 sm:underline-offset-4 sm:hover:underline"
           aria-label="Sign out"
         >
@@ -75,6 +95,37 @@ export function UserButton() {
           <span>Sign out</span>
         </button>
       )}
+
+      <Dialog open={confirmOut} onOpenChange={setConfirmOut}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Sign out?</DialogTitle>
+            <DialogDescription>
+              You’ll need your email and password to get back into your vault.
+              Your collection stays saved to this account.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmOut(false)}
+              disabled={signingOut}
+            >
+              Stay signed in
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => void confirmSignOut()}
+              disabled={signingOut}
+            >
+              <LogOut className="h-4 w-4" />
+              {signingOut ? "Signing out…" : "Sign out"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
