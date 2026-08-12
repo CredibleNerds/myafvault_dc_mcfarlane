@@ -171,3 +171,19 @@ export function releaseSortValue(
       : 0;
   return year * 12 + month;
 }
+
+export type PlatinumKind = "platinum" | "red";
+
+/** Silver Platinum vs Red Platinum chase, or null if not a platinum listing. */
+export function platinumKind(product: {
+  id?: string;
+  name?: string;
+  character?: string;
+  line?: string;
+}): PlatinumKind | null {
+  const hay =
+    `${product.name ?? ""} ${product.id ?? ""} ${product.character ?? ""} ${product.line ?? ""}`.toLowerCase();
+  if (hay.includes("red platinum")) return "red";
+  if (hay.includes("platinum")) return "platinum";
+  return null;
+}

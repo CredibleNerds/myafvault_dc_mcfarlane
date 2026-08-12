@@ -41,10 +41,13 @@ import {
   formatAccessories,
   officialImagesFor,
   formatRelease,
+  platinumKind,
 } from "@/lib/product";
 
 import { compressImage } from "@/lib/image";
 import { ProductImage } from "@/components/figures/product-image";
+import { PlatinumMark } from "@/components/figures/platinum-mark";
+
 import { ImageLightbox } from "@/components/figures/image-lightbox";
 import { publishItemShare } from "@/lib/public-share";
 import { absoluteShareUrl, copyText } from "@/lib/share-utils";
@@ -102,6 +105,8 @@ export function FigureDetail({
   const officialGallery = officialImagesFor(product, systemCover);
   const personal = entry?.personalPhotos ?? [];
   const cover = displayImageFor(product, entry, systemCover);
+  const platinum = platinumKind(product);
+
   const personalCoverIdx = entry?.personalCoverIndex ?? 0;
   const usingMyCover = !!(entry?.usePersonalPhoto && personal.length > 0);
 
@@ -243,6 +248,11 @@ export function FigureDetail({
                   imgClassName="p-2 sm:p-3"
                   onClick={() => setLightboxOpen(true)}
                 />
+                {platinum && (
+                  <div className="pointer-events-none absolute right-3 top-3 z-[2] sm:right-4 sm:top-4">
+                    <PlatinumMark kind={platinum} size={56} />
+                  </div>
+                )}
               </div>
               <button
                 type="button"
@@ -286,6 +296,14 @@ export function FigureDetail({
                   <Badge variant="secondary">{product.line}</Badge>
                   {product.scale && (
                     <Badge variant="outline">{product.scale}</Badge>
+                  )}
+                  {platinum === "red" && (
+                    <Badge className="bg-primary text-primary-fg">
+                      Red Platinum
+                    </Badge>
+                  )}
+                  {platinum === "platinum" && (
+                    <Badge variant="outline">Platinum Edition</Badge>
                   )}
                 </div>
 

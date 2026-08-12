@@ -5,9 +5,12 @@ import {
   categoryLabel,
   displayImageFor,
   formatRelease,
+  platinumKind,
 } from "@/lib/product";
 
 import { ProductImage } from "@/components/figures/product-image";
+import { PlatinumMark } from "@/components/figures/platinum-mark";
+
 import { OWNERSHIP } from "@/lib/ownership-copy";
 import { Check, Square, SquareCheck } from "lucide-react";
 
@@ -80,6 +83,7 @@ export function FigureCard({
   const owned = entry?.owned;
   const wishlist = entry?.wishlist;
   const wishOnly = !!wishlist && !owned;
+  const platinum = platinumKind(product);
 
   return (
     <button
@@ -161,6 +165,12 @@ export function FigureCard({
           )}
         </div>
 
+        {platinum && (
+          <div className="pointer-events-none absolute right-2 top-2 z-[2]">
+            <PlatinumMark kind={platinum} size={38} />
+          </div>
+        )}
+
         {owned && (
           <div
             className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-1 bg-primary"
@@ -222,6 +232,7 @@ export function FigureListRow({
   const owned = entry?.owned;
   const wishlist = entry?.wishlist;
   const wishOnly = !!wishlist && !owned;
+  const platinum = platinumKind(product);
 
   return (
     <button
@@ -275,6 +286,11 @@ export function FigureListRow({
           imgClassName="p-0.5"
           sizes="96px"
         />
+        {platinum && (
+          <div className="pointer-events-none absolute right-0.5 top-0.5">
+            <PlatinumMark kind={platinum} size={22} />
+          </div>
+        )}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-start gap-2">
