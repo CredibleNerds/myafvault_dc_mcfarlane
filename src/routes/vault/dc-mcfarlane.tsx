@@ -456,7 +456,7 @@ function CataloguePage() {
           <div
             role="tablist"
             aria-label="Main sections"
-            className="inline-flex w-full sm:w-auto rounded-[var(--radius-md)] border border-border bg-surface p-1 gap-1"
+            className="grid w-full grid-cols-2 gap-1 rounded-[var(--radius-md)] border border-border bg-surface p-1 sm:inline-flex sm:w-auto sm:grid-cols-none"
           >
             <button
               type="button"
@@ -465,11 +465,11 @@ function CataloguePage() {
               onClick={() => setSection("catalogue")}
               className={
                 section === "catalogue"
-                  ? "flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-primary px-4 py-2 text-sm font-medium text-primary-fg"
-                  : "flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] px-4 py-2 text-sm font-medium text-muted hover:text-fg"
+                  ? "inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-sm)] bg-primary px-3 py-2.5 text-sm font-medium text-primary-fg"
+                  : "inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-sm)] px-3 py-2.5 text-sm font-medium text-muted hover:text-fg"
               }
             >
-              <PackageOpen className="h-4 w-4" />
+              <PackageOpen className="h-4 w-4 shrink-0" />
               Catalogue
             </button>
             <button
@@ -479,25 +479,25 @@ function CataloguePage() {
               onClick={() => setSection("collections")}
               className={
                 section === "collections"
-                  ? "flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] bg-primary px-4 py-2 text-sm font-medium text-primary-fg"
-                  : "flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] px-4 py-2 text-sm font-medium text-muted hover:text-fg"
+                  ? "inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-sm)] bg-primary px-3 py-2.5 text-sm font-medium text-primary-fg"
+                  : "inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-sm)] px-3 py-2.5 text-sm font-medium text-muted hover:text-fg"
               }
             >
-              <Layers className="h-4 w-4" />
+              <Layers className="h-4 w-4 shrink-0" />
               Collections
             </button>
             <Link
               to="/forum"
-              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] px-4 py-2 text-sm font-medium text-muted hover:text-fg"
+              className="inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-sm)] px-3 py-2.5 text-sm font-medium text-muted hover:text-fg"
             >
-              <MessagesSquare className="h-4 w-4" />
+              <MessagesSquare className="h-4 w-4 shrink-0" />
               Board
             </Link>
             <Link
               to="/install"
-              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] px-4 py-2 text-sm font-medium text-muted hover:text-fg"
+              className="inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-sm)] px-3 py-2.5 text-sm font-medium text-muted hover:text-fg"
             >
-              <Smartphone className="h-4 w-4" />
+              <Smartphone className="h-4 w-4 shrink-0" />
               App
             </Link>
           </div>

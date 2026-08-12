@@ -34,7 +34,8 @@ export function ThemeToggle({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "flex items-center gap-3 sm:gap-2 flex-wrap",
+        "flex items-center gap-2 flex-nowrap",
+
 
         className,
       )}

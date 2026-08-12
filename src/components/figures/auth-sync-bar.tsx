@@ -46,41 +46,39 @@ export function AuthSyncBar() {
   }, [user?.id, user?.isDevFallback, isPending]);
 
   return (
-    <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end sm:gap-3">
-
+    <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:flex-row sm:items-center sm:justify-end sm:gap-3">
       <ThemeToggle />
-      <InstallLink />
+      <div className="flex items-center gap-3 sm:justify-end">
 
-
-      {authEnabled && (
-        <>
-          <SignedOut>
-            <Button asChild size="sm" variant="default">
-              <Link to="/login">
-                <LogIn className="h-4 w-4" />
-                <span className="hidden sm:inline">Sign in</span>
-                <span className="sm:hidden">Sign in</span>
-              </Link>
-            </Button>
-          </SignedOut>
-
-          <SignedIn>
-            <SyncChip
-              status={isPending ? "pulling" : sync}
-              detail={detail}
-              onResync={async () => {
-                try {
-                  await forceResync();
-                  toast.success("Re-synced");
-                } catch {
-                  toast.error("Could not re-sync");
-                }
-              }}
-            />
-            <UserButton />
-          </SignedIn>
-        </>
-      )}
+        <InstallLink />
+        {authEnabled && (
+          <>
+            <SignedOut>
+              <Button asChild size="sm" variant="default">
+                <Link to="/login">
+                  <LogIn className="h-4 w-4" />
+                  Sign in
+                </Link>
+              </Button>
+            </SignedOut>
+            <SignedIn>
+              <SyncChip
+                status={isPending ? "pulling" : sync}
+                detail={detail}
+                onResync={async () => {
+                  try {
+                    await forceResync();
+                    toast.success("Re-synced");
+                  } catch {
+                    toast.error("Could not re-sync");
+                  }
+                }}
+              />
+              <UserButton />
+            </SignedIn>
+          </>
+        )}
+      </div>
     </div>
   );
 }
