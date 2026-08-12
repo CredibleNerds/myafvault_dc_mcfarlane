@@ -113,6 +113,7 @@ export const LINES = [
   "Gold Label",
   "Platinum Edition",
   "Page Punchers",
+  "Collectors Club",
   "Super Powers",
   "Super Friends",
   "Custom",
