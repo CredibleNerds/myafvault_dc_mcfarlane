@@ -206,9 +206,16 @@ function waitForPopupToken(popup: Window): Promise<string | null> {
 /** Sign out of THIS app's local session, clear the preview token, then redirect. */
 export async function signOut(redirectTo = "/"): Promise<void> {
   try {
+    const { stopCloudSync } = await import("@/lib/sync-client");
+    stopCloudSync();
+  } catch {
+    /* ignore */
+  }
+  try {
     await authClient.signOut();
   } finally {
     setSessionBearer(null);
   }
   window.location.href = redirectTo;
 }
+

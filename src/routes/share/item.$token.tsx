@@ -72,7 +72,8 @@ function PublicItemSharePage() {
     if (!item) return;
     setImporting(true);
     try {
-      await hydrateCatalogue();
+      await hydrateCatalogue(user?.id ?? null);
+
       const entry = listingFromSharedItem(item);
       addCustom(entry);
       setImported(true);

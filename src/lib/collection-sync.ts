@@ -91,3 +91,20 @@ export const saveCloudVault = createServerFn({ method: "POST" })
       updatedAt: rows[0]?.updated_at ?? new Date().toISOString(),
     };
   });
+
+/** Wipe this account's cloud vault only (other users are untouched). */
+export const resetCloudVault = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }): Promise<VaultPayload> => {
+    const sql = await getSql();
+    await sql.query(
+      `insert into collection_vaults (user_id, entries, collections, updated_at)
+       values ($1, '{}'::jsonb, '{}'::jsonb, now())
+       on conflict (user_id) do update
+         set entries = '{}'::jsonb,
+             collections = '{}'::jsonb,
+             updated_at = now()`,
+      [context.userId],
+    );
+    return { entries: {}, collections: {}, updatedAt: new Date().toISOString() };
+  });

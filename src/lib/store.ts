@@ -65,6 +65,7 @@ interface CatalogueState {
   removeCollectionPhoto: (id: string, index: number) => void;
   setCollectionProducts: (id: string, productIds: string[]) => void;
   replaceCollections: (collections: Record<string, UserCollection>) => void;
+  ownerUserId: string | null;
 }
 
 function emptyEntry(productId: string): UserEntry {
@@ -99,10 +100,28 @@ function touchCollection(
   return { ...col, ...patch, updatedAt: new Date().toISOString() };
 }
 
-const storage =
-  typeof window !== "undefined"
-    ? createJSONStorage(() => localStorage)
-    : undefined;
+const persistOwnerRef = { current: null as string | null };
+
+const userScopedStorage = createJSONStorage(() => ({
+  getItem: (name) => {
+    if (typeof window === "undefined") return null;
+    const owner = persistOwnerRef.current;
+    if (!owner) return null;
+    return window.localStorage.getItem(`${name}:${owner}`);
+  },
+  setItem: (name, value) => {
+    if (typeof window === "undefined") return;
+    const owner = persistOwnerRef.current;
+    if (!owner) return;
+    window.localStorage.setItem(`${name}:${owner}`, value);
+  },
+  removeItem: (name) => {
+    if (typeof window === "undefined") return;
+    const owner = persistOwnerRef.current;
+    if (!owner) return;
+    window.localStorage.removeItem(`${name}:${owner}`);
+  },
+}));
 
 export const useCatalogue = create<CatalogueState>()(
   persist(
@@ -116,6 +135,7 @@ export const useCatalogue = create<CatalogueState>()(
       sort: "year-desc",
       view: "grid",
       section: "catalogue",
+      ownerUserId: null,
 
       setSearch: (search) => set({ search }),
       setCategoryFilter: (categoryFilter) => set({ categoryFilter }),
@@ -364,24 +384,55 @@ export const useCatalogue = create<CatalogueState>()(
       },
     }),
     {
-      name: "dc-mcfarlane-catalogue-v3",
-      storage,
+      name: "dc-mcfarlane-catalogue-v4",
+      storage: userScopedStorage,
       skipHydration: true,
       partialize: (s) => ({
         entries: s.entries,
         collections: s.collections,
         view: s.view,
         section: s.section,
+        ownerUserId: s.ownerUserId,
       }),
     },
   ),
 );
 
-export async function hydrateCatalogue(): Promise<void> {
+export async function hydrateCatalogue(userId?: string | null): Promise<void> {
   if (typeof window === "undefined") return;
+  persistOwnerRef.current = userId ?? null;
+  if (!userId) {
+    useCatalogue.setState({
+      entries: {},
+      collections: {},
+      ownerUserId: null,
+      sort: "year-desc",
+    });
+    return;
+  }
   await useCatalogue.persist.rehydrate();
-  // Always open the vault newest-year-first (do not restore an old sort).
+  const owner = useCatalogue.getState().ownerUserId;
+  if (owner && owner !== userId) {
+    useCatalogue.setState({
+      entries: {},
+      collections: {},
+      ownerUserId: userId,
+    });
+  } else if (!owner) {
+    useCatalogue.setState({ ownerUserId: userId });
+  }
   useCatalogue.setState({ sort: "year-desc" });
+}
+
+/** Drop in-memory vault without writing empty data into another user's cache. */
+export function unloadCatalogue(): void {
+  persistOwnerRef.current = null;
+  useCatalogue.setState({
+    entries: {},
+    collections: {},
+    ownerUserId: null,
+    sort: "year-desc",
+  });
 }
 
 export function selectCollectionStats(entries: Record<string, UserEntry>) {

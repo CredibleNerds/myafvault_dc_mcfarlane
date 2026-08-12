@@ -16,6 +16,8 @@ import {
   getTwoFactorStatus,
   startTwoFactorSetup,
 } from "@/lib/two-factor";
+import { resetCloudVault } from "@/lib/collection-sync";
+import { useCatalogue } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,6 +38,10 @@ function SecurityPage() {
   const [backupCodes, setBackupCodes] = useState<string[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [disableCode, setDisableCode] = useState("");
+  const [resetConfirm, setResetConfirm] = useState("");
+  const replaceEntries = useCatalogue((s) => s.replaceEntries);
+  const replaceCollections = useCatalogue((s) => s.replaceCollections);
+
 
   useEffect(() => {
     if (isPending || !user || user.isDevFallback) return;
@@ -74,6 +80,26 @@ function SecurityPage() {
       toast.success("Two-factor authentication enabled");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Invalid code");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onResetVault(e: React.FormEvent) {
+    e.preventDefault();
+    if (resetConfirm.trim().toUpperCase() !== "RESET") {
+      toast.error("Type RESET to confirm");
+      return;
+    }
+    setBusy(true);
+    try {
+      await resetCloudVault();
+      replaceEntries({});
+      replaceCollections({});
+      setResetConfirm("");
+      toast.success("This account’s vault is empty now");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not reset vault");
     } finally {
       setBusy(false);
     }
@@ -294,6 +320,34 @@ function SecurityPage() {
                 </Button>
               </form>
             )}
+
+            <form
+              onSubmit={onResetVault}
+              className="space-y-3 rounded-[var(--radius-lg)] border border-danger/30 bg-danger/5 p-4"
+            >
+              <p className="text-sm font-medium">Reset this account’s vault</p>
+              <p className="text-xs text-muted leading-relaxed">
+                Clears In My Vault, Wishlist, notes, photos, and collections for{" "}
+                <span className="text-fg">{user?.primaryEmail}</span> only.
+                Other accounts are not changed.
+              </p>
+              <Label htmlFor="reset-vault">Type RESET to confirm</Label>
+              <Input
+                id="reset-vault"
+                value={resetConfirm}
+                onChange={(e) => setResetConfirm(e.target.value)}
+                placeholder="RESET"
+                autoComplete="off"
+              />
+              <Button
+                type="submit"
+                variant="outline"
+                className="text-danger"
+                disabled={busy || resetConfirm.trim().toUpperCase() !== "RESET"}
+              >
+                Reset my collection
+              </Button>
+            </form>
           </div>
         )}
       </main>

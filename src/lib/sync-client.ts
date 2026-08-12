@@ -5,7 +5,8 @@ import {
   mergeEntries,
   entriesFingerprint,
 } from "@/lib/merge-entries";
-import { useCatalogue } from "@/lib/store";
+import { hydrateCatalogue, unloadCatalogue, useCatalogue } from "@/lib/store";
+
 
 export type SyncStatus =
   | "idle"
@@ -52,7 +53,7 @@ function vaultFingerprint() {
   return entriesFingerprint(entries, collections);
 }
 
-/** Merge local + cloud, write both sides, start watching for changes. */
+/** Pull this user's cloud vault only — never merge another account's browser cache. */
 export async function startCloudSync(userId: string): Promise<void> {
   if (
     startedForUser === userId &&
@@ -65,16 +66,20 @@ export async function startCloudSync(userId: string): Promise<void> {
   setStatus("pulling");
 
   try {
+    await hydrateCatalogue(userId);
     const cloud = await fetchCloudVault();
     const localEntries = useCatalogue.getState().entries;
     const localCollections = useCatalogue.getState().collections;
-    const mergedEntries = mergeEntries(localEntries, cloud.entries);
-    const mergedCollections = mergeCollections(
-      localCollections,
-      cloud.collections ?? {},
-    );
+    const sameOwner = useCatalogue.getState().ownerUserId === userId;
+    const mergedEntries = sameOwner
+      ? mergeEntries(localEntries, cloud.entries)
+      : cloud.entries;
+    const mergedCollections = sameOwner
+      ? mergeCollections(localCollections, cloud.collections ?? {})
+      : (cloud.collections ?? {});
 
     applyingRemote = true;
+    useCatalogue.setState({ ownerUserId: userId });
     useCatalogue.getState().replaceEntries(mergedEntries);
     useCatalogue.getState().replaceCollections(mergedCollections);
     applyingRemote = false;
@@ -94,7 +99,6 @@ export async function startCloudSync(userId: string): Promise<void> {
       setStatus("idle");
       return;
     }
-    // Older DBs without collections column — still try entries-only once
     if (/column .*collections/i.test(msg)) {
       setStatus("error", "Run migrations for collections support, then re-sync");
     } else {
@@ -126,8 +130,10 @@ export function stopCloudSync() {
     clearTimeout(pushTimer);
     pushTimer = null;
   }
+  unloadCatalogue();
   setStatus("idle");
 }
+
 
 function schedulePush() {
   if (pushTimer) clearTimeout(pushTimer);

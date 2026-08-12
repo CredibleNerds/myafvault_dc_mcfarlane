@@ -117,14 +117,16 @@ function CataloguePage() {
   const importEntries = useCatalogue((s) => s.importEntries);
 
   useEffect(() => {
+    if (authEnabled && authPending) return;
     let cancelled = false;
-    void hydrateCatalogue().then(() => {
+    const userId = signedIn ? user?.id ?? null : null;
+    void hydrateCatalogue(userId).then(() => {
       if (!cancelled) setReady(true);
     });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [authPending, signedIn, user?.id]);
 
   useEffect(() => {
     if (!authEnabled) {
