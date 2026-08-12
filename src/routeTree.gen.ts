@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PayRouteImport } from './routes/pay'
+import { Route as AccountIndexRouteImport } from './routes/account/index'
+import { Route as AccountProfileRouteImport } from './routes/account/profile'
 import { Route as AccountSecurityRouteImport } from './routes/account/security'
 import { Route as LoginTwoFactorRouteImport } from './routes/login/two-factor'
 import { Route as PaySuccessRouteImport } from './routes/pay.success'
@@ -36,6 +38,16 @@ const LoginRoute = LoginRouteImport.update({
 const PayRoute = PayRouteImport.update({
   id: '/pay',
   path: '/pay',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountIndexRoute = AccountIndexRouteImport.update({
+  id: '/account/',
+  path: '/account/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountProfileRoute = AccountProfileRouteImport.update({
+  id: '/account/profile',
+  path: '/account/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountSecurityRoute = AccountSecurityRouteImport.update({
@@ -93,10 +105,12 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRouteWithChildren
   '/pay': typeof PayRouteWithChildren
+  '/account/profile': typeof AccountProfileRoute
   '/account/security': typeof AccountSecurityRoute
   '/login/two-factor': typeof LoginTwoFactorRoute
   '/pay/success': typeof PaySuccessRoute
   '/vault/dc-mcfarlane': typeof VaultDcMcfarlaneRoute
+  '/account/': typeof AccountIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/share/collection/$token': typeof ShareCollectionTokenRoute
@@ -108,10 +122,12 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRouteWithChildren
   '/pay': typeof PayRouteWithChildren
+  '/account/profile': typeof AccountProfileRoute
   '/account/security': typeof AccountSecurityRoute
   '/login/two-factor': typeof LoginTwoFactorRoute
   '/pay/success': typeof PaySuccessRoute
   '/vault/dc-mcfarlane': typeof VaultDcMcfarlaneRoute
+  '/account': typeof AccountIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/share/collection/$token': typeof ShareCollectionTokenRoute
@@ -124,10 +140,12 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/login': typeof LoginRouteWithChildren
   '/pay': typeof PayRouteWithChildren
+  '/account/profile': typeof AccountProfileRoute
   '/account/security': typeof AccountSecurityRoute
   '/login/two-factor': typeof LoginTwoFactorRoute
   '/pay/success': typeof PaySuccessRoute
   '/vault/dc-mcfarlane': typeof VaultDcMcfarlaneRoute
+  '/account/': typeof AccountIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/share/collection/$token': typeof ShareCollectionTokenRoute
@@ -141,10 +159,12 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/pay'
+    | '/account/profile'
     | '/account/security'
     | '/login/two-factor'
     | '/pay/success'
     | '/vault/dc-mcfarlane'
+    | '/account/'
     | '/api/auth/$'
     | '/api/stripe/webhook'
     | '/share/collection/$token'
@@ -156,10 +176,12 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/pay'
+    | '/account/profile'
     | '/account/security'
     | '/login/two-factor'
     | '/pay/success'
     | '/vault/dc-mcfarlane'
+    | '/account'
     | '/api/auth/$'
     | '/api/stripe/webhook'
     | '/share/collection/$token'
@@ -171,10 +193,12 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/pay'
+    | '/account/profile'
     | '/account/security'
     | '/login/two-factor'
     | '/pay/success'
     | '/vault/dc-mcfarlane'
+    | '/account/'
     | '/api/auth/$'
     | '/api/stripe/webhook'
     | '/share/collection/$token'
@@ -187,8 +211,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRouteWithChildren
   PayRoute: typeof PayRouteWithChildren
+  AccountProfileRoute: typeof AccountProfileRoute
   AccountSecurityRoute: typeof AccountSecurityRoute
   VaultDcMcfarlaneRoute: typeof VaultDcMcfarlaneRoute
+  AccountIndexRoute: typeof AccountIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   ShareCollectionTokenRoute: typeof ShareCollectionTokenRoute
@@ -218,6 +244,20 @@ declare module '@tanstack/react-router' {
       path: '/pay'
       fullPath: '/pay'
       preLoaderRoute: typeof PayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/': {
+      id: '/account/'
+      path: '/account'
+      fullPath: '/account/'
+      preLoaderRoute: typeof AccountIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/profile': {
+      id: '/account/profile'
+      path: '/account/profile'
+      fullPath: '/account/profile'
+      preLoaderRoute: typeof AccountProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/account/security': {
@@ -317,8 +357,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRouteWithChildren,
   PayRoute: PayRouteWithChildren,
+  AccountProfileRoute: AccountProfileRoute,
   AccountSecurityRoute: AccountSecurityRoute,
   VaultDcMcfarlaneRoute: VaultDcMcfarlaneRoute,
+  AccountIndexRoute: AccountIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   ShareCollectionTokenRoute: ShareCollectionTokenRoute,
