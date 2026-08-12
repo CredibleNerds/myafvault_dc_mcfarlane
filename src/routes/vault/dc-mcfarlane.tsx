@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Layers, Loader2, PackageOpen } from "lucide-react";
+import { Layers, Loader2, MessagesSquare, PackageOpen } from "lucide-react";
+
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { authEnabled } from "@/lib/auth/client";
 import { getAccessStatus } from "@/lib/billing";
@@ -482,6 +483,13 @@ function CataloguePage() {
               <Layers className="h-4 w-4" />
               Collections
             </button>
+            <Link
+              to="/forum"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-[var(--radius-sm)] px-4 py-2 text-sm font-medium text-muted hover:text-fg"
+            >
+              <MessagesSquare className="h-4 w-4" />
+              Board
+            </Link>
           </div>
 
           {section === "collections" ? (
