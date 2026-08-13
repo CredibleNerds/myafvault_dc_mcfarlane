@@ -6747,6 +6747,49 @@
     "releaseMonth": 4
   },
   {
+    "id": "mcf-batman-justice-league-gold-label",
+    "name": "Batman (Justice League) Gold Label",
+    "character": "Batman",
+    "brand": "DC Multiverse",
+    "category": "7-inch",
+    "line": "Gold Label",
+    "scale": "7\"",
+    "productType": "Action Figure",
+    "genre": "Movies & TV",
+    "series": "Pre-Order Now",
+    "releaseYear": 2026,
+    "sku": "82853",
+    "description": "As Gotham City’s greatest vigilante, Batman has fought single-handedly for years in relentless pursuit of justice. Now, after witnessing Superman’s ultimate sacrifice for mankind, Bruce Wayne’s restored faith in humanity compels him to bring together a team of the greatest Super Heroes in order to save the world. US GameStop exclusive Gold Label 7\" figure based on Ben Affleck’s Justice League look; pre-order August 2026, expected to ship early September 2026.",
+    "features": [
+      "Incredibly detailed 7” scale figure based on the DC MULTIVERSE™",
+      "Designed with Ultra Articulation with up to 22 moving parts for full range of posing and play",
+      "Batman as featured in the Justice League film",
+      "Includes alternate heads, grapnel and batarang",
+      "Includes collectible art card with character art on the front, and character biography on the back",
+      "Collect all McFARLANE TOYS™ DC MULTIVERSE™ figures"
+    ],
+    "accessories": [
+      "Three interchangeable heads (two masked, one unmasked)",
+      "Soft goods cape",
+      "Grapnel / grappling gun",
+      "Batarang",
+      "Display base",
+      "Collectible art card with character art on the front, and character biography on the back"
+    ],
+    "imageUrl": "https://i0.wp.com/cdn.flickeringmyth.com/wp-content/uploads/2026/08/McFarlane-Justice-League-Affleck-Batman-1.jpg",
+    "gallery": [
+      "https://i0.wp.com/cdn.flickeringmyth.com/wp-content/uploads/2026/08/McFarlane-Justice-League-Affleck-Batman-1.jpg",
+      "https://i0.wp.com/cdn.flickeringmyth.com/wp-content/uploads/2026/08/McFarlane-Justice-League-Affleck-Batman-5.jpg",
+      "https://i0.wp.com/cdn.flickeringmyth.com/wp-content/uploads/2026/08/McFarlane-Justice-League-Affleck-Batman-6.jpg",
+      "https://i0.wp.com/cdn.flickeringmyth.com/wp-content/uploads/2026/08/McFarlane-Justice-League-Affleck-Batman-2.jpg",
+      "https://i0.wp.com/cdn.flickeringmyth.com/wp-content/uploads/2026/08/McFarlane-Justice-League-Affleck-Batman-3.jpg",
+      "https://i0.wp.com/cdn.flickeringmyth.com/wp-content/uploads/2026/08/McFarlane-Justice-League-Affleck-Batman-4.jpg"
+    ],
+    "productUrl": "https://mcfarlane.com/toys/82853-2/",
+    "source": "mcfarlane.com",
+    "releaseMonth": 9
+  },
+  {
     "id": "mcf-batman-joker-war-jokerized-gold-label",
     "name": "Batman (Joker War) (Jokerized) Gold Label",
     "character": "BatmanGold Label",
@@ -9639,6 +9682,46 @@
     "productUrl": "https://mcfarlane.com/toys/harley-quinn-jokerized-gl/",
     "source": "mcfarlane.com",
     "releaseMonth": 10
+  },
+  {
+    "id": "mcf-harley-quinn-dc-classic-gold-label",
+    "name": "Harley Quinn (DC Classic) Gold Label",
+    "character": "Harley Quinn",
+    "brand": "DC Multiverse",
+    "category": "7-inch",
+    "line": "Gold Label",
+    "scale": "7\"",
+    "productType": "Action Figure",
+    "genre": "Comics",
+    "series": "Pre-Order Now",
+    "releaseYear": 2026,
+    "sku": "",
+    "description": "DC Multiverse Gold Label 7\" Harley Quinn in her classic comic-book jester costume. US GameStop exclusive; surprise pre-order August 2026 with expected early September 2026 shipment.",
+    "features": [
+      "Incredibly detailed 7” scale figure based on the DC MULTIVERSE™",
+      "Designed with Ultra Articulation with up to 22 moving parts for full range of posing and play",
+      "Includes novelty weapon and mallet accessories and base",
+      "Includes collectible art card with character art on the front, and character biography on the back",
+      "Collect all McFARLANE TOYS™ DC MULTIVERSE™ figures"
+    ],
+    "accessories": [
+      "Novelty weapon",
+      "Mallet",
+      "Display base",
+      "Collectible art card with character art on the front, and character biography on the back"
+    ],
+    "imageUrl": "https://i0.wp.com/cdn.flickeringmyth.com/wp-content/uploads/2026/08/Harley-Quinn-Gold-Label-3.jpg",
+    "gallery": [
+      "https://i0.wp.com/cdn.flickeringmyth.com/wp-content/uploads/2026/08/Harley-Quinn-Gold-Label-3.jpg",
+      "https://i0.wp.com/cdn.flickeringmyth.com/wp-content/uploads/2026/08/Harley-Quinn-Gold-Label-2.jpg",
+      "https://i0.wp.com/cdn.flickeringmyth.com/wp-content/uploads/2026/08/adc447_6d5b8c61744d4366bf1b068b6afbaca6_mv2.jpg",
+      "https://i0.wp.com/cdn.flickeringmyth.com/wp-content/uploads/2026/08/Harley-Quinn-Gold-Label-1.jpg",
+      "https://i0.wp.com/cdn.flickeringmyth.com/wp-content/uploads/2026/08/Harley-Quinn-Gold-Label-4.jpg",
+      "https://i0.wp.com/cdn.flickeringmyth.com/wp-content/uploads/2026/08/Harley-Quinn-Gold-Label-5.jpg"
+    ],
+    "productUrl": "https://mcfarlane.com/toys/harley-quinn-dc-classic-gold-label/",
+    "source": "mcfarlane.com",
+    "releaseMonth": 9
   },
   {
     "id": "mcf-green-lantern-simon-baz-mcfarlane-collector-edition-26-platinum-edition",
