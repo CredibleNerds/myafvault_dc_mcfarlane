@@ -15712,6 +15712,48 @@
     "releaseMonth": 11
   },
   {
+    "id": "mcf-poison-ivy-batman-and-robin-deluxe-theatrical-edition-gold-label",
+    "name": "Poison Ivy (Batman & Robin) Deluxe Theatrical Edition Gold Label",
+    "character": "Poison Ivy",
+    "brand": "DC Multiverse",
+    "category": "7-inch",
+    "line": "Gold Label",
+    "scale": "7\"",
+    "productType": "Action Figure",
+    "genre": "Movies & TV",
+    "series": "Pre-Order Now",
+    "releaseYear": 2026,
+    "sku": "17978",
+    "description": "THE DARK KNIGHT™ battles his greatest threats yet: cold-hearted MR. FREEZE™, venomous POISON IVY™ and the unstoppable brute known only as BANE™. BATMAN™ finds himself at odds with his crimefighting comrade ROBIN™, no longer satisfied with his role as a sidekick. As MR. FREEZE™ threatens to unleash a new ice age upon the citizens of GOTHAM CITY™, the DYNAMIC DUO, now joined by the heroic newcomer BATGIRL™, must learn to work as a team before GOTHAM CITY is put on ice. US GameStop exclusive Gold Label Deluxe Theatrical Edition 7\" figure based on Uma Thurman's Batman & Robin look; standalone 2026 reissue without Mr. Freeze Build-A-Figure parts. Pre-order about $27.99, expected to ship October 2026.",
+    "features": [
+      "Incredibly detailed 7” scale figure based on Uma Thurman’s Poison Ivy in the Batman & Robin theatrical film",
+      "Designed with Ultra Articulation with up to 22 moving parts for full range of posing and play",
+      "Standalone Gold Label Deluxe Theatrical Edition — no Mr. Freeze Build-A-Figure parts",
+      "Poison Ivy includes vines and display base",
+      "Includes collectible art card with character art on the front, and character biography on the back",
+      "US GameStop exclusive",
+      "Collect all McFARLANE TOYS™ DC MULTIVERSE™ figures"
+    ],
+    "accessories": [
+      "Two vine effect pieces",
+      "Display base",
+      "Collectible art card with character art on the front, and character biography on the back"
+    ],
+    "imageUrl": "https://media.gamestop.com/i/gamestop/20035291",
+    "gallery": [
+      "https://media.gamestop.com/i/gamestop/20035291",
+      "https://media.gamestop.com/i/gamestop/20035291_ALT05",
+      "https://media.gamestop.com/i/gamestop/20035291_ALT06",
+      "https://media.gamestop.com/i/gamestop/20035291_ALT01",
+      "https://media.gamestop.com/i/gamestop/20035291_ALT02",
+      "https://media.gamestop.com/i/gamestop/20035291_ALT03",
+      "https://bleedingcool.com/wp-content/uploads/2026/07/20035291_ALT02.jpeg"
+    ],
+    "productUrl": "https://www.gamestop.com/collectibles/figures/products/mcfarlane-dc-theatrical-deluxe-poison-ivy-batman-and-robin-gold-label-7-in-action-figure/20035291.html",
+    "source": "gamestop.com",
+    "releaseMonth": 10
+  },
+  {
     "id": "mcf-omega-vs-batman-2pk-gold-label",
     "name": "Omega vs Batman 2pk (Gold Label)",
     "character": "Omega",
@@ -15964,6 +16006,47 @@
     "productUrl": "https://mcfarlane.com/toys/mr-freeze-batman-robin/",
     "source": "mcfarlane.com",
     "releaseMonth": 11
+  },
+  {
+    "id": "mcf-mr-freeze-batman-and-robin-deluxe-theatrical-edition-gold-label",
+    "name": "Mr. Freeze (Batman & Robin) Deluxe Theatrical Edition Gold Label",
+    "character": "Mr. Freeze",
+    "brand": "DC Multiverse",
+    "category": "7-inch",
+    "line": "Gold Label",
+    "scale": "7\"",
+    "productType": "Action Figure",
+    "genre": "Movies & TV",
+    "series": "Pre-Order Now",
+    "releaseYear": 2026,
+    "sku": "17896",
+    "description": "THE DARK KNIGHT™ battles his greatest threats yet: cold-hearted MR. FREEZE™, venomous POISON IVY™ and the unstoppable brute known only as BANE™. BATMAN™ finds himself at odds with his crimefighting comrade ROBIN™, no longer satisfied with his role as a sidekick. As MR. FREEZE™ threatens to unleash a new ice age upon the citizens of GOTHAM CITY™, the DYNAMIC DUO, now joined by the heroic newcomer BATGIRL™, must learn to work as a team before GOTHAM CITY is put on ice. US GameStop exclusive Gold Label Deluxe Theatrical Edition; solo 2026 packaging of the former Batman & Robin Build-A-Figure. Pre-order about $34.99, expected to ship October 2026.",
+    "features": [
+      "Incredibly detailed 7” scale figure based on Arnold Schwarzenegger’s Mr. Freeze in the Batman & Robin theatrical film",
+      "Designed with Ultra Articulation with up to 22 moving parts for full range of posing and play",
+      "Solo Gold Label Deluxe Theatrical Edition packaging of the former Batman & Robin Build-A-Figure",
+      "Includes freeze ray with ice effect and base",
+      "Includes collectible art card with character art on the front, and character biography on the back",
+      "US GameStop exclusive",
+      "Collect all McFARLANE TOYS™ DC MULTIVERSE™ figures"
+    ],
+    "accessories": [
+      "Freeze ray",
+      "Three ice effect pieces",
+      "Display base",
+      "Collectible art card with character art on the front, and character biography on the back"
+    ],
+    "imageUrl": "https://bleedingcool.com/wp-content/uploads/2026/07/20035293_ALT05.jpeg",
+    "gallery": [
+      "https://bleedingcool.com/wp-content/uploads/2026/07/20035293_ALT05.jpeg",
+      "https://media.gamestop.com/i/gamestop/20035293?fmt=jpg",
+      "https://media.gamestop.com/i/gamestop/20035293_ALT06",
+      "https://bleedingcool.com/wp-content/uploads/2026/07/20035293_ALT06.jpeg",
+      "https://bleedingcool.com/wp-content/uploads/2026/07/20035293_ALT01-3-e1785356567521.jpeg"
+    ],
+    "productUrl": "https://www.gamestop.com/collectibles/figures/products/mcfarlane-dc-theatrical-deluxe-mr.-freeze-batman-and-robin-gold-label-7-in-action-figure/20035293.html",
+    "source": "gamestop.com",
+    "releaseMonth": 10
   },
   {
     "id": "mcf-midnighter-dc-classic-gold-label",
